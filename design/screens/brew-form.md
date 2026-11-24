@@ -56,6 +56,7 @@ Regions top to bottom:
 | method-open | Method select opened | Listbox popover under the select (max 320px, scrolls) |
 | add-method | "+ Add new method…" chosen | Select replaced by a terracotta-soft box: label "New method name", focused input, `button-primary` "Add", help "It will be saved and selected for this brew.", ghost "Cancel" |
 | validation-error | Submit with client-side errors | Banner "3 fields need your attention" with links to each invalid field; each invalid field gets error border + error-soft fill + message with alert icon below ("Enter a brew name", "Enter where the beans are from", "Choose a rating from 1 to 5 beans"); focus moves to the banner |
+| one-error | Submit with exactly 1 invalid field | Banner "1 field needs your attention" with one link ("Enter where the beans are from"); only Origin shows the error. Singular for exactly 1, plural otherwise ("3 fields need your attention") |
 | duplicate-name | Backend rejects the name (edit or create) | Banner "Couldn’t save your changes — That brew name is already taken" (linked); name field error "You already have a brew called “Kenyan morning”. Brew names must be unique, ignoring capitals." |
 | server-error | Non-field server/network failure | Banner "Couldn’t save your brew" + "The Brewlog server didn’t respond. Nothing was lost: your entry is still here, so you can try again." Fields keep their values |
 | saving | Request in flight | Primary button shows spinner + "Saving…" (`aria-busy`); fields disabled |

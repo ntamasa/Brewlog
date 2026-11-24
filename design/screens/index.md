@@ -3,8 +3,8 @@
 | Screen | Purpose | States |
 |---|---|---|
 | [landing](landing.md) | Explains Brewlog and leads into the journal | default |
-| [brews](brews.md) | All brews as cards, with search, filters, sort and pagination | default, filtered, filters-sheet, card-menu, saved, empty, no-results, loading, error |
-| [brew-form](brew-form.md) | Add or edit a brew (drawer on desktop, bottom sheet on phones), incl. inline "add method" | create, edit, method-open, add-method, validation-error, duplicate-name, server-error, saving, field-limits, method-gone, brew-gone |
+| [brews](brews.md) | All brews as cards, with search, filters, sort and pagination | default, many-pages, filtered, filters-sheet, filters-sheet-any, card-menu, saved, empty, no-results, loading, error |
+| [brew-form](brew-form.md) | Add or edit a brew (drawer on desktop, bottom sheet on phones), incl. inline "add method" | create, edit, method-open, add-method, validation-error, one-error, duplicate-name, server-error, saving, field-limits, method-gone, brew-gone |
 | [brew-detail](brew-detail.md) | One brew with full tasting notes, Edit and Delete | default, no-notes |
 | [brew-delete](brew-delete.md) | Confirm the permanent deletion of a brew | default, deleting, error, gone |
 | [methods](methods.md) | Add, rename and delete brew methods; "Other" is protected | default, renaming, rename-confirm, rename-saving, rename-error, delete-confirm, delete-reassign, delete-mixed, deleting, delete-error, duplicate, added, save-error, error, gone |
