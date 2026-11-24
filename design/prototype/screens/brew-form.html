@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brewlog: Brew form</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  .form-panel .drawer-head h2 { font-family: var(--font-headline-md), Georgia, serif; }
+  .intro { color: var(--color-on-surface-muted); font-size: var(--text-body-sm); margin-top: calc(-1 * var(--spacing-sm)); }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); align-items: start; }
+  fieldset.field { border: 0; padding: 0; margin: 0; min-width: 0; }
+  fieldset.field legend { padding: 0; margin-bottom: var(--spacing-xs); }
+  .rating-row { display: flex; align-items: center; gap: var(--spacing-md); }
+  .rating-row .t-body-sm { color: var(--color-on-surface-muted); }
+  .combo { position: relative; }
+  .combo-btn { display: flex; align-items: center; gap: var(--spacing-sm); text-align: left; cursor: pointer; }
+  .combo-btn .val { flex: 1; display: flex; align-items: center; gap: var(--spacing-sm); }
+  .combo-btn .val .icon { color: var(--color-tertiary); }
+  .listbox { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + var(--spacing-xs)); list-style: none; margin: 0; padding: var(--spacing-xs); background: var(--color-surface); border: 1px solid var(--color-outline); border-radius: var(--radius-sm); max-height: 320px; overflow: auto; }
+  .listbox li { display: flex; align-items: center; gap: var(--spacing-md); min-height: 40px; padding: 0 var(--spacing-md); border-radius: var(--radius-sm); font-size: var(--text-body-md); cursor: pointer; }
+  .listbox li .icon { color: var(--color-tertiary); }
+  .listbox li:hover, .listbox li.active { background: var(--color-surface-sunken); }
+  .listbox li[aria-selected="true"] { font-weight: var(--font-weight-title-md); }
+  .listbox li[aria-selected="true"]::after { content: ""; margin-left: auto; width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-tertiary); }
+  .listbox .sep { min-height: 0; height: 1px; padding: 0; margin: var(--spacing-xs) 0; background: var(--color-outline); pointer-events: none; }
+  .listbox .add { color: var(--color-tertiary); font-weight: var(--font-weight-label-md); }
+  .add-method { display: grid; gap: var(--spacing-sm); padding: var(--spacing-md); border: 1px solid var(--color-tertiary); border-radius: var(--radius-sm); background: var(--color-tertiary-soft); }
+  .add-method .row { display: flex; gap: var(--spacing-sm); }
+  .add-method .row .input { flex: 1; }
+  .date-field { position: relative; }
+  .date-field .icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--color-on-surface-muted); pointer-events: none; }
+  .drawer-foot .left { margin-right: auto; color: var(--color-on-surface-muted); font-size: var(--text-body-sm); align-self: center; }
+  .handle-host { display: none; }
+
+  @media (max-width: 767px) {
+    .form-panel.drawer { top: auto; left: 0; right: 0; width: 100%; height: 90vh; border-left: 0; border-radius: var(--radius-md) var(--radius-md) 0 0; }
+    .handle-host { display: block; }
+    .handle-host .sheet-handle { display: block; }
+    .form-panel .drawer-head { padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md) var(--spacing-lg); }
+    .form-panel .drawer-body { padding: var(--spacing-lg); }
+    .form-panel .drawer-foot { padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg); }
+    .form-panel .drawer-foot .btn { flex: 1; }
+    .drawer-foot .left { display: none; }
+    .row-2 { grid-template-columns: 1fr; gap: var(--spacing-lg); }
+  }
+</style>
+</head>
+<body>
+<script src="../icons.js"></script>
+<iframe class="app-frame" src="brews.html" title="Journal (background)" aria-hidden="true" tabindex="-1"></iframe>
+<div class="backdrop"></div>
+
+<form class="drawer form-panel float-shadow" role="dialog" aria-modal="true" aria-labelledby="form-title" novalidate>
+  <div class="handle-host"><span class="sheet-handle" aria-hidden="true"></span></div>
+  <div class="drawer-head">
+    <h2 id="form-title" class="t-headline-md">
+      <span data-states="create validation-error server-error method-open add-method saving">Log a brew</span>
+      <span data-states="edit duplicate-name">Edit brew</span>
+    </h2>
+    <a class="icon-btn" href="brews.html" aria-label="Close without saving"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></a>
+  </div>
+
+  <div class="drawer-body">
+    <p class="intro">Everything is required except tasting notes.</p>
+
+    <!-- Error banners -->
+    <div class="banner-error" role="alert" tabindex="-1" data-states="validation-error">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+      <div><strong>3 fields need your attention</strong>
+        <ul><li><a href="#name">Enter a brew name</a></li><li><a href="#origin">Enter where the beans are from</a></li><li><a href="#rating">Choose a rating from 1 to 5 beans</a></li></ul>
+      </div>
+    </div>
+    <div class="banner-error" role="alert" tabindex="-1" data-states="duplicate-name">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+      <div><strong>Couldn’t save your changes</strong><a href="#name">That brew name is already taken</a>.</div>
+    </div>
+    <div class="banner-error" role="alert" tabindex="-1" data-states="server-error">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+      <div><strong>Couldn’t save your brew</strong>The Brewlog server didn’t respond. Nothing was lost: your entry is still here, so you can try again.</div>
+    </div>
+
+    <!-- Brew name -->
+    <div class="field" data-field="name">
+      <label class="field-label" for="name">Brew name</label>
+      <input class="input" id="name" autocomplete="off" aria-describedby="name-help name-err">
+      <p class="field-help" id="name-help" data-states="create edit method-open add-method saving server-error">A name only you would recognise, like “Sunday Moka”. Must be unique.</p>
+      <p class="field-error" id="name-err" data-states="validation-error"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Enter a brew name</p>
+      <p class="field-error" data-states="duplicate-name"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>You already have a brew called “Kenyan morning”. Brew names must be unique, ignoring capitals.</p>
+    </div>
+
+    <div class="row-2">
+      <div class="field" data-field="bean">
+        <label class="field-label" for="bean">Bean name</label>
+        <input class="input" id="bean" autocomplete="off">
+      </div>
+      <div class="field" data-field="origin">
+        <label class="field-label" for="origin">Origin</label>
+        <input class="input" id="origin" autocomplete="off" placeholder="Country or region">
+        <p class="field-error" data-states="validation-error"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Enter where the beans are from</p>
+      </div>
+    </div>
+
+    <!-- Method -->
+    <div class="field" data-field="method">
+      <span class="field-label" id="method-label">Brew method</span>
+      <div class="combo" data-states="create edit validation-error server-error duplicate-name method-open saving">
+        <button type="button" class="input combo-btn" aria-haspopup="listbox" aria-labelledby="method-label method-val" id="method-btn">
+          <span class="val" id="method-val"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg><span>Pour Over</span></span>
+          <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+        </button>
+        <ul class="listbox float-shadow" role="listbox" aria-labelledby="method-label" data-states="method-open">
+          <li role="option"><svg class="icon" aria-hidden="true"><use href="#i-espresso"/></svg>Espresso</li>
+          <li role="option" aria-selected="true" class="active"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg>Pour Over</li>
+          <li role="option"><svg class="icon" aria-hidden="true"><use href="#i-french-press"/></svg>French Press</li>
+          <li role="option"><svg class="icon" aria-hidden="true"><use href="#i-aeropress"/></svg>AeroPress</li>
+          <li role="option"><svg class="icon" aria-hidden="true"><use href="#i-moka-pot"/></svg>Moka Pot</li>
+          <li role="option"><svg class="icon" aria-hidden="true"><use href="#i-cold-brew"/></svg>Cold Brew</li>
+          <li role="option"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg>Siphon</li>
+          <li role="option"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg>Other</li>
+          <li class="sep" role="presentation"></li>
+          <li role="option" class="add"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Add new method…</li>
+          <li role="option" class="add"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg>Manage methods…</li>
+        </ul>
+      </div>
+      <div class="add-method" data-states="add-method">
+        <label class="field-label" for="new-method">New method name</label>
+        <div class="row">
+          <input class="input is-focus" id="new-method" value="Chemex">
+          <button type="button" class="btn btn-primary">Add</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--spacing-sm)">
+          <p class="field-help">It will be saved and selected for this brew.</p>
+          <button type="button" class="btn btn-ghost" style="min-height:32px">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Roast -->
+    <fieldset class="field" data-field="roast">
+      <legend class="field-label">Roast level</legend>
+      <div class="segmented">
+        <label><input type="radio" name="roast" value="Light"><span class="swatch swatch-light" aria-hidden="true"></span><span>Light</span></label>
+        <label><input type="radio" name="roast" value="Medium"><span class="swatch swatch-medium" aria-hidden="true"></span><span>Medium</span></label>
+        <label><input type="radio" name="roast" value="Dark"><span class="swatch swatch-dark" aria-hidden="true"></span><span>Dark</span></label>
+      </div>
+    </fieldset>
+
+    <!-- Rating -->
+    <fieldset class="field" data-field="rating" id="rating">
+      <legend class="field-label">Rating</legend>
+      <div class="rating-row">
+        <div class="rating-input" id="rating-beans"></div>
+        <span class="t-body-sm" id="rating-text"></span>
+      </div>
+      <p class="field-error" data-states="validation-error"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Choose a rating from 1 to 5 beans</p>
+    </fieldset>
+
+    <!-- Date -->
+    <div class="field" data-field="date">
+      <label class="field-label" for="date">Date</label>
+      <div class="date-field"><input class="input" id="date"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg></div>
+      <p class="field-help" data-states="create validation-error server-error method-open add-method saving">Defaults to today. Change it if you’re logging an earlier brew.</p>
+    </div>
+
+    <!-- Notes -->
+    <div class="field" data-field="notes">
+      <label class="field-label" for="notes">Tasting notes <span class="opt">Optional</span></label>
+      <textarea class="textarea" id="notes" rows="5" placeholder="Aroma, acidity, body, finish… and anything you’d change next time."></textarea>
+    </div>
+  </div>
+
+  <div class="drawer-foot">
+    <span class="left" data-states="edit duplicate-name">Last edited 28 Oct 2026</span>
+    <a class="btn btn-secondary" href="brews.html">Cancel</a>
+    <button class="btn btn-primary" type="submit" data-states="create validation-error server-error method-open add-method">Add to journal</button>
+    <button class="btn btn-primary" type="submit" data-states="edit duplicate-name">Save changes</button>
+    <button class="btn btn-primary" type="button" aria-busy="true" data-states="saving"><span class="spinner" aria-hidden="true"></span>Saving…</button>
+  </div>
+</form>
+
+<script>
+  (function () {
+    var state = new URLSearchParams(location.search).get('state') || 'create';
+    document.documentElement.setAttribute('data-state', state);
+    document.querySelectorAll('[data-states]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-states').split(' ').indexOf(state) === -1;
+    });
+
+    // Per-state data
+    var full = { name: 'Kenyan Morning', bean: 'Kiambu AA', origin: 'Kenya', roast: 'Light', rating: 5, date: '28 Oct 2026',
+      notes: 'Blackcurrant and grapefruit up front, a syrupy body and a long, sweet tomato-leaf finish. 15 g to 250 g, 3:10 total, bloom 45 s. Best cup this month.' };
+    var fresh = { name: 'Huila Sunrise', bean: 'Pink Bourbon', origin: 'Colombia', roast: 'Light', rating: 4, date: '1 Nov 2026',
+      notes: 'Red grape and panela, silky body. Try 93 °C next time.' };
+    var data = {
+      create: { name: '', bean: '', origin: '', roast: '', rating: 0, date: '1 Nov 2026', notes: '' },
+      'method-open': { name: 'Huila Sunrise', bean: 'Pink Bourbon', origin: 'Colombia', roast: '', rating: 0, date: '1 Nov 2026', notes: '' },
+      'add-method': { name: 'Huila Sunrise', bean: 'Pink Bourbon', origin: 'Colombia', roast: '', rating: 0, date: '1 Nov 2026', notes: '' },
+      'validation-error': { name: '', bean: 'Pink Bourbon', origin: '', roast: 'Light', rating: 0, date: '1 Nov 2026', notes: '' },
+      'server-error': fresh, saving: fresh,
+      edit: full,
+      'duplicate-name': Object.assign({}, full, { name: 'Kenyan morning', notes: 'Second bag from the same lot. Slightly less bright than last time.', rating: 4 })
+    }[state] || {};
+
+    var set = function (id, v) { var el = document.getElementById(id); if (el) el.value = v || ''; };
+    set('name', data.name); set('bean', data.bean); set('origin', data.origin); set('date', data.date); set('notes', data.notes);
+    document.querySelectorAll('input[name="roast"]').forEach(function (r) { r.checked = r.value === data.roast; });
+
+    // Rating input
+    var host = document.getElementById('rating-beans'), html = '';
+    for (var i = 1; i <= 5; i++) {
+      var on = i <= (data.rating || 0);
+      html += '<label class="' + (on ? 'on' : '') + '"><input type="radio" name="rating" value="' + i + '"' + (i === data.rating ? ' checked' : '') + '><span class="sr-only">' + i + ' of 5 beans</span><svg class="icon bean" aria-hidden="true"><use href="#i-' + (on ? 'bean-fill' : 'bean') + '"/></svg></label>';
+    }
+    host.innerHTML = html;
+    document.getElementById('rating-text').textContent = data.rating ? data.rating + ' of 5' : 'Not rated';
+
+    // Errors
+    var errs = { 'validation-error': ['name', 'origin', 'rating'], 'duplicate-name': ['name'] }[state] || [];
+    errs.forEach(function (f) { var el = document.querySelector('[data-field="' + f + '"]'); if (el) el.classList.add('has-error'); });
+    if (state === 'saving') document.querySelectorAll('.drawer-body input, .drawer-body textarea, .drawer-body button').forEach(function (el) { el.disabled = true; });
+  })();
+</script>
+</body>
+</html>

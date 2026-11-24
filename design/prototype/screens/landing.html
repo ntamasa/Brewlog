@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brewlog: Landing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  /* Hero */
+  .hero { position: relative; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; color: var(--color-on-scrim); overflow: hidden; background: var(--color-primary); }
+  .hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 50%; }
+  .hero-scrim { position: absolute; inset: 0; background: linear-gradient(90deg, var(--color-scrim) 0%, color-mix(in srgb, var(--color-scrim) 80%, transparent) 38%, color-mix(in srgb, var(--color-scrim) 10%, transparent) 75%); }
+  .hero-nav { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-lg) var(--spacing-page-margin); }
+  .hero-nav .brand { color: var(--color-on-scrim); }
+  .hero-nav .brand-mark { color: var(--color-on-scrim); }
+  .hero-nav a.nav-link { color: var(--color-on-scrim); text-decoration: none; font-size: var(--text-label-md); font-weight: var(--font-weight-label-md); display: inline-flex; gap: var(--spacing-sm); align-items: center; min-height: var(--spacing-control-height); }
+  .hero-nav a.nav-link:hover { text-decoration: underline; }
+  .hero-body { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 var(--spacing-page-margin) var(--spacing-4xl); max-width: calc(760px + 2 * var(--spacing-page-margin)); }
+  .hero .eyebrow { color: var(--color-tertiary-soft); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-md); }
+  .hero .eyebrow::before { content: ""; width: 40px; height: 1px; background: currentColor; }
+  .hero h1 { margin-bottom: var(--spacing-lg); }
+  .hero h1 em { font-style: italic; color: var(--color-tertiary-soft); }
+  .hero .lede { max-width: 520px; margin-bottom: var(--spacing-xl); color: color-mix(in srgb, var(--color-on-scrim) 88%, transparent); }
+  .hero .ctas { display: flex; gap: var(--spacing-md); flex-wrap: wrap; }
+  .hero-foot { position: relative; z-index: 1; border-top: 1px solid color-mix(in srgb, var(--color-on-scrim) 22%, transparent); padding: var(--spacing-lg) var(--spacing-page-margin); display: flex; gap: var(--spacing-2xl); color: color-mix(in srgb, var(--color-on-scrim) 75%, transparent); }
+
+  /* Sections */
+  section.block { padding: var(--spacing-5xl) 0; }
+  .section-head { display: grid; gap: var(--spacing-md); max-width: 640px; margin-bottom: var(--spacing-3xl); }
+  .section-head .t-caps { color: var(--color-tertiary); }
+
+  .features { display: grid; grid-template-columns: 5fr 7fr; gap: var(--spacing-4xl); align-items: stretch; }
+  .features figure { margin: 0; position: relative; }
+  .features figure img { width: 100%; height: 100%; min-height: 560px; object-fit: cover; border-radius: var(--radius-md); }
+  .features figcaption { position: absolute; left: var(--spacing-lg); bottom: var(--spacing-lg); right: var(--spacing-lg); background: var(--color-surface); padding: var(--spacing-md) var(--spacing-lg); border-radius: var(--radius-sm); display: flex; align-items: center; gap: var(--spacing-md); }
+  .feature-list { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-2xl) var(--spacing-xl); align-content: center; }
+  .feature { display: grid; gap: var(--spacing-sm); padding-top: var(--spacing-lg); border-top: 1px solid var(--color-outline); }
+  .feature .icon { width: 32px; height: 32px; color: var(--color-tertiary); margin-bottom: var(--spacing-sm); }
+
+  .how { background: var(--color-surface); border-top: 1px solid var(--color-outline); border-bottom: 1px solid var(--color-outline); }
+  .how-grid { display: grid; grid-template-columns: 7fr 5fr; gap: var(--spacing-4xl); align-items: center; }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; }
+  .steps li { display: grid; grid-template-columns: 72px 1fr; gap: var(--spacing-lg); padding: var(--spacing-xl) 0; border-top: 1px solid var(--color-outline); }
+  .steps li:last-child { border-bottom: 1px solid var(--color-outline); }
+  .steps .num { font-family: var(--font-display-md), Georgia, serif; font-size: var(--text-headline-lg); font-style: italic; color: var(--color-tertiary); line-height: 1; }
+  .steps h3 { margin-bottom: var(--spacing-xs); }
+  .how figure { margin: 0; }
+  .how figure img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius-md); }
+
+  /* Sample entry */
+  .sample { position: relative; margin-top: calc(-1 * var(--spacing-4xl)); margin-left: calc(-1 * var(--spacing-3xl)); width: 340px; pointer-events: none; }
+  .sample .brew-card { box-shadow: 0 24px 64px -24px color-mix(in srgb, var(--color-primary) 35%, transparent); }
+
+  .closing { text-align: center; }
+  .closing .rule { width: 1px; height: var(--spacing-3xl); background: var(--color-tertiary); margin: 0 auto var(--spacing-xl); }
+  .closing h2 { max-width: 820px; margin: 0 auto var(--spacing-lg); }
+  .closing p { max-width: 520px; margin: 0 auto var(--spacing-xl); }
+
+  footer { border-top: 1px solid var(--color-outline); padding: var(--spacing-2xl) 0; }
+  .foot { display: flex; justify-content: space-between; gap: var(--spacing-lg); align-items: flex-start; flex-wrap: wrap; }
+  .foot p { max-width: 520px; }
+
+  @media (max-width: 1119px) {
+    .features, .how-grid { grid-template-columns: 1fr; gap: var(--spacing-2xl); }
+    .features figure img { min-height: 0; aspect-ratio: 4 / 3; }
+    .sample { margin: calc(-1 * var(--spacing-3xl)) auto 0; }
+  }
+  @media (max-width: 767px) {
+    .hero-nav { padding: var(--spacing-md) var(--spacing-page-margin-mobile); }
+    .hero-scrim { background: linear-gradient(180deg, color-mix(in srgb, var(--color-scrim) 55%, transparent) 0%, color-mix(in srgb, var(--color-scrim) 20%, transparent) 30%, var(--color-scrim) 62%); }
+    .hero-photo { object-position: 62% 30%; }
+    .hero-body { justify-content: flex-end; padding: 0 var(--spacing-page-margin-mobile) var(--spacing-2xl); }
+    .hero h1.t-display-xl { font-size: var(--text-display-md); line-height: 1.05; }
+    .hero .lede { font-size: var(--text-body-md); }
+    .hero .ctas .btn { flex: 1; }
+    .hero-foot { display: none; }
+    section.block { padding: var(--spacing-4xl) 0; }
+    .section-head { margin-bottom: var(--spacing-2xl); }
+    .section-head .t-display-md { font-size: var(--text-headline-lg); }
+    .feature-list { grid-template-columns: 1fr; gap: var(--spacing-xl); }
+    .features figcaption { left: var(--spacing-md); right: var(--spacing-md); bottom: var(--spacing-md); }
+    .steps li { grid-template-columns: 48px 1fr; gap: var(--spacing-md); padding: var(--spacing-lg) 0; }
+    .steps .num { font-size: var(--text-headline-md); }
+    .sample { width: auto; margin: calc(-1 * var(--spacing-2xl)) var(--spacing-md) 0; }
+    .closing h2.t-display-md { font-size: var(--text-headline-lg); }
+    .closing .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<script src="../icons.js"></script>
+
+<header class="hero" data-states="default">
+  <img class="hero-photo" src="../assets/hero-pour-over.jpg" alt="Hot water poured from a gooseneck kettle into a white ceramic pour-over dripper">
+  <div class="hero-scrim" aria-hidden="true"></div>
+  <nav class="hero-nav" aria-label="Main">
+    <a class="brand" href="landing.html"><svg class="icon brand-mark" aria-hidden="true"><use href="#i-logo"/></svg><span class="brand-name">Brewlog</span></a>
+    <a class="nav-link" href="brews.html">Open journal <svg class="icon icon-sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+  </nav>
+  <div class="hero-body">
+    <p class="eyebrow t-caps">A private coffee tasting journal</p>
+    <h1 class="t-display-xl">Remember every cup <em>worth remembering.</em></h1>
+    <p class="lede t-body-lg">Brewlog keeps a quiet record of what you brewed, how you brewed it and how it tasted, so your best cup is never a happy accident again.</p>
+    <div class="ctas">
+      <a class="btn btn-accent" href="brews.html">Open my journal</a>
+      <a class="btn btn-on-scrim" href="#how">How it works</a>
+    </div>
+  </div>
+  <div class="hero-foot t-caps" aria-hidden="true">
+    <span>Bean &amp; origin</span><span>Method</span><span>Roast</span><span>Rating</span><span>Tasting notes</span>
+  </div>
+</header>
+
+<main data-states="default">
+  <section class="block" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="t-caps">What it keeps</p>
+        <h2 id="features-title" class="t-display-md">A ledger for the cups you love.</h2>
+      </div>
+      <div class="features">
+        <figure>
+          <img src="../assets/beans.jpg" alt="Close-up of freshly roasted coffee beans" loading="lazy">
+          <figcaption>
+            <span class="rating" aria-hidden="true"><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg></span>
+            <span class="t-body-sm">Ethiopia Guji, washed. Light roast, pour over.</span>
+          </figcaption>
+        </figure>
+        <div class="feature-list">
+          <div class="feature">
+            <svg class="icon" aria-hidden="true"><use href="#i-notebook"/></svg>
+            <h3 class="t-headline-sm">Log every brew</h3>
+            <p class="muted">Bean, origin, method, roast, a rating out of five beans and your tasting notes, dated the day you brewed it.</p>
+          </div>
+          <div class="feature">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+            <h3 class="t-headline-sm">Find any cup again</h3>
+            <p class="muted">Search by name, filter by method, roast or rating, and sort by date or score. They all work together.</p>
+          </div>
+          <div class="feature">
+            <svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg>
+            <h3 class="t-headline-sm">Your methods, your words</h3>
+            <p class="muted">Espresso to cold brew out of the box. Add your own, rename them, retire them. Your history follows along.</p>
+          </div>
+          <div class="feature">
+            <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+            <h3 class="t-headline-sm">Private by design</h3>
+            <p class="muted">One journal, one person. It runs on your own machine and every entry is kept safe in your own database.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block how" id="how" aria-labelledby="how-title">
+    <div class="container how-grid">
+      <div>
+        <div class="section-head">
+          <p class="t-caps">How it works</p>
+          <h2 id="how-title" class="t-display-md">Brew. Log. Rediscover.</h2>
+        </div>
+        <ol class="steps">
+          <li><span class="num" aria-hidden="true">i.</span><div><h3 class="t-headline-sm">Brew as you always do</h3><p class="muted">Pull the shot, bloom the pour over, press the plunger. Nothing changes at the counter.</p></div></li>
+          <li><span class="num" aria-hidden="true">ii.</span><div><h3 class="t-headline-sm">Log it in under a minute</h3><p class="muted">Name the brew, pick the method and roast, tap a rating and jot what you tasted. Today’s date is filled in for you.</p></div></li>
+          <li><span class="num" aria-hidden="true">iii.</span><div><h3 class="t-headline-sm">Rediscover your best</h3><p class="muted">Sort by rating, filter to five beans, and brew that perfect Kenyan again, exactly the way you did.</p></div></li>
+        </ol>
+      </div>
+      <div>
+        <figure><img src="../assets/cup-notebook.jpg" alt="A cup of black coffee beside a leather notebook and pen on a wooden table in sunlight" loading="lazy"></figure>
+        <div class="sample" aria-hidden="true">
+          <article class="brew-card">
+            <div class="card-top"><div class="method"><svg class="icon icon-lg"><use href="#i-pour-over"/></svg><span class="t-caps">Pour Over</span></div></div>
+            <h3>Kenyan Morning</h3>
+            <p class="t-body-sm muted">Kiambu AA · Kenya</p>
+            <div class="meta-row">
+              <span class="rating"><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg></span>
+              <span class="roast-tag t-caps"><span class="swatch swatch-light"></span>Light</span>
+            </div>
+            <p class="notes">Blackcurrant and grapefruit up front, a syrupy body and a long, sweet tomato-leaf finish.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block closing" aria-labelledby="closing-title">
+    <div class="container">
+      <div class="rule" aria-hidden="true"></div>
+      <h2 id="closing-title" class="t-display-md">Your next great cup starts with the last one.</h2>
+      <p class="t-body-lg muted">Open the journal and log today’s brew. It takes less time than the bloom.</p>
+      <a class="btn btn-primary" href="brews.html">Open my journal <svg class="icon icon-sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+    </div>
+  </section>
+</main>
+
+<footer data-states="default">
+  <div class="container foot">
+    <a class="brand" href="landing.html"><svg class="icon brand-mark" aria-hidden="true"><use href="#i-logo"/></svg><span class="brand-name">Brewlog</span></a>
+    <p class="t-body-sm muted">A private coffee tasting journal that runs on your own machine. Photography from Unsplash: Nadia Valko, Mona Jain, Andres Molina.</p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var state = new URLSearchParams(location.search).get('state') || 'default';
+    document.querySelectorAll('[data-states]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-states').split(' ').indexOf(state) === -1;
+    });
+  })();
+</script>
+</body>
+</html>

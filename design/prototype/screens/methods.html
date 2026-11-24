@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brewlog: Brew methods</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  .methods { width: min(560px, calc(100vw - 2 * var(--spacing-md))); }
+  .methods .lede { color: var(--color-on-surface-muted); margin-top: var(--spacing-xs); }
+  .add-row { display: flex; gap: var(--spacing-sm); margin: var(--spacing-lg) 0 var(--spacing-xs); }
+  .add-row .input { flex: 1; }
+  .m-list { list-style: none; margin: var(--spacing-lg) 0 0; padding: 0; border-top: 1px solid var(--color-outline); }
+  .m-row { display: flex; align-items: center; gap: var(--spacing-md); min-height: 60px; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--color-outline); }
+  .m-row > .icon { color: var(--color-tertiary); width: 28px; height: 28px; }
+  .m-row .name { flex: 1; min-width: 0; display: grid; }
+  .m-row .name strong { font-weight: var(--font-weight-title-md); font-size: var(--text-body-md); }
+  .m-row .name span { font-size: var(--text-body-sm); color: var(--color-on-surface-muted); }
+  .m-row .actions { display: flex; gap: var(--spacing-xxs); color: var(--color-on-surface-muted); }
+  .m-row .actions .del:hover { color: var(--color-error); background: var(--color-error-soft); }
+  .m-row .locked { display: inline-flex; align-items: center; gap: var(--spacing-xs); color: var(--color-on-surface-muted); padding-right: var(--spacing-sm); }
+  .m-row.editing { background: var(--color-neutral); margin: 0 calc(-1 * var(--spacing-md)); padding: var(--spacing-sm) var(--spacing-md); }
+  .m-row.editing .input { flex: 1; }
+  .m-row .tag { font-size: var(--text-label-caps); }
+  .confirm-row { display: grid; gap: var(--spacing-md); padding: var(--spacing-md); margin: 0 calc(-1 * var(--spacing-md)); background: var(--color-error-soft); border-bottom: 1px solid var(--color-outline); }
+  .confirm-row p strong { font-weight: var(--font-weight-title-md); }
+  .confirm-row .btns { display: flex; justify-content: flex-end; gap: var(--spacing-sm); }
+  .hint { font-size: var(--text-body-sm); color: var(--color-on-surface-muted); }
+  .methods .dialog-actions { margin-top: var(--spacing-lg); }
+  @media (max-width: 767px) {
+    .methods { top: auto; bottom: 0; left: 0; transform: none; width: 100%; max-height: 90vh; border-radius: var(--radius-md) var(--radius-md) 0 0; }
+    .m-row.editing, .confirm-row { margin: 0 calc(-1 * var(--spacing-lg)); padding-left: var(--spacing-lg); padding-right: var(--spacing-lg); }
+    .m-row.editing { flex-wrap: wrap; }
+    .m-row.editing > .icon { display: none; }
+    .m-row.editing .input { flex-basis: 100%; }
+    .m-row.editing .btn { flex: 1; }
+    .confirm-row .btns .btn { flex: 1; }
+    .methods .dialog-actions { flex-direction: row; }
+  }
+</style>
+</head>
+<body>
+<script src="../icons.js"></script>
+<iframe class="app-frame" src="brews.html" title="Journal (background)" aria-hidden="true" tabindex="-1"></iframe>
+<div class="backdrop"></div>
+
+<div class="dialog methods float-shadow" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="dialog-head" style="margin-bottom:0">
+    <div>
+      <h2 id="m-title" class="t-headline-md">Brew methods</h2>
+      <p class="lede t-body-sm">Renaming updates every brew that uses the method. Deleting moves those brews to “Other”.</p>
+    </div>
+    <a class="icon-btn" href="brews.html" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></a>
+  </div>
+
+  <form class="field" onsubmit="return false" data-field="add">
+    <div class="add-row">
+      <label class="sr-only" for="new-m">New method name</label>
+      <input class="input" id="new-m" placeholder="Add a method, e.g. Chemex" aria-describedby="new-m-err">
+      <button class="btn btn-primary"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
+    </div>
+    <p class="field-error" id="new-m-err" data-states="duplicate"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>“Pour Over” already exists. Method names must be unique.</p>
+  </form>
+
+  <ul class="m-list" aria-label="Methods">
+    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-espresso"/></svg><div class="name"><strong>Espresso</strong><span>9 brews</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename Espresso"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Espresso"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
+    <li class="m-row" data-states="default delete-confirm duplicate added"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg><div class="name"><strong>Pour Over</strong><span>14 brews</span></div>
+      <div class="actions"><a class="icon-btn" href="?state=renaming" aria-label="Rename Pour Over"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></a><button class="icon-btn del" aria-label="Delete Pour Over"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
+    <li class="m-row editing" data-states="renaming"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg>
+      <label class="sr-only" for="rename">Rename Pour Over</label>
+      <input class="input is-focus" id="rename" value="Pour Over (V60)">
+      <button class="btn btn-ghost">Cancel</button><button class="btn btn-primary">Save</button></li>
+    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-french-press"/></svg><div class="name"><strong>French Press</strong><span>4 brews</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename French Press"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete French Press"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
+    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-aeropress"/></svg><div class="name"><strong>AeroPress</strong><span>6 brews</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename AeroPress"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete AeroPress"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
+    <li class="m-row" data-states="default renaming duplicate added"><svg class="icon" aria-hidden="true"><use href="#i-moka-pot"/></svg><div class="name"><strong>Moka Pot</strong><span>3 brews</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><a class="icon-btn del" href="?state=delete-confirm" aria-label="Delete Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></a></div></li>
+    <li class="confirm-row" role="alert" data-states="delete-confirm">
+      <p><strong>Delete “Moka Pot”?</strong> Its 3 brews will move to “Other”. This can’t be undone.</p>
+      <div class="btns"><a class="btn btn-secondary" href="?state=default">Keep</a><button class="btn btn-danger">Delete method</button></div>
+    </li>
+    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cold-brew"/></svg><div class="name"><strong>Cold Brew</strong><span>2 brews</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename Cold Brew"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Cold Brew"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
+    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Siphon</strong><span>1 brew · added by you</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename Siphon"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Siphon"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
+    <li class="m-row" data-states="added" style="background:var(--color-tertiary-soft);margin:0 calc(-1 * var(--spacing-md));padding-left:var(--spacing-md);padding-right:var(--spacing-md)"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Chemex</strong><span>0 brews · added by you</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename Chemex"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Chemex"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
+    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Other</strong><span>2 brews</span></div>
+      <span class="locked t-caps" title="“Other” can’t be renamed or deleted"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-lock"/></svg>Protected</span></li>
+  </ul>
+  <p class="hint" style="margin-top:var(--spacing-md)">“Other” is always available and catches brews from deleted methods.</p>
+
+  <div class="dialog-actions">
+    <a class="btn btn-secondary" href="brews.html">Done</a>
+  </div>
+</div>
+
+<div class="toast float-shadow" role="status" data-states="added"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"/></svg>“Chemex” added</div>
+
+<script>
+  (function () {
+    var state = new URLSearchParams(location.search).get('state') || 'default';
+    document.querySelectorAll('[data-states]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-states').split(' ').indexOf(state) === -1;
+    });
+    if (state === 'duplicate') { var i = document.getElementById('new-m'); i.value = 'pour over'; document.querySelector('[data-field="add"]').classList.add('has-error'); }
+  })();
+</script>
+</body>
+</html>

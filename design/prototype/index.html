@@ -1,0 +1,172 @@
+<title>Brewlog Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* Layout: screen index on the left, live preview of the chosen screen/state on the right (stacks on phones).
+     Single light theme by design decision: all colors come from tokens.css (DESIGN.md). */
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--color-neutral); color: var(--color-on-surface); font-family: var(--font-body-md), system-ui, sans-serif; font-size: var(--text-body-md); line-height: 1.55; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--color-tertiary); outline-offset: 2px; }
+  .shell { display: grid; grid-template-columns: 380px minmax(0, 1fr); height: 100%; }
+  nav.index { overflow: auto; border-right: 1px solid var(--color-outline); background: var(--color-surface); padding-block: var(--spacing-xl); padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: 24px; }
+  .head { display: grid; gap: var(--spacing-xs); margin-bottom: var(--spacing-xl); }
+  .head .eyebrow { font-size: var(--text-label-caps); font-weight: var(--font-weight-label-caps); letter-spacing: var(--tracking-label-caps); text-transform: uppercase; color: var(--color-tertiary); }
+  .head h1 { margin: 0; font-family: var(--font-headline-lg), Georgia, serif; font-size: var(--text-headline-lg); font-weight: var(--font-weight-headline-lg); line-height: 1.1; }
+  .head p { margin: 0; color: var(--color-on-surface-muted); font-size: var(--text-body-sm); }
+  .screen { padding: var(--spacing-md) 0; border-top: 1px solid var(--color-outline); display: grid; gap: var(--spacing-sm); }
+  .screen h2 { margin: 0; display: flex; justify-content: space-between; align-items: baseline; gap: var(--spacing-sm); font-family: var(--font-headline-sm), Georgia, serif; font-size: var(--text-headline-sm); font-weight: var(--font-weight-headline-sm); line-height: 1.2; }
+  .screen h2 a { text-decoration: none; }
+  .screen h2 code { font-family: ui-monospace, Consolas, monospace; font-size: var(--text-body-sm); font-weight: 400; color: var(--color-on-surface-muted); }
+  .screen p { margin: 0; color: var(--color-on-surface-muted); font-size: var(--text-body-sm); }
+  .states { display: flex; flex-wrap: wrap; gap: var(--spacing-xs); }
+  .states a { display: inline-flex; align-items: center; min-height: 30px; padding: 0 var(--spacing-sm); border: 1px solid var(--color-outline); border-radius: var(--radius-sm); font-size: var(--text-body-sm); text-decoration: none; background: var(--color-surface); }
+  .states a:hover { border-color: var(--color-outline-strong); }
+  .states a.on { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+  .stage { display: flex; flex-direction: column; min-width: 0; height: 100%; }
+  .bar { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-sm) var(--spacing-lg); border-bottom: 1px solid var(--color-outline); flex-wrap: wrap; }
+  .bar .now { flex: 1; min-width: 0; font-size: var(--text-label-md); font-weight: var(--font-weight-label-md); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .now span { color: var(--color-on-surface-muted); font-weight: 400; }
+  .seg { display: inline-flex; border: 1px solid var(--color-outline); border-radius: var(--radius-sm); padding: 2px; background: var(--color-surface); }
+  .seg button { border: 0; background: transparent; font: inherit; font-size: var(--text-body-sm); min-height: 32px; padding: 0 var(--spacing-md); border-radius: var(--radius-sm); cursor: pointer; color: var(--color-on-surface); }
+  .seg button[aria-pressed="true"] { background: var(--color-primary); color: var(--color-on-primary); }
+  .open { font-size: var(--text-body-sm); color: var(--color-tertiary); }
+  .viewport { flex: 1; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: var(--spacing-lg); background: var(--color-surface-sunken); }
+  .frame-wrap { flex: none; background: var(--color-surface); border: 1px solid var(--color-outline-strong); overflow: hidden; box-shadow: 0 24px 64px -24px color-mix(in srgb, var(--color-primary) 35%, transparent); }
+  .frame-wrap iframe { border: 0; display: block; transform-origin: 0 0; }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; height: auto; }
+    nav.index { border-right: 0; border-bottom: 1px solid var(--color-outline); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+    .stage { height: auto; }
+    .viewport { padding: var(--spacing-md) max(16px, env(safe-area-inset-right, 0px)) var(--spacing-md) max(16px, env(safe-area-inset-left, 0px)); }
+  }
+</style>
+
+<div class="shell">
+  <nav class="index" aria-label="Screens and states">
+    <div class="head">
+      <span class="eyebrow">Design prototype</span>
+      <h1>Brewlog</h1>
+      <p>Ivory editorial look. Six screens, each with every designed state. Pick a state to preview it at phone or desktop width.</p>
+    </div>
+
+    <section class="screen">
+      <h2><a href="screens/landing.html" target="preview">Landing</a><code>landing</code></h2>
+      <p>Explains Brewlog and leads into the journal.</p>
+      <div class="states"><a href="screens/landing.html?state=default" target="preview">default</a></div>
+    </section>
+    <section class="screen">
+      <h2><a href="screens/brews.html" target="preview">Journal</a><code>brews</code></h2>
+      <p>All brews with search, filters, sort and pagination.</p>
+      <div class="states">
+        <a href="screens/brews.html?state=default" target="preview">default</a>
+        <a href="screens/brews.html?state=filtered" target="preview">filtered</a>
+        <a href="screens/brews.html?state=filters-sheet" target="preview">filters-sheet</a>
+        <a href="screens/brews.html?state=card-menu" target="preview">card-menu</a>
+        <a href="screens/brews.html?state=saved" target="preview">saved</a>
+        <a href="screens/brews.html?state=empty" target="preview">empty</a>
+        <a href="screens/brews.html?state=no-results" target="preview">no-results</a>
+        <a href="screens/brews.html?state=loading" target="preview">loading</a>
+        <a href="screens/brews.html?state=error" target="preview">error</a>
+      </div>
+    </section>
+    <section class="screen">
+      <h2><a href="screens/brew-form.html" target="preview">Brew form</a><code>brew-form</code></h2>
+      <p>Add or edit a brew. Drawer on desktop, bottom sheet on phones.</p>
+      <div class="states">
+        <a href="screens/brew-form.html?state=create" target="preview">create</a>
+        <a href="screens/brew-form.html?state=edit" target="preview">edit</a>
+        <a href="screens/brew-form.html?state=method-open" target="preview">method-open</a>
+        <a href="screens/brew-form.html?state=add-method" target="preview">add-method</a>
+        <a href="screens/brew-form.html?state=validation-error" target="preview">validation-error</a>
+        <a href="screens/brew-form.html?state=duplicate-name" target="preview">duplicate-name</a>
+        <a href="screens/brew-form.html?state=server-error" target="preview">server-error</a>
+        <a href="screens/brew-form.html?state=saving" target="preview">saving</a>
+      </div>
+    </section>
+    <section class="screen">
+      <h2><a href="screens/brew-detail.html" target="preview">Brew detail</a><code>brew-detail</code></h2>
+      <p>Full brew with all notes, plus Edit and Delete.</p>
+      <div class="states">
+        <a href="screens/brew-detail.html?state=default" target="preview">default</a>
+        <a href="screens/brew-detail.html?state=no-notes" target="preview">no-notes</a>
+      </div>
+    </section>
+    <section class="screen">
+      <h2><a href="screens/brew-delete.html" target="preview">Delete brew</a><code>brew-delete</code></h2>
+      <p>Confirms a permanent delete.</p>
+      <div class="states">
+        <a href="screens/brew-delete.html?state=default" target="preview">default</a>
+        <a href="screens/brew-delete.html?state=deleting" target="preview">deleting</a>
+        <a href="screens/brew-delete.html?state=error" target="preview">error</a>
+      </div>
+    </section>
+    <section class="screen">
+      <h2><a href="screens/methods.html" target="preview">Brew methods</a><code>methods</code></h2>
+      <p>Add, rename and delete methods. “Other” is protected.</p>
+      <div class="states">
+        <a href="screens/methods.html?state=default" target="preview">default</a>
+        <a href="screens/methods.html?state=renaming" target="preview">renaming</a>
+        <a href="screens/methods.html?state=delete-confirm" target="preview">delete-confirm</a>
+        <a href="screens/methods.html?state=duplicate" target="preview">duplicate</a>
+        <a href="screens/methods.html?state=added" target="preview">added</a>
+      </div>
+    </section>
+  </nav>
+
+  <main class="stage">
+    <div class="bar">
+      <p class="now" id="now">landing <span>· default</span></p>
+      <div class="seg" role="group" aria-label="Preview width">
+        <button type="button" id="vp-mobile" aria-pressed="false">Phone 390</button>
+        <button type="button" id="vp-desktop" aria-pressed="true">Desktop 1440</button>
+      </div>
+      <a class="open" id="open" href="screens/landing.html?state=default" target="_blank" rel="noopener">Open alone</a>
+    </div>
+    <div class="viewport" id="viewport">
+      <div class="frame-wrap" id="wrap"><iframe name="preview" id="frame" title="Screen preview" src="screens/landing.html?state=default"></iframe></div>
+    </div>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var frame = document.getElementById('frame'), wrap = document.getElementById('wrap'), vp = document.getElementById('viewport');
+    var mode = 'desktop';
+    var sizes = { mobile: [390, 844], desktop: [1440, 900] };
+    function fit() {
+      var w = sizes[mode][0], h = sizes[mode][1];
+      var avail = vp.clientWidth - 48;
+      var scale = Math.min(1, avail / w);
+      if (mode === 'desktop' && vp.clientHeight > 200) scale = Math.min(scale, (vp.clientHeight - 48) / h);
+      scale = Math.max(scale, 0.2);
+      frame.style.width = w + 'px'; frame.style.height = h + 'px';
+      frame.style.transform = 'scale(' + scale + ')';
+      wrap.style.width = Math.round(w * scale) + 'px'; wrap.style.height = Math.round(h * scale) + 'px';
+    }
+    function setMode(m) {
+      mode = m;
+      document.getElementById('vp-mobile').setAttribute('aria-pressed', m === 'mobile');
+      document.getElementById('vp-desktop').setAttribute('aria-pressed', m === 'desktop');
+      fit();
+    }
+    document.getElementById('vp-mobile').onclick = function () { setMode('mobile'); };
+    document.getElementById('vp-desktop').onclick = function () { setMode('desktop'); };
+    var links = document.querySelectorAll('nav.index a[target="preview"]');
+    function mark(href) {
+      links.forEach(function (a) { a.classList.toggle('on', a.closest('.states') && a.getAttribute('href') === href); });
+      var m = href.match(/screens\/([\w-]+)\.html(?:\?state=([\w-]+))?/);
+      if (m) document.getElementById('now').innerHTML = m[1] + ' <span>· ' + (m[2] || 'default') + '</span>';
+      document.getElementById('open').setAttribute('href', href);
+    }
+    links.forEach(function (a) { a.addEventListener('click', function () { mark(a.getAttribute('href')); }); });
+    mark('screens/landing.html?state=default');
+    if (window.innerWidth < 900) setMode('mobile'); else fit();
+    window.addEventListener('resize', fit);
+  })();
+</script>

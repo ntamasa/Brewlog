@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brewlog: Brew detail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  .detail { width: min(640px, calc(100vw - 2 * var(--spacing-md))); padding: var(--spacing-2xl); }
+  .detail .kicker { display: flex; align-items: center; gap: var(--spacing-md); color: var(--color-tertiary); }
+  .detail .kicker span { color: var(--color-on-surface-muted); }
+  .detail h2 { margin: var(--spacing-lg) 0 var(--spacing-xs); }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; margin: var(--spacing-xl) 0; border-top: 1px solid var(--color-outline); }
+  .facts > div { padding: var(--spacing-md) 0; border-bottom: 1px solid var(--color-outline); display: grid; gap: var(--spacing-xs); }
+  .facts > div:nth-child(odd) { padding-right: var(--spacing-lg); border-right: 1px solid var(--color-outline); }
+  .facts > div:nth-child(even) { padding-left: var(--spacing-lg); }
+  .facts dt { color: var(--color-on-surface-muted); }
+  .facts dd { margin: 0; display: flex; align-items: center; gap: var(--spacing-sm); font-size: var(--text-body-md); }
+  .notes-block .t-caps { color: var(--color-tertiary); margin-bottom: var(--spacing-sm); }
+  .notes-block p.body { white-space: pre-line; font-size: var(--text-body-lg); line-height: 1.7; }
+  .notes-block p.empty { color: var(--color-on-surface-muted); font-style: italic; }
+  .detail .dialog-actions { justify-content: space-between; align-items: center; border-top: 1px solid var(--color-outline); padding-top: var(--spacing-lg); }
+  .detail .danger-link { color: var(--color-error); }
+  .detail .danger-link:hover { background: var(--color-error-soft); }
+  .detail .handle-host { display: none; }
+  @media (max-width: 767px) {
+    .detail { top: auto; bottom: 0; left: 0; transform: none; width: 100%; max-height: 90vh; border-radius: var(--radius-md) var(--radius-md) 0 0; padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-lg); }
+    .detail .handle-host { display: block; margin-bottom: var(--spacing-md); }
+    .detail .handle-host .sheet-handle { display: block; }
+    .detail h2.t-headline-lg { font-size: var(--text-headline-md); }
+    .facts { grid-template-columns: 1fr 1fr; }
+    .detail .dialog-actions { flex-direction: row; }
+    .detail .dialog-actions .btn { width: auto; flex: 1; }
+  }
+</style>
+</head>
+<body>
+<script src="../icons.js"></script>
+<iframe class="app-frame" src="brews.html" title="Journal (background)" aria-hidden="true" tabindex="-1"></iframe>
+<div class="backdrop"></div>
+
+<article class="dialog detail float-shadow" role="dialog" aria-modal="true" aria-labelledby="d-title">
+  <div class="handle-host"><span class="sheet-handle" aria-hidden="true"></span></div>
+  <div class="dialog-head" style="margin-bottom:0">
+    <div class="kicker"><svg class="icon icon-lg" aria-hidden="true"><use href="#i-pour-over"/></svg><span class="t-caps">Pour Over</span></div>
+    <a class="icon-btn" href="brews.html" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></a>
+  </div>
+  <h2 id="d-title" class="t-headline-lg">
+    <span data-states="default">Kenyan Morning</span>
+    <span data-states="no-notes">Quick Flat White Base</span>
+  </h2>
+  <p class="muted">
+    <span data-states="default">Kiambu AA · Kenya</span>
+    <span data-states="no-notes">House Blend · Brazil &amp; Colombia</span>
+  </p>
+
+  <dl class="facts">
+    <div><dt class="t-caps">Rating</dt><dd>
+      <span class="rating" role="img" aria-label="5 of 5 beans" data-states="default"><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg></span>
+      <span class="rating" role="img" aria-label="2 of 5 beans" data-states="no-notes"><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean"><use href="#i-bean-fill"/></svg><svg class="icon bean off"><use href="#i-bean"/></svg><svg class="icon bean off"><use href="#i-bean"/></svg><svg class="icon bean off"><use href="#i-bean"/></svg></span>
+      <span class="t-body-sm muted" data-states="default">5 of 5</span><span class="t-body-sm muted" data-states="no-notes">2 of 5</span>
+    </dd></div>
+    <div><dt class="t-caps">Roast</dt><dd>
+      <span data-states="default" style="display:inline-flex;gap:var(--spacing-sm);align-items:center"><span class="swatch swatch-light" aria-hidden="true"></span>Light</span>
+      <span data-states="no-notes" style="display:inline-flex;gap:var(--spacing-sm);align-items:center"><span class="swatch swatch-medium" aria-hidden="true"></span>Medium</span>
+    </dd></div>
+    <div><dt class="t-caps">Method</dt><dd><span data-states="default">Pour Over</span><span data-states="no-notes">Espresso</span></dd></div>
+    <div><dt class="t-caps">Brewed on</dt><dd><time data-states="default">28 Oct 2026</time><time data-states="no-notes">12 Oct 2026</time></dd></div>
+  </dl>
+
+  <section class="notes-block">
+    <h3 class="t-caps">Tasting notes</h3>
+    <p class="body" data-states="default">Blackcurrant and grapefruit up front, a syrupy body and a long, sweet tomato-leaf finish.
+
+15 g to 250 g, 3:10 total, bloom 45 s with 40 g water. Water at 94 °C, medium-fine on the hand grinder (18 clicks).
+
+Best cup this month. Buy this lot again if it’s still in stock.</p>
+    <p class="empty" data-states="no-notes">No tasting notes yet. Edit this brew to add some.</p>
+  </section>
+
+  <div class="dialog-actions">
+    <a class="btn btn-ghost danger-link" href="brew-delete.html"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-trash"/></svg>Delete</a>
+    <a class="btn btn-primary" href="brew-form.html?state=edit"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-edit"/></svg>Edit brew</a>
+  </div>
+</article>
+
+<script>
+  (function () {
+    var state = new URLSearchParams(location.search).get('state') || 'default';
+    document.querySelectorAll('[data-states]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-states').split(' ').indexOf(state) === -1;
+    });
+    if (state === 'no-notes') {
+      document.querySelector('.kicker use').setAttribute('href', '#i-espresso');
+      document.querySelector('.kicker .t-caps').textContent = 'Espresso';
+    }
+  })();
+</script>
+</body>
+</html>

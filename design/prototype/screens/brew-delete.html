@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brewlog: Delete brew</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  .confirm .mark { width: 48px; height: 48px; border-radius: var(--radius-full); background: var(--color-error-soft); color: var(--color-error); display: grid; place-items: center; margin-bottom: var(--spacing-lg); }
+  .confirm .mark .icon { width: 22px; height: 22px; }
+  .confirm .summary { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); margin-top: var(--spacing-lg); border: 1px solid var(--color-outline); border-radius: var(--radius-sm); background: var(--color-neutral); }
+  .confirm .summary .icon { color: var(--color-tertiary); width: 32px; height: 32px; }
+  .confirm .summary .serif { font-size: var(--text-headline-sm); font-weight: var(--font-weight-headline-sm); line-height: 1.2; }
+  .confirm .banner-error { margin-top: var(--spacing-lg); }
+</style>
+</head>
+<body>
+<script src="../icons.js"></script>
+<iframe class="app-frame" src="brews.html" title="Journal (background)" aria-hidden="true" tabindex="-1"></iframe>
+<div class="backdrop"></div>
+
+<div class="dialog confirm float-shadow" role="alertdialog" aria-modal="true" aria-labelledby="del-title" aria-describedby="del-desc">
+  <div class="mark" aria-hidden="true"><svg class="icon"><use href="#i-trash"/></svg></div>
+  <h2 id="del-title" class="t-headline-md">Delete this brew?</h2>
+  <p id="del-desc" class="muted" style="margin-top:var(--spacing-sm)">It will be permanently removed from your journal. This can’t be undone.</p>
+  <div class="summary">
+    <svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg>
+    <div>
+      <p class="serif">Kenyan Morning</p>
+      <p class="t-body-sm muted">Pour Over · Light · 28 Oct 2026</p>
+    </div>
+  </div>
+  <div class="banner-error" role="alert" data-states="error">
+    <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+    <div><strong>Couldn’t delete this brew</strong>The server didn’t respond, so nothing was removed. Try again in a moment.</div>
+  </div>
+  <div class="dialog-actions">
+    <a class="btn btn-secondary" href="brews.html">Keep brew</a>
+    <button class="btn btn-danger" data-states="default error">Delete brew</button>
+    <button class="btn btn-danger" aria-busy="true" data-states="deleting"><span class="spinner" aria-hidden="true"></span>Deleting…</button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var state = new URLSearchParams(location.search).get('state') || 'default';
+    document.querySelectorAll('[data-states]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-states').split(' ').indexOf(state) === -1;
+    });
+  })();
+</script>
+</body>
+</html>
