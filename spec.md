@@ -381,7 +381,7 @@ Under `frontend/src/app/`, by feature:
 ### UI implementation
 - `frontend/src/styles/tokens.css` copied from `design/prototype/tokens.css`; `styles/theme.scss`: `mat.theme` (Brewlog primary/tertiary, Cormorant Garamond + Inter) plus `mat.*-overrides` (button, form-field, select, dialog, bottom-sheet, snack-bar, card, button-toggle, datepicker, menu, sidenav) mapped to `var(--color-*)`, `var(--radius-*)` and `var(--text-*)`; component SCSS ported from `design/prototype/components.css` and the screen files.
 - Fonts: the Google Fonts `<link>` from the prototype in `index.html`.
-- Icons: `public/icons.svg`, a `<symbol>` sprite generated from `design/prototype/icons.js` (ids = keys: `logo`, `bean`, `bean-fill`, the method keys, `cup`, `search`, …), registered with `MatIconRegistry.addSvgIconSet`.
+- Icons: `public/icons.svg`, a `<symbol>` sprite generated from `design/prototype/icons.js` (ids = keys: `logo`, `bean`, `bean-fill`, the method keys, `cup`, `search`, …), registered with `MatIconRegistry.addSvgIconSet`. Tests read the sprite as text with `import sprite from '../../../public/icons.svg' with { loader: 'text' };` (Angular CLI's esbuild text loader; `ng test` bundles with esbuild, not Vite, so `?raw` doesn't work), typed by `frontend/src/svg.d.ts`: `declare module '*.svg' { const content: string; export default content; }`. No `angular.json` change, no new dependency.
 - Landing photos: `design/prototype/assets/*.jpg` copied to `frontend/public/images/`.
 - Material mapping: buttons → mat-button variants; selects → mat-select; roast → mat-button-toggle-group; card ⋮ → mat-menu; toast → MatSnackBar; dialogs → MatDialog; phone sheets → MatBottomSheet; date → mat-datepicker with `[max]` = today.
 
@@ -401,6 +401,7 @@ Under `frontend/src/app/`, by feature:
 | Backend unit: `BrewValidator`, `BrewService`, `BrewMethodService`, `BrewSort` | R13–R18, R23, R24, R36, B19 | JUnit 5, fixed `Clock` (2026-11-01) | repositories (Mockito) |
 | Backend integration: HTTP API via MockMvc | R2, R5–R10, R12–R19, R22–R25, R27–R30, R32–R38, R41 | `@SpringBootTest` + Testcontainers postgres:17 + Liquibase, data reset per test, fixed `Clock` | nothing |
 | Frontend unit: `BrewApi`, `MethodApi`, `parseApiError`, `error-messages`, `format`, `diff`, `brew-validators`, stores | R5–R10, R13–R23, R29–R39 | Vitest + TestBed, `HttpTestingController` | HTTP; stores get fake APIs |
+| Frontend unit: generated sprite `frontend/public/icons.svg` (a `<symbol id>` per icon key) | B22, R29 | Vitest, `frontend/src/app/core/icons-sprite.spec.ts`, sprite imported as text (UI implementation) | nothing |
 | Frontend unit: components (card, pagination, bean-rating, toolbar, chips, dialogs, method steps) and `pageItems` | R2–R4, R6, R11, R13, R43, R44, R21, R26–R28, R33–R35, R37, R39 | TestBed + Material harnesses | stores faked |
 | Frontend integration: `JournalPage`, `BrewForm`, `MethodsDialog` with real stores | R2, R6, R8, R12, R16, R19, R25, R35, R40 | TestBed, real stores and APIs, harnesses | HTTP (`HttpTestingController`) |
 | E2E (Playwright, `desktop` + `phone`) | (1) R1; (2) R12, R16; (3) R5–R8, R22, R27; (4) R30, R33, R35 | compose stack with a fresh volume, real browser | nothing |
