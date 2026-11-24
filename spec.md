@@ -320,7 +320,9 @@ Three deployables in one repo: `backend/` (Spring Boot REST API, Liquibase-manag
 ### Repository and tooling
 - `backend/`: Gradle wrapper, Kotlin DSL (`settings.gradle.kts`, `build.gradle.kts`), Java toolchain 25 with the foojay resolver plugin, Spring Boot 4.2. Dependencies: web MVC, data JPA, Liquibase, PostgreSQL driver, Testcontainers PostgreSQL, spring-boot-testcontainers. Spotless with palantir-java-format.
 - `.nvmrc` (root): `24`, the single source of the Node.js major for CI.
-- `frontend/`: Angular 22 (`npx @angular/cli@22 new`), standalone components, zoneless, SCSS, Vitest. `package.json` `engines.node`: `^24.15.0`. Dependencies: `@angular/material`, `@angular/cdk`, `@angular/material-date-fns-adapter`, `date-fns`, `@ngrx/signals`, angular-eslint, Prettier. Scripts: `start` (with `proxy.conf.json` sending `/api` to `http://localhost:8080`), `test`, `lint`, `format:check`, `build`.
+- `frontend/`: Angular 22 (`npx @angular/cli@22 new`), standalone components, zoneless, SCSS, Vitest. `package.json` `engines.node`: `^24.15.0`. Dependencies: `@angular/material`, `@angular/cdk`, `@angular/material-date-fns-adapter`, `date-fns`, `@ngrx/signals`, angular-eslint, Prettier. Scripts: `start` (with `proxy.conf.json` sending `/api` to `http://localhost:8080`), `test`, `lint`, `format`, `format:check`, `build`.
+- `frontend/` scaffold: every file `ng new` generates stays as generated, except that `frontend/README.md` and `frontend/src/app/app.spec.ts` are deleted and the root `App` (`frontend/src/app/app.ts`, `app.html`) renders only `<router-outlet />`, with no `title`. The router tests live in `frontend/src/app/app.routes.spec.ts`. After scaffolding and these edits, `npm run format` runs once so every file passes `format:check`.
+- `frontend/.prettierrc`: the generated file (`printWidth` 100, `singleQuote` true, `*.html` → `angular` parser) plus `"endOfLine": "auto"`. There is no other Prettier config file.
 - `e2e/`: own `package.json` with `@playwright/test` and `engines.node`: `^24.15.0`; `playwright.config.ts` with projects `desktop` (1440×900) and `phone` (390×844), baseURL `http://localhost:8081`.
 - `.env.example`: add `DB_URL`, `DB_USER`, `DB_PASSWORD`.
 - `README.md` (root, new): the prerequisites below, the run and test commands (`docker compose up -d --build`; `./gradlew spotlessCheck test` in `backend/`; `npm start`, `npm test`, `npm run lint`, `npm run format:check`, `npm run build` in `frontend/`; `npx playwright install chromium` and `npx playwright test` in `e2e/` against the running compose stack), and a link to `docs/business-rules.md`.
@@ -430,6 +432,7 @@ sort NEWEST: brewDate desc, createdAt desc, id desc; OLDEST: all asc; HIGHEST: r
 - JDK 25 isn't installed locally: the Gradle toolchain downloads it (foojay); CI uses setup-java 25.
 - Testcontainers and E2E need a running Docker engine (Docker Desktop locally, see Prerequisites); tests fail fast with a clear message otherwise.
 - A Node older than 24.15.0 makes the Angular CLI refuse to run; `engines.node` makes npm warn on a wrong version.
+- Line endings: on Windows with git `core.autocrlf=true` (no `.gitattributes`), checkouts and `ng new` output are CRLF, while CI checks out LF. `endOfLine: "auto"` in `frontend/.prettierrc` keeps `format:check` passing in both.
 - Matching the ivory design with Material needs disciplined theming. Overrides are kept in `theme.scss` via the documented `mat.*-overrides` mixins, never `::ng-deep`.
 - Parallel saves of the same name: the unique indexes on `lower(name)` are the last guard and are mapped to DUPLICATE.
 - Time zones: the server allows today + 1 (B8); the client blocks after the browser's today.
