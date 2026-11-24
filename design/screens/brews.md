@@ -7,7 +7,7 @@
 1. **App header** (sticky, 64px desktop / 56px phone, ivory at 92% with blur, hairline bottom): brand mark + "Brewlog" (links to landing) · spacer · `button-ghost` "Manage methods" with sliders icon (phone: `icon-button`, aria-label "Manage methods") · `button-primary` "+ Add brew" (desktop only).
 2. **Page head**: eyebrow "Tasting journal" (`label-caps`, terracotta) + `headline-lg` "Your brews" (phone `headline-md`); right-aligned muted count ("41 brews" / "3 of 41 brews" / "No brews yet"), `aria-live="polite"`.
 3. **Toolbar**, between hairlines:
-   - Desktop: one row, labelled controls (`label-caps` labels): Search input with search icon (2.2fr) · Method select (All methods + every method incl. custom ones) · Roast select (All roasts, Light, Medium, Dark) · Min. rating select (Any rating, 2+, 3+, 4+, 5 beans only) · Sort select (Newest first [default], Oldest first, Highest rated, Lowest rated).
+   - Desktop: one row, labelled controls (`label-caps` labels): Search input with search icon (2.2fr) · Method select (All methods, then every method incl. custom ones A–Z, "Other" last) · Roast select (All roasts, Light, Medium, Dark) · Min. rating select (Any rating, 2+, 3+, 4+, 5 beans only) · Sort select (Newest first [default], Oldest first, Highest rated, Lowest rated).
    - Phone: Search input + `button-secondary` "Filters" with a terracotta count badge (number of active filters). Method, roast, min rating and sort live in the filters sheet.
 4. **Active filter chips** (only when filters or search are active): `chip-filter` per active search/method/roast/min-rating, each with an × button, then a ghost "Clear all". Sort is not shown as a chip.
 5. **Card grid**: 3 columns ≥1120px, 2 columns 768–1119px, 1 column on phone; gutter 24px (16px phone). 12 cards per page.
@@ -30,7 +30,7 @@
 | Creation date | date | Format "d MMM yyyy" (e.g. 3 Oct 2026), English |
 | Tasting notes | string, optional | Clamped to 3 lines |
 | Total count / filtered count | int | "3 of 41 brews" when filtered |
-| Method list | all methods | Fills the Method filter |
+| Method list | all methods | Fills the Method filter, A–Z with "Other" last |
 | Page / page count | int | 12 per page |
 
 ## States

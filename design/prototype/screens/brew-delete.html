@@ -38,8 +38,13 @@
     <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
     <div><strong>Couldn’t delete this brew</strong>The server didn’t respond, so nothing was removed. Try again in a moment.</div>
   </div>
+  <div class="banner-error" role="alert" data-states="gone">
+    <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+    <div><strong>This brew no longer exists</strong>It may have been deleted in another tab. Your journal has been refreshed.</div>
+  </div>
   <div class="dialog-actions">
-    <a class="btn btn-secondary" href="brews.html">Keep brew</a>
+    <a class="btn btn-primary" href="brews.html" data-states="gone">Close</a>
+    <a class="btn btn-secondary" href="brews.html" data-states="default deleting error">Keep brew</a>
     <button class="btn btn-danger" data-states="default error">Delete brew</button>
     <button class="btn btn-danger" aria-busy="true" data-states="deleting"><span class="spinner" aria-hidden="true"></span>Deleting…</button>
   </div>

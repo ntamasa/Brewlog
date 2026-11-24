@@ -29,6 +29,9 @@
   .confirm-row { display: grid; gap: var(--spacing-md); padding: var(--spacing-md); margin: 0 calc(-1 * var(--spacing-md)); background: var(--color-error-soft); border-bottom: 1px solid var(--color-outline); }
   .confirm-row p strong { font-weight: var(--font-weight-title-md); }
   .confirm-row .btns { display: flex; justify-content: flex-end; gap: var(--spacing-sm); }
+  .load-error { margin-top: var(--spacing-lg); }
+  .load-error .btn { margin-top: var(--spacing-md); }
+  .confirm-row .field-error { margin-top: calc(-1 * var(--spacing-xs)); }
   .hint { font-size: var(--text-body-sm); color: var(--color-on-surface-muted); }
   .methods .dialog-actions { margin-top: var(--spacing-lg); }
   @media (max-width: 767px) {
@@ -57,19 +60,27 @@
     <a class="icon-btn" href="brews.html" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></a>
   </div>
 
-  <form class="field" onsubmit="return false" data-field="add">
+  <form class="field" onsubmit="return false" data-field="add" data-states="default renaming delete-confirm duplicate added save-error delete-error">
     <div class="add-row">
       <label class="sr-only" for="new-m">New method name</label>
       <input class="input" id="new-m" placeholder="Add a method, e.g. Chemex" aria-describedby="new-m-err">
       <button class="btn btn-primary"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
     </div>
     <p class="field-error" id="new-m-err" data-states="duplicate"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>“Pour Over” already exists. Method names must be unique.</p>
+    <p class="field-error" data-states="save-error"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Couldn’t save the method. Try again.</p>
   </form>
 
-  <ul class="m-list" aria-label="Methods">
+  <div class="banner-error load-error" role="alert" data-states="error">
+    <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+    <div><strong>We couldn’t load your methods</strong>The Brewlog server didn’t respond. Check that the backend is running, then try again.
+      <div><button class="btn btn-primary"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-refresh"/></svg>Try again</button></div>
+    </div>
+  </div>
+
+  <ul class="m-list" aria-label="Methods" data-states="default renaming delete-confirm duplicate added save-error delete-error">
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-espresso"/></svg><div class="name"><strong>Espresso</strong><span>9 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Espresso"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Espresso"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
-    <li class="m-row" data-states="default delete-confirm duplicate added"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg><div class="name"><strong>Pour Over</strong><span>14 brews</span></div>
+    <li class="m-row" data-states="default delete-confirm duplicate added save-error delete-error"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg><div class="name"><strong>Pour Over</strong><span>14 brews</span></div>
       <div class="actions"><a class="icon-btn" href="?state=renaming" aria-label="Rename Pour Over"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></a><button class="icon-btn del" aria-label="Delete Pour Over"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row editing" data-states="renaming"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg>
       <label class="sr-only" for="rename">Rename Pour Over</label>
@@ -79,10 +90,11 @@
       <div class="actions"><button class="icon-btn" aria-label="Rename French Press"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete French Press"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-aeropress"/></svg><div class="name"><strong>AeroPress</strong><span>6 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename AeroPress"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete AeroPress"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
-    <li class="m-row" data-states="default renaming duplicate added"><svg class="icon" aria-hidden="true"><use href="#i-moka-pot"/></svg><div class="name"><strong>Moka Pot</strong><span>3 brews</span></div>
+    <li class="m-row" data-states="default renaming duplicate added save-error"><svg class="icon" aria-hidden="true"><use href="#i-moka-pot"/></svg><div class="name"><strong>Moka Pot</strong><span>3 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><a class="icon-btn del" href="?state=delete-confirm" aria-label="Delete Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></a></div></li>
-    <li class="confirm-row" role="alert" data-states="delete-confirm">
+    <li class="confirm-row" role="alert" data-states="delete-confirm delete-error">
       <p><strong>Delete “Moka Pot”?</strong> Its 3 brews will move to “Other”. This can’t be undone.</p>
+      <p class="field-error" data-states="delete-error"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Couldn’t delete the method. Try again.</p>
       <div class="btns"><a class="btn btn-secondary" href="?state=default">Keep</a><button class="btn btn-danger">Delete method</button></div>
     </li>
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cold-brew"/></svg><div class="name"><strong>Cold Brew</strong><span>2 brews</span></div>
@@ -94,7 +106,7 @@
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Other</strong><span>2 brews</span></div>
       <span class="locked t-caps" title="“Other” can’t be renamed or deleted"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-lock"/></svg>Protected</span></li>
   </ul>
-  <p class="hint" style="margin-top:var(--spacing-md)">“Other” is always available and catches brews from deleted methods.</p>
+  <p class="hint" style="margin-top:var(--spacing-md)" data-states="default renaming delete-confirm duplicate added save-error delete-error">“Other” is always available and catches brews from deleted methods.</p>
 
   <div class="dialog-actions">
     <a class="btn btn-secondary" href="brews.html">Done</a>
@@ -109,6 +121,7 @@
     document.querySelectorAll('[data-states]').forEach(function (el) {
       el.hidden = el.getAttribute('data-states').split(' ').indexOf(state) === -1;
     });
+    if (state === 'save-error') { var j = document.getElementById('new-m'); j.value = 'Chemex'; document.querySelector('[data-field="add"]').classList.add('has-error'); }
     if (state === 'duplicate') { var i = document.getElementById('new-m'); i.value = 'pour over'; document.querySelector('[data-field="add"]').classList.add('has-error'); }
   })();
 </script>
