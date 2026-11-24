@@ -1,0 +1,427 @@
+---
+intent: ./intent.md
+design: ./design-changes.md
+type: feature
+base_commit: 784446b281fb2b165321a307af6989c8200d863c
+---
+
+# Spec: Brewlog
+
+## Objective
+Brewlog is a coffee tasting journal web application for a single coffee drinker, used on a local or private deployment. It lets the user record, review and organize the brews they make, so they remember what they tasted and can find their best brews again. A modern, eye-catching landing page explains the product and leads into the app page, where the user lists, adds, edits, deletes, searches, filters and sorts brews and manages brew methods. Every change is persisted in PostgreSQL through a backend.
+
+## Summary
+New greenfield app: an Angular 22 frontend (landing page `/`, journal page `/journal` with overlays for the brew form, brew detail, delete confirmation and methods dialog) and a Spring Boot 4.2 / Java 25 backend with a REST API on PostgreSQL 17. The backend owns validation, uniqueness, filtering, sorting, pagination and method reassignment. Both sides ship with unit, integration and end-to-end tests, Docker images and path-filtered CI.
+
+## Constraints
+- Backend Java Spring Boot → Technical design → Backend
+- Frontend Angular → Technical design → Frontend
+- Database PostgreSQL → Technical design → Data model
+- Greenfield (no existing code) → Technical design → Repository and tooling
+- Single user, no authentication; deployed only locally or privately → B1, Out of scope
+- Landing and app page responsive on phone and desktop → R42
+- Brew fields (name required + unique ignoring case, bean, origin, method from dropdown, roast Light/Medium/Dark, rating 1–5, creation date defaulting to today and editable, optional tasting notes) → B2–B8, R12–R18, R22–R25
+- Brew methods: predefined list + "Other"; add by free text, saved and selectable later → B10, B12, R29–R31
+- All methods except "Other" can be renamed or deleted → B11, R37
+- Renaming updates the method shown on every brew using it → B13, R32, R33 (now confirmed in a step view, from grilling)
+- Deleting a method reassigns its brews to "Other" → B14, R34–R36, R40 (now with optional per-brew targets, "Other" by default, from grilling)
+- Deleting a brew asks for confirmation and is permanent → B16, R27, R28
+- Text search on brew name; filters method, roast, minimum rating; sort by date or rating asc/desc, default newest first; all combine → B17–B20, R5–R10
+- Out of scope: authentication/multiple accounts, public deployment, photos, statistics → Out of scope
+
+## Business rules
+
+### B1 — Single private user
+There is exactly one user and no authentication; the app runs only on a local or private deployment.
+
+### B2 — Brew fields
+A brew has: brew name, bean name, origin, brew method, roast level, rating, creation date (all required) and tasting notes (optional).
+
+### B3 — Text normalisation
+Every text value (brew name, bean name, origin, tasting notes, method name, search) is trimmed at both ends before validation and storage. A value of only spaces counts as empty; empty tasting notes are stored as null. (from grilling)
+
+### B4 — Length limits
+After trimming: brew name, bean name and origin at most 100 characters, method name at most 50, tasting notes at most 2000. Over-long input is never cut off: it is rejected with an inline error. (from grilling)
+
+### B5 — Unique brew names
+Brew names are unique ignoring case. The check excludes the brew itself, so changing only the capitals of a brew's own name is allowed. (from grilling)
+
+### B6 — Rating
+The rating is a whole number from 1 to 5.
+
+### B7 — Roast level
+The roast level is one of Light, Medium, Dark.
+
+### B8 — Creation date
+The creation date defaults to today (the browser's local date) when creating, is editable in create and edit, and may not be after today. The server rejects dates after its own today + 1 day, to tolerate time-zone differences. (from grilling)
+
+### B9 — Insertion order
+The time each brew was added is stored but never shown; it only breaks sort ties. Brews have no "last edited" date. (from grilling)
+
+### B10 — Predefined methods
+On first start the methods Espresso, Pour Over, French Press, AeroPress, Moka Pot, Cold Brew and the protected "Other" exist. (from grilling)
+
+### B11 — "Other" is protected
+"Other" can't be renamed or deleted. Every other method, predefined or custom, can be.
+
+### B12 — Unique method names
+Method names are unique ignoring case (so no custom method can be called "other"). The check excludes the method itself, so changing only its capitals is allowed. (from grilling)
+
+### B13 — Renaming a method
+A rename changes the method on every brew that uses it. If at least 1 brew uses the method, the user first confirms in a step view listing those brews; declining changes nothing. With 0 brews the rename saves directly. (from grilling; replaces the intent's unconfirmed rename)
+
+### B14 — Deleting a method
+Deleting a method moves each of its brews to a method the user picks per brew, "Other" by default; brews left untouched move to "Other". A method with 0 brews is deleted after a simple confirmation. The delete toast always says "reassigned". (from grilling; extends the intent's "reassign to Other")
+
+### B15 — Stale method deletions
+When a method is deleted, a chosen target that no longer exists sends the brew to "Other". A listed brew that no longer exists or no longer uses the method is ignored. A brew of the method that wasn't listed goes to "Other". The delete always succeeds and reports the number of brews actually moved. (from grilling)
+
+### B16 — Deleting a brew
+Deleting a brew needs a confirmation and is permanent; there is no undo.
+
+### B17 — Search
+Search finds brews whose name contains the trimmed search text, ignoring case. The characters % and _ match literally. Empty search means no search. (from grilling)
+
+### B18 — Filters
+The filters are method (exact method), roast level (exact) and minimum rating (rating ≥ value: 2, 3, 4 or 5). They combine with each other, with search and with sort (AND).
+
+### B19 — Sort
+Newest first (default): creation date descending, then most recently added first. Oldest first: date ascending, then earliest added first. Highest rated: rating descending, then newest date, then most recently added. Lowest rated: rating ascending, then newest date, then most recently added. (from grilling)
+
+### B20 — Pagination
+The journal shows 12 brews per page. Any change to search, filter or sort goes back to page 1. After a delete, the list reloads on the same page, or on the previous page if the current page became empty. (from grilling)
+
+### B21 — Method order
+The brew form's method dropdown and the journal's Method filter list methods A–Z (ignoring case), with "Other" last. The methods dialog lists the predefined methods in the fixed order of B10, then custom methods A–Z, then "Other". A renamed predefined method keeps its place in that order. (from grilling)
+
+### B22 — Method icon
+Each predefined method has its own icon, which stays with it after a rename. Custom methods and "Other" use the generic cup. (from grilling)
+
+### B23 — Singular counts
+Counts use "brew" for exactly 1 and "brews" otherwise. (from grilling)
+
+### B24 — Toasts
+Every toast is shown for 4 seconds. (from grilling)
+
+### B25 — Changes made elsewhere
+If a brew was deleted elsewhere (e.g. another tab), saving its edit offers "Save as new brew". A delete of an already-deleted brew reports that it's gone. If the chosen method was deleted, the brew can't be saved until another method is chosen. A method deleted elsewhere is removed from the methods dialog with a toast. In every case the list refreshes. (from grilling)
+
+## Requirements
+
+Example data: journal with 41 brews; today is 1 Nov 2026 in the browser and on the server.
+
+### R1 — Landing page
+**Given** the user opens `/`, **when** the page loads, **then** it shows the hero "Remember every cup worth remembering.", the sections "A ledger for the cups you love.", "Brew. Log. Rediscover." and "Your next great cup starts with the last one." with the three local photos and their credits. "Open my journal" (hero and closing CTA) and "Open journal →" navigate to `/journal`, "How it works" scrolls to `#how`, and the brand mark goes to the top of `/`.
+- **Rules:** B1
+- **Screens:** `landing` (default)
+
+### R2 — Journal default list
+**Given** 41 brews, **when** the user opens `/journal`, **then** the count reads "41 brews", 12 cards show page 1 sorted newest first, the footer reads "Showing 1–12 of 41", and pages 1–4 are shown with ‹ disabled. Each card shows the method icon and name, the brew name, "Bean · Origin", the rating as beans, the roast tag, the notes clamped to 3 lines (or "No tasting notes") and the date as "28 Oct 2026".
+- **Rules:** B19, B20, B22
+- **Screens:** `brews` (default)
+
+### R3 — Empty journal
+**Given** 0 brews, **when** `/journal` loads, **then** the count reads "No brews yet", the toolbar is hidden, and the panel "Your journal is waiting" shows the button "+ Log your first brew", which opens the brew form (create).
+- **Screens:** `brews` (empty)
+
+### R4 — Loading and load error
+**Given** the list request is in flight, **then** 6 skeleton cards show with `aria-busy`. **Given** the list request fails (network or 5xx), **then** the panel "We couldn’t load your brews" / "The Brewlog server didn’t respond. Check that the backend is running, then try again. Your entries are safe." shows with "Try again", which reloads the list (loading, then default or error).
+- **Screens:** `brews` (loading, error)
+
+### R5 — Search
+**Given** brews "Kenyan Morning", "KENYA AA Batch" and "Sunday Moka", **when** the user types "  kenya " in Search, **then** after 250 ms the list shows the two Kenya brews, the count reads "2 of 41 brews", a search chip "“kenya”" appears, and the URL contains `q=kenya`. **When** the search is "50%", **then** only names containing "50%" literally match. **When** the search is only spaces, **then** no search applies.
+- **Rules:** B3, B17, B23
+- **Screens:** `brews` (filtered)
+
+### R6 — Filters combine
+**Given** 3 brews that are Pour Over, Light and rated 4 or more, **when** the user picks Method "Pour Over", Roast "Light", Min. rating "4+" and Sort "Highest rated", **then** exactly those 3 show, highest rating first. The count reads "3 of 41 brews", the footer reads "Showing 1–3 of 3" with no pagination, there are chips for method, roast and min rating (none for sort), and the phone "Filters" badge reads "3". Chip × removes only its filter. "Clear all" resets search and filters but keeps the sort. With exactly 1 match, the count reads "1 of 41 brews" and the phone sheet button reads "Show 1 brew".
+- **Rules:** B18, B19, B23
+- **Screens:** `brews` (filtered, filters-sheet)
+
+### R7 — Sort and ties
+**Given** brews A (1 Nov, rating 4, added first), B (1 Nov, rating 4, added second) and C (30 Oct, rating 5): Newest first shows B, A, C; Oldest first shows C, A, B; Highest rated shows C, B, A; Lowest rated shows B, A, C.
+- **Rules:** B9, B19
+
+### R8 — Page reset and URL state
+**Given** the user is on page 3, **when** search, any filter or sort changes, **then** page 1 loads. **Given** the URL `/journal?q=kenya&roast=LIGHT&minRating=4&sort=HIGHEST&page=2`, **when** the page is reloaded or reached via Back, **then** the toolbar shows those values and page 2 loads. Paging scrolls to the top of the grid; › is disabled on the last page.
+- **Rules:** B20
+- **Screens:** `brews` (default, filtered)
+
+### R9 — Invalid list parameters
+**Given** `GET /api/brews?roast=FOO` (or `minRating=7`, `minRating=1`, `sort=X`, `page=0`, `methodId=abc`), **then** the API answers 400 with `errors: [{field: "roast", code: "INVALID"}]` (the field named accordingly) and returns no list. **Given** `/journal?roast=FOO&methodId=9` where method 9 doesn't exist, **when** the page loads, **then** the UI removes both params from the URL and loads with All roasts / All methods. **Given** `GET /api/brews?methodId=9` for a nonexistent method, **then** the API returns 200 with `items: []` and `matchingCount: 0`.
+- **Rules:** B18
+
+### R10 — Page past the last
+**Given** 41 brews, **when** `GET /api/brews?page=9` is called, **then** it returns 200 with `items: []`, `page: 9`, `totalPages: 4`, `matchingCount: 41` and `totalCount: 41`, and the UI then loads page 4 and updates the URL.
+- **Rules:** B20
+
+### R11 — No results
+**Given** the search "panama natural" matches nothing, **then** the count reads "0 of 41 brews" and the panel "No brews match" says "Nothing in your journal matches “panama natural” with these filters. Try a different name or loosen a filter.". "Clear search and filters" resets search and filters.
+- **Screens:** `brews` (no-results)
+
+### R12 — Create a brew
+**Given** the form opened via "+ Add brew" (desktop), the FAB (phone) or "+ Log your first brew", **then** the title reads "Log a brew", all fields are empty except Date = "1 Nov 2026", and focus is on Brew name. **When** the user enters name "Kenyan Morning", bean "AA Kiambu", origin "Kenya", method Pour Over, roast Light, rating 5, empty notes and clicks "Add to journal", **then** the API returns 201 with `notes: null`. The form closes, the toast "“Kenyan Morning” saved to your journal" shows for 4 s, the card is highlighted, and the list reloads with the current query. The brew is still there after a backend restart.
+- **Rules:** B2, B3, B8, B24
+- **Screens:** `brew-form` (create, saving), `brews` (saved)
+
+### R13 — Required fields
+**Given** an empty create form except the date, **when** the user clicks "Add to journal", **then** nothing is sent, the banner reads "6 fields need your attention" with links to each invalid field, focus moves to the banner, and the field errors read "Enter a brew name", "Enter a bean name", "Enter where the beans are from", "Choose a brew method", "Choose a roast level" and "Choose a rating from 1 to 5 beans". A cleared date gives "Choose a date". After the first submit, a touched field re-validates on blur or change. The API rejects a missing or blank field with 400 `{field, code: "REQUIRED"}` (fields `name`, `beanName`, `origin`, `methodId`, `roast`, `rating`, `brewDate`) and saves nothing.
+- **Rules:** B2, B3
+- **Screens:** `brew-form` (validation-error)
+
+### R14 — Trimming
+**Given** name "  Kenyan Morning ", bean "   " and notes "   ", **when** saved, **then** the bean gets "Enter a bean name" (API: `beanName` REQUIRED). After fixing the bean, the name is stored as "Kenyan Morning" and the notes as null.
+- **Rules:** B3
+
+### R15 — Length limits
+**Given** a brew name of exactly 100 characters after trimming, **then** it saves. **Given** 101 characters, **then** the field error reads "Brew name can be at most 100 characters" (API 400 `name` TOO_LONG) and nothing is saved. The same applies to bean name ("Bean name can be at most 100 characters", `beanName`), origin ("Origin can be at most 100 characters", `origin`) and notes at 2000/2001 ("Tasting notes can be at most 2000 characters", `notes`). Typing and pasting are never cut off. The notes counter appears at 1801 characters ("1,801 / 2,000") and turns error-coloured at 2001.
+- **Rules:** B4
+- **Screens:** `brew-form` (field-limits)
+
+### R16 — Duplicate brew name
+**Given** an existing brew "Kenyan Morning", **when** the user saves a new or edited brew named "kenyan morning", **then** the API answers 400 `{field: "name", code: "DUPLICATE"}`. The banner reads "Couldn’t save your changes — That brew name is already taken", the name error reads "You already have a brew called “kenyan morning”. Brew names must be unique, ignoring capitals.", the form keeps its values and nothing is saved. Two parallel saves of the same name never both succeed.
+- **Rules:** B5
+- **Screens:** `brew-form` (duplicate-name)
+
+### R17 — Rating and roast values
+**Given** the API receives `rating` 0 or 6, **then** it answers 400 `rating` OUT_OF_RANGE. **Given** `rating` 1 or 5, **then** it accepts. **Given** `roast` "BOLD", **then** it answers 400 `roast` INVALID. In the form, rating is set by the 5 bean radios ("n of 5" / "Not rated") and roast by the Light/Medium/Dark toggle.
+- **Rules:** B6, B7
+
+### R18 — Future date
+**Given** the server's today is 1 Nov 2026, **when** the API receives `brewDate` "2026-11-03", **then** it answers 400 `brewDate` FUTURE_DATE. With "2026-11-02" it accepts. In the form, days after the browser's today are disabled in the datepicker, and a typed "2 Nov 2026" gives "The date can’t be in the future".
+- **Rules:** B8
+- **Screens:** `brew-form` (field-limits)
+
+### R19 — Method gone on save
+**Given** the selected method was deleted in another tab, **when** the user saves, **then** the API answers 400 `{field: "methodId", code: "METHOD_NOT_FOUND"}`. The method list reloads, the select shows "Choose a method" with the error "This method no longer exists. Choose another one.", and the banner reads "Couldn’t save your brew". The other fields keep their values and nothing is saved.
+- **Rules:** B25
+- **Screens:** `brew-form` (method-gone)
+
+### R20 — Server error on save
+**Given** the save fails with a network error or 5xx, **then** the banner reads "Couldn’t save your brew" / "The Brewlog server didn’t respond. Nothing was lost: your entry is still here, so you can try again.", the fields keep their values, and no toast shows. While a save is in flight, the primary button shows "Saving…" and the fields are disabled.
+- **Screens:** `brew-form` (server-error, saving)
+
+### R21 — Unsaved changes
+**Given** the user changed any field, **when** they press Cancel, ×, Esc or the backdrop, **then** the foot asks "Discard changes?" with "Keep editing" (stay) and "Discard" (close, nothing saved). Without changes the form closes at once.
+- **Screens:** `brew-form` (create, edit)
+
+### R22 — Edit a brew
+**Given** "Kenyan Morning", **when** the user chooses "Edit brew" (card menu or detail), **then** the form titled "Edit brew" shows all values prefilled, with no "Last edited" text. **When** they change the rating to 4 and click "Save changes", **then** `PATCH /api/brews/{id}` is sent with `{"rating": 4}` only. The response is 200 with the full brew, the toast "“Kenyan Morning” saved to your journal" shows and the card is highlighted.
+- **Rules:** B2, B9
+- **Screens:** `brew-form` (edit), `brews` (saved)
+
+### R23 — Patch semantics
+**Given** a PATCH body `{"notes": null}`, **then** the notes are cleared. **Given** `{}`, **then** nothing changes (200). **Given** `{"name": null}` or `{"name": "  "}`, **then** 400 `name` REQUIRED. The merged brew passes the same validation as a create. **Given** the edit form's notes are emptied, **then** the UI sends `"notes": null`.
+- **Rules:** B3
+
+### R24 — Own name in different capitals
+**Given** a brew "kenyan morning", **when** it is saved as "Kenyan Morning", **then** it saves (200). Renaming the method "moka" to "Moka" works the same way.
+- **Rules:** B5, B12
+
+### R25 — Edited brew gone
+**Given** the brew being edited was deleted in another tab, **when** the user clicks "Save changes", **then** the API answers 404 `BREW_NOT_FOUND`. The banner reads "This brew no longer exists" / "It may have been deleted in another tab. Your changes are still here: save them as a new brew, or close.", the foot shows "Close" and "Save as new brew", and the journal refreshes. "Save as new brew" POSTs all current values with the usual validation; success behaves like R12. "Close" closes without asking.
+- **Rules:** B25
+- **Screens:** `brew-form` (brew-gone)
+
+### R26 — Brew detail
+**Given** a card is clicked, **then** a dialog (bottom sheet on phone) shows the method, the name, "Bean · Origin", Rating ("5 of 5"), Roast, Method, "Brewed on" and the full notes with their line breaks. Empty notes show "No tasting notes yet. Edit this brew to add some.". "Edit brew" opens R22; "Delete" opens R27. ×, Esc or the backdrop closes it and returns focus to the card.
+- **Screens:** `brew-detail` (default, no-notes)
+
+### R27 — Delete a brew
+**Given** "Delete brew" in the card menu or "Delete" in the detail, **then** the dialog "Delete this brew?" names the brew ("Pour Over · Light · 28 Oct 2026"), with focus on "Keep brew". **When** the user clicks "Delete brew", **then** `DELETE /api/brews/{id}` returns 204, the dialog closes, the toast "Brew deleted" shows, and the list reloads on the same page. If brew 37 was the only brew on page 4, page 3 loads. "Keep brew", Esc or the backdrop changes nothing.
+- **Rules:** B16, B20
+- **Screens:** `brew-delete` (default, deleting)
+
+### R28 — Brew delete fails or is gone
+**Given** the delete fails with a network error or 5xx, **then** the banner reads "Couldn’t delete this brew — The server didn’t respond, so nothing was removed. Try again in a moment." and "Delete brew" retries. **Given** a 404 `BREW_NOT_FOUND`, **then** the banner reads "This brew no longer exists — It may have been deleted in another tab. Your journal has been refreshed.", the only button is "Close", no toast shows, and the journal refreshes.
+- **Rules:** B25
+- **Screens:** `brew-delete` (error, gone)
+
+### R29 — Seeded methods and their order
+**Given** a fresh database, **then** `GET /api/methods` returns, in this order, AeroPress, Cold Brew, Espresso, French Press, Moka Pot, Pour Over, Other. Each entry has `predefined` true, `protected` true only for Other, `position` 1–6 in the order Espresso, Pour Over, French Press, AeroPress, Moka Pot, Cold Brew (Other 99), `iconKey` (`espresso`, `pour-over`, `french-press`, `aeropress`, `moka-pot`, `cold-brew`, `cup`) and `brewCount`. With a custom "chemex", the dropdown and filter read AeroPress, chemex, Cold Brew, …, Pour Over, Other. The methods dialog reads Espresso, Pour Over, French Press, AeroPress, Moka Pot, Cold Brew, chemex, Other.
+- **Rules:** B10, B21, B22
+- **Screens:** `methods` (default), `brew-form` (method-open), `brews` (default)
+
+### R30 — Add a method (dialog)
+**Given** the methods dialog, **when** the user adds " Chemex ", **then** `POST /api/methods` returns 201 with name "Chemex", `iconKey` "cup", `predefined` false and `brewCount` 0. The row "Chemex · 0 brews · added by you" is highlighted, the toast "“Chemex” added" shows, the input is cleared and refocused, and Chemex appears in the dropdown and filter. Errors (in the slot under the input; nothing saved): empty → "Enter a method name" (API `name` REQUIRED); 51 characters → "Method name can be at most 50 characters" (`name` TOO_LONG; 50 characters is accepted); "pour over" → "“Pour Over” already exists. Method names must be unique." (`name` DUPLICATE); network or 5xx → "Couldn’t save the method. Try again." with the input keeping its value.
+- **Rules:** B3, B4, B12, B23, B24
+- **Screens:** `methods` (added, duplicate, save-error)
+
+### R31 — Quick-add from the form
+**Given** the brew form's method dropdown, **when** the user picks "+ Add new method…", types "Chemex" and clicks "Add", **then** the method is saved (as in R30) and selected for this brew, and the other form values stay. Its errors use the same texts as R30, except that the duplicate reads "“Pour Over” already exists.". "Cancel" returns to the select.
+- **Rules:** B12
+- **Screens:** `brew-form` (add-method, method-open)
+
+### R32 — Rename a method without brews
+**Given** "Chemex" with 0 brews, **when** the user clicks its pencil, types "Chemex Classic" and presses Enter, **then** `PUT /api/methods/{id}` returns 200, the row shows the new name, and the toast "Renamed to “Chemex Classic”" shows. Esc or "Cancel" in the row leaves the name unchanged. Empty, too long and duplicate names show the R30 errors under the row input without sending anything (the API also enforces them).
+- **Rules:** B12, B13
+- **Screens:** `methods` (renaming, duplicate)
+
+### R33 — Rename a method with brews
+**Given** "Pour Over" with 14 brews, **when** the user saves the rename to "Pour Over (V60)", **then** the step view "Rename “Pour Over” to “Pour Over (V60)”?" reads "14 brews use this method and will show the new name:" and lists all 14 (from `GET /api/methods/{id}/brews`, newest first). **When** the user clicks "Rename for all 14 brews", **then** the PUT is sent (showing "Renaming…"), the list returns with the new name, the toast "Renamed to “Pour Over (V60)”" shows, all 14 cards show "Pour Over (V60)", and the icon stays the pour-over icon. "Cancel", back or Esc returns to the row input with "Pour Over (V60)" kept, and nothing changes. With 1 brew the texts read "1 brew uses this method…" and "Rename for 1 brew". A failure shows "Couldn’t save the method — Nothing was changed. Try again.", and the primary button retries.
+- **Rules:** B13, B22, B23
+- **Screens:** `methods` (rename-confirm, rename-saving, rename-error)
+
+### R34 — Delete a method without brews
+**Given** "Kalita Wave" with 0 brews, **when** the user clicks its trash icon, **then** the inline panel reads "Delete “Kalita Wave”? No brews use it. This can’t be undone.". "Delete method" sends `POST /api/methods/{id}/delete` with `{"reassignments": []}`, which returns 200 `{"reassignedBrewCount": 0}`. The row disappears and the toast "“Kalita Wave” deleted" shows. "Keep" closes the panel. A network or 5xx failure shows "Couldn’t delete the method. Try again." in the panel.
+- **Rules:** B14
+- **Screens:** `methods` (delete-confirm, delete-error)
+
+### R35 — Delete a method with reassignment
+**Given** "Moka Pot" with 3 brews, **when** the user clicks its trash icon, **then** the step view "Delete “Moka Pot”?" lists the 3 brews, each set to "Other", with "Move all brews to [Other]" and the summary "3 to Other". **When** they set one brew to AeroPress and click "Delete method", **then** the request body is `{"reassignments": [{brewId, methodId: <Other>}, {brewId, methodId: <Other>}, {brewId, methodId: <AeroPress>}]}` and the response is 200 `{"reassignedBrewCount": 3}`. Moka Pot disappears, the counts update (Other +2, AeroPress +1), the toast reads "“Moka Pot” deleted · 3 brews reassigned" ("1 brew reassigned" for one), and the journal reloads. "Keep method", back or Esc changes nothing. A failure shows "Couldn’t delete the method — Nothing was changed. Try again." with the choices kept. While deleting, the button shows "Deleting…" and the selects are disabled.
+- **Rules:** B14, B23, B24
+- **Screens:** `methods` (delete-reassign, delete-mixed, deleting, delete-error)
+
+### R36 — Stale delete data
+**Given** a delete request for method M where (a) a target method no longer exists, (b) a listed brew no longer exists or no longer uses M, and (c) a brew of M isn't listed, **then** the API answers 200: (a) goes to Other, (b) is ignored, (c) goes to Other, and `reassignedBrewCount` equals the number of brews that used M. **Given** a reassignment that targets M itself, **then** 400 `{field: "reassignments", code: "INVALID"}` and nothing changes.
+- **Rules:** B15
+
+### R37 — "Other" is protected
+**Given** the methods dialog, **then** "Other" shows a lock and "PROTECTED" instead of rename and delete buttons. **Given** `PUT` or `POST …/delete` on Other's id, **then** the API answers 409 `PROTECTED` and nothing changes.
+- **Rules:** B11
+- **Screens:** `methods` (default)
+
+### R38 — Method gone in the dialog
+**Given** a method deleted in another tab, **when** the user renames it, deletes it or opens its step view (the API answers 404 `METHOD_NOT_FOUND`), **then** any step view or confirm closes, the list reloads without it, the toast "That method no longer exists. The list has been refreshed." shows, and the journal refreshes.
+- **Rules:** B25
+- **Screens:** `methods` (gone)
+
+### R39 — Methods list fails to load
+**Given** `GET /api/methods` fails, **then** the dialog shows "We couldn’t load your methods" / "The Brewlog server didn’t respond. Check that the backend is running, then try again." with "Try again" in place of the add row, list and hint, and "Done" stays.
+- **Screens:** `methods` (error)
+
+### R40 — Form open while its method is deleted
+**Given** the brew form has "Moka Pot" selected and the user opens "Manage methods…" and deletes Moka Pot, **when** the dialog closes, **then** the form keeps all other values, its method list refreshes and the selection is "Other". "Done", × or Esc closes the dialog, and the journal and form reload method data.
+- **Rules:** B14
+- **Screens:** `methods` (default), `brew-form` (edit)
+
+### R41 — Not found on the API
+**Given** a nonexistent brew id 999, **then** `PATCH /api/brews/999` and `DELETE /api/brews/999` answer 404 `BREW_NOT_FOUND`. **Given** a nonexistent method id 999, **then** `PUT /api/methods/999`, `POST /api/methods/999/delete` and `GET /api/methods/999/brews` answer 404 `METHOD_NOT_FOUND`. A malformed JSON body answers 400 with no field errors, and the UI shows the generic server-error banner of the screen.
+
+### R42 — Responsive layouts
+**Given** a 390 px viewport, **then** the landing stacks, the journal shows 1 card column, Search plus a "Filters" button (opening the "Filter & sort" sheet with "Show 3 brews"), the FAB "Add brew" and pagination "‹ PAGE 1 OF 4 ›". The form, detail and methods open as bottom sheets. **Given** 1440 px, **then** the journal shows 3 columns, the toolbar in one row, "+ Add brew" in the header and the form as a 520 px right drawer. At 768–1119 px it shows 2 columns.
+- **Screens:** `landing` (default), `brews` (default, filters-sheet), `brew-form` (create), `brew-detail` (default), `methods` (default)
+
+## Technical design
+
+### Overview
+Three deployables in one repo: `backend/` (Spring Boot REST API, Liquibase-managed PostgreSQL schema), `frontend/` (Angular SPA served by nginx, which proxies `/api` to the backend) and `e2e/` (Playwright). `docker-compose.yml` runs db, backend and frontend. The backend owns all rules; the frontend repeats the field validation for instant feedback and maps error codes to the design's messages.
+
+### Repository and tooling
+- `backend/`: Gradle wrapper, Kotlin DSL (`settings.gradle.kts`, `build.gradle.kts`), Java toolchain 25 with the foojay resolver plugin, Spring Boot 4.2. Dependencies: web MVC, data JPA, Liquibase, PostgreSQL driver, Testcontainers PostgreSQL, spring-boot-testcontainers. Spotless with palantir-java-format.
+- `frontend/`: Angular 22 (`npx @angular/cli@22 new`), standalone components, zoneless, SCSS, Vitest. Dependencies: `@angular/material`, `@angular/cdk`, `@angular/material-date-fns-adapter`, `date-fns`, `@ngrx/signals`, angular-eslint, Prettier. Scripts: `start` (with `proxy.conf.json` sending `/api` to `http://localhost:8080`), `test`, `lint`, `format:check`, `build`.
+- `e2e/`: own `package.json` with `@playwright/test`; `playwright.config.ts` with projects `desktop` (1440×900) and `phone` (390×844), baseURL `http://localhost:8081`.
+- `.env.example`: add `DB_URL`, `DB_USER`, `DB_PASSWORD`.
+
+### Data model
+Liquibase: `backend/src/main/resources/db/changelog/db.changelog-master.yaml` includes `001-init.sql` and `002-seed-methods.sql` (formatted SQL).
+- `brew_method`: `id BIGINT GENERATED ALWAYS AS IDENTITY PK`, `name VARCHAR(50) NOT NULL`, `icon_key VARCHAR(20) NOT NULL`, `predefined BOOLEAN NOT NULL`, `is_protected BOOLEAN NOT NULL DEFAULT false`, `position INT NULL`; `UNIQUE INDEX ux_brew_method_name ON (lower(name))`.
+- `brew`: `id BIGINT IDENTITY PK`, `name VARCHAR(100) NOT NULL`, `bean_name VARCHAR(100) NOT NULL`, `origin VARCHAR(100) NOT NULL`, `method_id BIGINT NOT NULL REFERENCES brew_method(id)`, `roast VARCHAR(6) NOT NULL CHECK (roast IN ('LIGHT','MEDIUM','DARK'))`, `rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5)`, `brew_date DATE NOT NULL`, `notes VARCHAR(2000) NULL`, `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`; `UNIQUE INDEX ux_brew_name ON (lower(name))`, indexes on `method_id` and `(brew_date, created_at)`.
+- Seed: Espresso/espresso/1, Pour Over/pour-over/2, French Press/french-press/3, AeroPress/aeropress/4, Moka Pot/moka-pot/5, Cold Brew/cold-brew/6 (all `predefined` true), Other/cup/99 (`predefined` and `is_protected` true).
+
+### API
+JSON, base `/api`. Brew JSON: `{id, name, beanName, origin, method: {id, name, iconKey}, roast: "LIGHT"|"MEDIUM"|"DARK", rating, brewDate: "2026-11-01", notes|null}`. Method JSON: `{id, name, iconKey, predefined, protected, position|null, brewCount}`.
+
+| Method | Path | Body | Response |
+|---|---|---|---|
+| GET | `/api/brews?q&methodId&roast&minRating&sort&page` | – | 200 `{items: Brew[], page, totalPages, matchingCount, totalCount}`; 400 INVALID |
+| POST | `/api/brews` | `{name, beanName, origin, methodId, roast, rating, brewDate, notes}` | 201 Brew; 400 |
+| PATCH | `/api/brews/{id}` | `application/json`, merge-patch subset of the POST body | 200 Brew; 400; 404 |
+| DELETE | `/api/brews/{id}` | – | 204; 404 |
+| GET | `/api/methods` | – | 200 Method[] (A–Z ignoring case, Other last) |
+| POST | `/api/methods` | `{name}` | 201 Method; 400 |
+| PUT | `/api/methods/{id}` | `{name}` | 200 Method; 400; 404; 409 |
+| GET | `/api/methods/{id}/brews` | – | 200 `[{id, name, beanName, origin, brewDate}]` newest first (B19 Newest order); 404 |
+| POST | `/api/methods/{id}/delete` | `{reassignments: [{brewId, methodId}]}` | 200 `{reassignedBrewCount}`; 400; 404; 409 |
+
+List params: `q` (string), `methodId` (long), `roast` (enum), `minRating` (2–5), `sort` (`NEWEST` default, `OLDEST`, `HIGHEST`, `LOWEST`), `page` (≥ 1, default 1); size fixed at 12; `totalCount` counts all brews.
+Errors are Spring `ProblemDetail` with extra properties: 400 `errors: [{field, code}]`, codes `REQUIRED`, `TOO_LONG`, `DUPLICATE`, `OUT_OF_RANGE`, `FUTURE_DATE`, `METHOD_NOT_FOUND`, `INVALID`. 404 `code: BREW_NOT_FOUND | METHOD_NOT_FOUND`. 409 `code: PROTECTED`. Malformed JSON gives 400 with no `errors`.
+
+### Backend
+Package `com.brewlog`, by layer, under `backend/src/main/java/com/brewlog/`:
+- `BrewlogApplication`; `config/ClockConfig` (`@Bean Clock clock()` = system default zone, replaced in tests).
+- `entity/`: `Brew`, `BrewMethod` (field `isProtected` → column `is_protected`), `Roast` enum.
+- `repository/`: `BrewRepository extends JpaRepository<Brew, Long>, JpaSpecificationExecutor<Brew>` (`existsByNameIgnoreCaseAndIdNot`, `findByMethodId`, `countByMethodId`); `BrewMethodRepository` (`existsByNameIgnoreCaseAndIdNot`, `findByIsProtectedTrue`, `findAllWithBrewCount()` JPQL projection).
+- `service/`: `BrewService` (`BrewPage list(BrewQuery)`, `BrewResponse create(BrewRequest)`, `BrewResponse patch(long id, JsonNode patch)`, `void delete(long id)`); `BrewValidator` (`List<FieldErrorDto> validate(BrewDraft, Long selfId)`: normalises (B3) and checks B4–B8 plus method existence); `BrewSpecifications` (`nameContains`, `methodIs`, `roastIs`, `ratingAtLeast`); `BrewSort` (`Sort toSort(SortKey)`); `BrewMethodService` (`list`, `create`, `rename(long id, String name)`, `brewsOf(long id)`, `DeleteMethodResponse delete(long id, DeleteMethodRequest)`).
+- `controller/`: `BrewController`, `BrewMethodController`; `BrewQueryParams` binds and validates the list params (INVALID).
+- `dto/`: records `BrewRequest`, `BrewResponse`, `MethodRef`, `BrewPage`, `BrewQuery`, `SortKey`, `MethodRequest`, `MethodResponse` (`@JsonProperty("protected")`), `MethodBrewResponse`, `DeleteMethodRequest`, `Reassignment`, `DeleteMethodResponse`, `FieldErrorDto(String field, ErrorCode code)`.
+- `exception/`: `ErrorCode` enum, `ValidationException(List<FieldErrorDto>)`, `NotFoundException(ErrorCode)`, `ProtectedMethodException`, `ApiExceptionHandler extends ResponseEntityExceptionHandler` (maps these exceptions plus `DataIntegrityViolationException` on `ux_brew_name` / `ux_brew_method_name` to DUPLICATE).
+- `application.yml`: `spring.datasource.url: ${DB_URL:jdbc:postgresql://localhost:5432/brewlog}`, `username: ${DB_USER:brewlog}`, `password: ${DB_PASSWORD:brewlog}`, `jpa.hibernate.ddl-auto: validate`, `jpa.open-in-view: false`.
+
+### Frontend
+Under `frontend/src/app/`, by feature:
+- `app.routes.ts`: `''` → `LandingPage`, `'journal'` → `JournalPage`, `'**'` → redirect `''`. `app.config.ts`: router, `provideHttpClient`, `provideDateFnsAdapter` with formats parse/display `d MMM yyyy`, `MAT_DATE_LOCALE` enGB, an icon registration `provideAppInitializer`.
+- `core/`: `models.ts` (`Brew`, `BrewMethod`, `BrewPage`, `BrewQuery`, `Roast`, `SortKey`, `ApiFieldError`); `brew-api.ts` (`BrewApi`: `list(query)`, `create(body)`, `patch(id, changes)`, `delete(id)`); `method-api.ts` (`MethodApi`: `list()`, `create(name)`, `rename(id, name)`, `brewsOf(id)`, `delete(id, reassignments)`); `api-error.ts` (`parseApiError(err): {kind: 'fields'|'notFound'|'protected'|'network', fields, code}`); `error-messages.ts` (field + code → exact message from the requirements); `format.ts` (`formatDate`, `brewCount(n)` → "1 brew"/"n brews", `methodsAz`, `methodsDialogOrder`); `toast.ts` (`Toaster.show(text)`: MatSnackBar, 4000 ms).
+- `journal/`: `journal.store.ts` (`JournalStore` signalStore: `query`, `items`, `page`, `totalPages`, `matchingCount`, `totalCount`, `status: 'loading'|'ready'|'error'`, `highlightId`; `rxMethod` load with 250 ms debounce on `q`; syncs `query` with the URL query params `q`, `methodId`, `roast`, `minRating`, `sort`, `page`); `journal-page`, `journal-toolbar`, `filters-sheet` (MatBottomSheet), `filter-chips`, `brew-card` (mat-card), `pagination` (custom numbered), `brew-detail-dialog` (MatDialog / MatBottomSheet), `brew-delete-dialog` (MatDialog).
+- `brew-form/`: `brew-form.ts` (reactive form, typed; desktop in a `mat-sidenav` `mode="over" position="end"` inside the journal page, phone in a MatBottomSheet); `brew-validators.ts` (client copies of B3–B8); `method-select` (mat-select with icons + "Add new method…" / "Manage methods…" options); `diff.ts` (`changedFields(original, value)` → the PATCH body, with emptied notes → null).
+- `methods/`: `method.store.ts` (`MethodStore`: `methods`, `status`, `load`, `add`, `rename`, `remove`); `methods-dialog` with step components `rename-step` and `delete-step` (MatDialog / MatBottomSheet on phone).
+- `shared/`: `bean-rating` (display + ControlValueAccessor input, custom), `method-icon` (mat-icon `svgIcon` from `iconKey`).
+- `landing/landing-page`.
+- Breakpoints via CDK `BreakpointObserver`: phone < 768 px, tablet 768–1119 px, desktop ≥ 1120 px.
+
+### UI implementation
+- `frontend/src/styles/tokens.css` copied from `design/prototype/tokens.css`; `styles/theme.scss`: `mat.theme` (Brewlog primary/tertiary, Cormorant Garamond + Inter) plus `mat.*-overrides` (button, form-field, select, dialog, bottom-sheet, snack-bar, card, button-toggle, datepicker, menu, sidenav) mapped to `var(--color-*)`, `var(--radius-*)` and `var(--text-*)`; component SCSS ported from `design/prototype/components.css` and the screen files.
+- Fonts: the Google Fonts `<link>` from the prototype in `index.html`.
+- Icons: `public/icons.svg`, a `<symbol>` sprite generated from `design/prototype/icons.js` (ids = keys: `logo`, `bean`, `bean-fill`, the method keys, `cup`, `search`, …), registered with `MatIconRegistry.addSvgIconSet`.
+- Landing photos: `design/prototype/assets/*.jpg` copied to `frontend/public/images/`.
+- Material mapping: buttons → mat-button variants; selects → mat-select; roast → mat-button-toggle-group; card ⋮ → mat-menu; toast → MatSnackBar; dialogs → MatDialog; phone sheets → MatBottomSheet; date → mat-datepicker with `[max]` = today.
+
+### Deployment
+- `docker-compose.yml` (root): `db` (postgres:17, db/user/password `brewlog`, port 5432, volume `brewlog-data`, healthcheck), `backend` (build `./backend`, `DB_URL=jdbc:postgresql://db:5432/brewlog`, depends on a healthy db), `frontend` (build `./frontend`, port `8081:80`).
+- `backend/Dockerfile`: Gradle JDK 25 build stage → `eclipse-temurin:25-jre`, port 8080.
+- `frontend/Dockerfile`: `node:22` build → `nginx:1.29-alpine` with `frontend/nginx.conf` (`try_files $uri /index.html`; `location /api/ { proxy_pass http://backend:8080; }`).
+
+### CI
+- `.github/workflows/backend.yml`: on `pull_request` with paths `backend/**` and `.github/workflows/backend.yml`; Temurin 25; `./gradlew spotlessCheck test` in `backend/`.
+- `.github/workflows/frontend.yml`: paths `frontend/**` and its own file; Node 22; `npm ci`, `npm run lint`, `npm run format:check`, `npm test`, `npm run build`.
+- `.github/workflows/e2e.yml`: paths `backend/**`, `frontend/**`, `e2e/**`, `docker-compose.yml` and its own file; `docker compose down -v`, `docker compose up -d --build --wait`, then `npx playwright install --with-deps chromium` and `npx playwright test` in `e2e/`.
+
+### Seams and tests
+| Seam | Covers | Setup | Mocked |
+|---|---|---|---|
+| Backend unit: `BrewValidator`, `BrewService`, `BrewMethodService`, `BrewSort` | R13–R18, R23, R24, R36, B19 | JUnit 5, fixed `Clock` (2026-11-01) | repositories (Mockito) |
+| Backend integration: HTTP API via MockMvc | R2, R5–R10, R12–R19, R22–R25, R27–R30, R32–R38, R41 | `@SpringBootTest` + Testcontainers postgres:17 + Liquibase, data reset per test, fixed `Clock` | nothing |
+| Frontend unit: `BrewApi`, `MethodApi`, `parseApiError`, `error-messages`, `format`, `diff`, `brew-validators`, stores | R5–R10, R13–R23, R29–R39 | Vitest + TestBed, `HttpTestingController` | HTTP; stores get fake APIs |
+| Frontend unit: components (card, pagination, bean-rating, toolbar, chips, dialogs, method steps) | R2–R4, R11, R21, R26–R28, R33–R35, R37, R39 | TestBed + Material harnesses | stores faked |
+| Frontend integration: `JournalPage`, `BrewForm`, `MethodsDialog` with real stores | R2, R6, R8, R12, R16, R19, R25, R35, R40 | TestBed, real stores and APIs, harnesses | HTTP (`HttpTestingController`) |
+| E2E (Playwright, `desktop` + `phone`) | (1) R1; (2) R12, R16; (3) R5–R8, R22, R27; (4) R30, R33, R35 | compose stack with a fresh volume, real browser | nothing |
+
+### Conventions
+There is no application code yet. Copy markup, spacing and states from `design/prototype/screens/*.html` and styles from `design/prototype/components.css`. Every message text comes from these requirements or `design/screens/*.md`, never invented.
+
+### Hard logic
+```text
+patch(id, node):                         // node = JsonNode (Jackson 3, tools.jackson)
+  brew = find(id) or 404 BREW_NOT_FOUND
+  draft = BrewDraft.from(brew); for each field present in node: draft.set(field, node.get(field))  // null allowed
+  errors = validator.validate(draft, selfId=id); if any → 400
+  apply; save; on unique violation → 400 name DUPLICATE
+
+delete method M (transaction):
+  M = find or 404; M.isProtected → 409 PROTECTED
+  if any r.methodId == M.id → 400 reassignments INVALID
+  other = findByIsProtectedTrue(); targets = existing ids among r.methodId
+  for b in brewRepo.findByMethodId(M.id): b.method = r[b.id] in targets ? that : other
+  delete M; return count of those brews
+
+nameContains(q): lower(name) LIKE '%' + escape(lower(q)) + '%' ESCAPE '\'   // escape \ % _
+sort NEWEST: brewDate desc, createdAt desc, id desc; OLDEST: all asc; HIGHEST: rating desc, brewDate desc, createdAt desc; LOWEST: rating asc, brewDate desc, createdAt desc
+```
+
+### Risks
+- Spring Boot 4 uses Jackson 3 (`tools.jackson.*`) and renamed starters (e.g. `spring-boot-starter-webmvc`); implementers must not use Boot 3 names.
+- JDK 25 isn't installed locally: the Gradle toolchain downloads it (foojay); CI uses setup-java 25.
+- Testcontainers and E2E need a running Docker engine; tests fail fast with a clear message otherwise.
+- Matching the ivory design with Material needs disciplined theming. Overrides are kept in `theme.scss` via the documented `mat.*-overrides` mixins, never `::ng-deep`.
+- Parallel saves of the same name: the unique indexes on `lower(name)` are the last guard and are mapped to DUPLICATE.
+- Time zones: the server allows today + 1 (B8); the client blocks after the browser's today.
+
+## Out of scope
+- Authentication and multiple user accounts.
+- Public deployment.
+- Photos or images for brews (landing photos are static marketing assets).
+- Statistics, analytics or charts.
+- A "last edited" date or any edit history.
+- Undo for deleted brews or methods.
+- A dark theme and languages other than English.
+- An endpoint to fetch a single brew (detail and edit use the list data).
