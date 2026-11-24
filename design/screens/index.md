@@ -7,7 +7,7 @@
 | [brew-form](brew-form.md) | Add or edit a brew (drawer on desktop, bottom sheet on phones), incl. inline "add method" | create, edit, method-open, add-method, validation-error, duplicate-name, server-error, saving, field-limits, method-gone, brew-gone |
 | [brew-detail](brew-detail.md) | One brew with full tasting notes, Edit and Delete | default, no-notes |
 | [brew-delete](brew-delete.md) | Confirm the permanent deletion of a brew | default, deleting, error, gone |
-| [methods](methods.md) | Add, rename and delete brew methods; "Other" is protected | default, renaming, delete-confirm, duplicate, added, error, save-error, delete-error |
+| [methods](methods.md) | Add, rename and delete brew methods; "Other" is protected | default, renaming, rename-confirm, rename-saving, rename-error, delete-confirm, delete-reassign, delete-mixed, deleting, delete-error, duplicate, added, save-error, error, gone |
 
 Prototype support files: `prototype/components.css` (component styles built only from tokens.css) and `prototype/icons.js` (fine-line icon sprite: brand mark, beans, method icons, UI icons). Landing photos live in `prototype/assets/` (Unsplash License).
 
@@ -29,3 +29,6 @@ Prototype support files: `prototype/components.css` (component styles built only
 - brew-form → method-gone on Save when the chosen method was deleted elsewhere → choose another method → Save.
 - brew-delete → gone when the brew was already deleted → "Close" → brews (refreshed).
 - methods → error when the list fails to load → "Try again" → default.
+- methods (renaming) → Save on a method with brews → rename-confirm → "Rename for all n brews" → default (toast); Cancel / back → renaming with the typed value. 0 brews: Save renames directly.
+- methods → trash on a method with brews → delete-reassign → "Delete method" → default (toast "“Moka Pot” deleted · 3 brews reassigned"); "Keep method" / back → default. 0 brews: inline delete-confirm.
+- methods → rename or delete of a method already deleted elsewhere → gone (list reloaded, toast).

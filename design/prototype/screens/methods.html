@@ -32,6 +32,28 @@
   .load-error { margin-top: var(--spacing-lg); }
   .load-error .btn { margin-top: var(--spacing-md); }
   .confirm-row .field-error { margin-top: calc(-1 * var(--spacing-xs)); }
+  .step-head { display: flex; align-items: flex-start; gap: var(--spacing-xs); }
+  .step-head h2 { flex: 1; min-width: 0; }
+  .step-head .back { margin: -10px 0 0 -10px; }
+  .step-head .close { margin: -10px -10px 0 0; }
+  .step .lede { color: var(--color-on-surface-muted); margin-top: var(--spacing-sm); }
+  .bulk { display: flex; align-items: center; gap: var(--spacing-md); margin-top: var(--spacing-lg); flex-wrap: wrap; }
+  .bulk .field-label { margin: 0; }
+  .bulk .select-wrap { width: 220px; }
+  .summary { font-size: var(--text-body-sm); color: var(--color-on-surface-muted); margin-top: var(--spacing-sm); }
+  .rb-list { list-style: none; margin: var(--spacing-md) 0 0; padding: 0; border-top: 1px solid var(--color-outline); border-bottom: 1px solid var(--color-outline); max-height: 336px; overflow: auto; }
+  .rb-row { display: flex; align-items: center; gap: var(--spacing-md); min-height: 64px; padding: var(--spacing-sm) 0; }
+  .rb-row + .rb-row { border-top: 1px solid var(--color-outline); }
+  .rb-info { flex: 1; min-width: 0; display: grid; }
+  .rb-info strong { font-weight: var(--font-weight-title-md); font-size: var(--text-body-md); }
+  .rb-info span { font-size: var(--text-body-sm); color: var(--color-on-surface-muted); }
+  .rb-pick { display: flex; align-items: center; gap: var(--spacing-sm); width: 210px; flex: none; }
+  .rb-pick .select-wrap { flex: 1; }
+  .rb-pick .select { min-height: 40px; }
+  .rb-pick .dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-tertiary); visibility: hidden; flex: none; }
+  .rb-row.changed .dot { visibility: visible; }
+  .step .banner-error { margin-top: var(--spacing-md); }
+  .step .dialog-actions { margin-top: var(--spacing-lg); }
   .hint { font-size: var(--text-body-sm); color: var(--color-on-surface-muted); }
   .methods .dialog-actions { margin-top: var(--spacing-lg); }
   @media (max-width: 767px) {
@@ -43,6 +65,11 @@
     .m-row.editing .btn { flex: 1; }
     .confirm-row .btns .btn { flex: 1; }
     .methods .dialog-actions { flex-direction: row; }
+    .methods .step .dialog-actions { flex-direction: column-reverse; }
+    .rb-row { flex-wrap: wrap; gap: var(--spacing-xs) var(--spacing-md); }
+    .rb-pick { width: 100%; }
+    .bulk .select-wrap { width: 100%; }
+    .rb-list { max-height: 44vh; }
   }
 </style>
 </head>
@@ -52,7 +79,7 @@
 <div class="backdrop"></div>
 
 <div class="dialog methods float-shadow" role="dialog" aria-modal="true" aria-labelledby="m-title">
-  <div class="dialog-head" style="margin-bottom:0">
+  <div class="dialog-head" style="margin-bottom:0" data-states="default renaming delete-confirm duplicate added save-error gone error">
     <div>
       <h2 id="m-title" class="t-headline-md">Brew methods</h2>
       <p class="lede t-body-sm">Renaming updates every brew that uses the method. Deleting moves those brews to “Other”.</p>
@@ -60,7 +87,7 @@
     <a class="icon-btn" href="brews.html" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></a>
   </div>
 
-  <form class="field" onsubmit="return false" data-field="add" data-states="default renaming delete-confirm duplicate added save-error delete-error">
+  <form class="field" onsubmit="return false" data-field="add" data-states="default renaming delete-confirm duplicate added save-error gone">
     <div class="add-row">
       <label class="sr-only" for="new-m">New method name</label>
       <input class="input" id="new-m" placeholder="Add a method, e.g. Chemex" aria-describedby="new-m-err">
@@ -77,10 +104,10 @@
     </div>
   </div>
 
-  <ul class="m-list" aria-label="Methods" data-states="default renaming delete-confirm duplicate added save-error delete-error">
+  <ul class="m-list" aria-label="Methods" data-states="default renaming delete-confirm duplicate added save-error gone">
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-espresso"/></svg><div class="name"><strong>Espresso</strong><span>9 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Espresso"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Espresso"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
-    <li class="m-row" data-states="default delete-confirm duplicate added save-error delete-error"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg><div class="name"><strong>Pour Over</strong><span>14 brews</span></div>
+    <li class="m-row" data-states="default delete-confirm duplicate added save-error gone"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg><div class="name"><strong>Pour Over</strong><span>14 brews</span></div>
       <div class="actions"><a class="icon-btn" href="?state=renaming" aria-label="Rename Pour Over"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></a><button class="icon-btn del" aria-label="Delete Pour Over"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row editing" data-states="renaming"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg>
       <label class="sr-only" for="rename">Rename Pour Over</label>
@@ -90,30 +117,77 @@
       <div class="actions"><button class="icon-btn" aria-label="Rename French Press"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete French Press"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-aeropress"/></svg><div class="name"><strong>AeroPress</strong><span>6 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename AeroPress"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete AeroPress"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
-    <li class="m-row" data-states="default renaming duplicate added save-error"><svg class="icon" aria-hidden="true"><use href="#i-moka-pot"/></svg><div class="name"><strong>Moka Pot</strong><span>3 brews</span></div>
-      <div class="actions"><button class="icon-btn" aria-label="Rename Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><a class="icon-btn del" href="?state=delete-confirm" aria-label="Delete Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></a></div></li>
-    <li class="confirm-row" role="alert" data-states="delete-confirm delete-error">
-      <p><strong>Delete “Moka Pot”?</strong> Its 3 brews will move to “Other”. This can’t be undone.</p>
-      <p class="field-error" data-states="delete-error"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Couldn’t delete the method. Try again.</p>
-      <div class="btns"><a class="btn btn-secondary" href="?state=default">Keep</a><button class="btn btn-danger">Delete method</button></div>
-    </li>
+    <li class="m-row" data-states="default renaming delete-confirm duplicate added save-error"><svg class="icon" aria-hidden="true"><use href="#i-moka-pot"/></svg><div class="name"><strong>Moka Pot</strong><span>3 brews</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><a class="icon-btn del" href="?state=delete-reassign" aria-label="Delete Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></a></div></li>
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cold-brew"/></svg><div class="name"><strong>Cold Brew</strong><span>2 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Cold Brew"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Cold Brew"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
-    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Siphon</strong><span>1 brew · added by you</span></div>
-      <div class="actions"><button class="icon-btn" aria-label="Rename Siphon"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Siphon"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row" data-states="added" style="background:var(--color-tertiary-soft);margin:0 calc(-1 * var(--spacing-md));padding-left:var(--spacing-md);padding-right:var(--spacing-md)"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Chemex</strong><span>0 brews · added by you</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Chemex"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Chemex"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
+    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Kalita Wave</strong><span>0 brews · added by you</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename Kalita Wave"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><a class="icon-btn del" href="?state=delete-confirm" aria-label="Delete Kalita Wave"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></a></div></li>
+    <li class="confirm-row" role="alert" data-states="delete-confirm">
+      <p><strong>Delete “Kalita Wave”?</strong> No brews use it. This can’t be undone.</p>
+      <div class="btns"><a class="btn btn-secondary" href="?state=default">Keep</a><button class="btn btn-danger">Delete method</button></div>
+    </li>
+    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Siphon</strong><span>1 brew · added by you</span></div>
+      <div class="actions"><button class="icon-btn" aria-label="Rename Siphon"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Siphon"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Other</strong><span>2 brews</span></div>
       <span class="locked t-caps" title="“Other” can’t be renamed or deleted"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-lock"/></svg>Protected</span></li>
   </ul>
-  <p class="hint" style="margin-top:var(--spacing-md)" data-states="default renaming delete-confirm duplicate added save-error delete-error">“Other” is always available and catches brews from deleted methods.</p>
+  <p class="hint" style="margin-top:var(--spacing-md)" data-states="default renaming delete-confirm duplicate added save-error gone">“Other” is always available and catches brews from deleted methods.</p>
 
-  <div class="dialog-actions">
+  <div class="dialog-actions" data-states="default renaming delete-confirm duplicate added save-error gone error">
     <a class="btn btn-secondary" href="brews.html">Done</a>
   </div>
+
+  <!-- Step view: confirm a rename that changes brews -->
+  <section class="step" aria-labelledby="rn-title" data-states="rename-confirm rename-saving rename-error">
+    <div class="step-head">
+      <a class="icon-btn back" href="?state=renaming" aria-label="Back to methods"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg></a>
+      <h2 id="rn-title" class="t-headline-md">Rename “Pour Over” to “Pour Over (V60)”?</h2>
+      <a class="icon-btn close" href="brews.html" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></a>
+    </div>
+    <p class="lede t-body-sm"><span class="n-brews">14 brews use</span> this method and will show the new name:</p>
+    <ul class="rb-list" id="rn-list" aria-label="Brews that will show the new name"></ul>
+    <div class="banner-error" role="alert" tabindex="-1" data-states="rename-error">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+      <div><strong>Couldn’t save the method</strong>Nothing was changed. Try again.</div>
+    </div>
+    <div class="dialog-actions">
+      <a class="btn btn-secondary" href="?state=renaming">Cancel</a>
+      <button class="btn btn-primary" data-states="rename-confirm rename-error">Rename for all 14 brews</button>
+      <button class="btn btn-primary" aria-busy="true" data-states="rename-saving"><span class="spinner" aria-hidden="true"></span>Renaming…</button>
+    </div>
+  </section>
+
+  <!-- Step view: delete a method that brews use, with per-brew reassignment -->
+  <section class="step" aria-labelledby="dl-title" data-states="delete-reassign delete-mixed deleting delete-error">
+    <div class="step-head">
+      <a class="icon-btn back" href="?state=default" aria-label="Back to methods"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg></a>
+      <h2 id="dl-title" class="t-headline-md">Delete “<span class="m-name">Moka Pot</span>”?</h2>
+      <a class="icon-btn close" href="brews.html" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></a>
+    </div>
+    <p class="lede t-body-sm"><span class="n-brews">3 brews use</span> this method. Choose where each one goes; any you leave on “Other” move there. Deleting the method can’t be undone.</p>
+    <div class="bulk">
+      <label class="field-label" for="dl-all">Move all brews to</label>
+      <div class="select-wrap"><select class="select" id="dl-all"></select><svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg></div>
+    </div>
+    <p class="summary" id="dl-summary" aria-live="polite"></p>
+    <ul class="rb-list" id="dl-list" aria-label="Brews to move"></ul>
+    <div class="banner-error" role="alert" tabindex="-1" data-states="delete-error">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+      <div><strong>Couldn’t delete the method</strong>Nothing was changed. Try again.</div>
+    </div>
+    <div class="dialog-actions">
+      <a class="btn btn-secondary" href="?state=default">Keep method</a>
+      <button class="btn btn-danger" data-states="delete-reassign delete-mixed delete-error">Delete method</button>
+      <button class="btn btn-danger" aria-busy="true" data-states="deleting"><span class="spinner" aria-hidden="true"></span>Deleting…</button>
+    </div>
+  </section>
 </div>
 
 <div class="toast float-shadow" role="status" data-states="added"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"/></svg>“Chemex” added</div>
+<div class="toast float-shadow" role="status" data-states="gone"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-refresh"/></svg>That method no longer exists. The list has been refreshed.</div>
 
 <script>
   (function () {
@@ -121,6 +195,37 @@
     document.querySelectorAll('[data-states]').forEach(function (el) {
       el.hidden = el.getAttribute('data-states').split(' ').indexOf(state) === -1;
     });
+    var moka = [['Sunday Moka', 'Santos Bourbon · Brazil', '26 Oct 2026'], ['Stovetop Saturday', 'Cerrado Natural · Brazil', '14 Oct 2026'], ['Grandpa’s Bialetti', 'Sul de Minas · Brazil', '2 Oct 2026']];
+    var pour = [['Kenyan Morning', 'Kiambu AA · Kenya', '28 Oct 2026'], ['Gesha Experiment', 'La Esmeralda Gesha · Panama', '19 Oct 2026'], ['Yirgacheffe Bloom', 'Konga Washed · Ethiopia', '10 Oct 2026'],
+      ['Rwanda Red Bourbon', 'Huye Mountain · Rwanda', '30 Sep 2026'], ['Guji Honey', 'Hambela · Ethiopia', '24 Sep 2026'], ['Tarrazú Light', 'Don Mayo · Costa Rica', '18 Sep 2026'],
+      ['Burundi Kayanza', 'Gakenke · Burundi', '9 Sep 2026'], ['Sumatra Clean Cup', 'Wahana · Indonesia', '2 Sep 2026'], ['Panama Natural', 'Elida Estate · Panama', '27 Aug 2026'],
+      ['Kenya Peaberry', 'Nyeri Peaberry · Kenya', '20 Aug 2026'], ['Colombia Decaf', 'Sugarcane EA · Colombia', '11 Aug 2026'], ['Sidamo Morning', 'Bensa · Ethiopia', '3 Aug 2026'],
+      ['Huehue Sunday', 'La Esperanza · Guatemala', '25 Jul 2026'], ['Chiapas Bright', 'Finca Chanjul · Mexico', '6 Jul 2026']];
+    var all = ['AeroPress', 'Cold Brew', 'Espresso', 'French Press', 'Kalita Wave', 'Moka Pot', 'Pour Over', 'Siphon', 'Other'];
+    var esc = function (t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    var opts = function (except, sel) { return all.filter(function (m) { return m !== except; }).map(function (m) { return '<option' + (m === sel ? ' selected' : '') + '>' + m + '</option>'; }).join(''); };
+    var info = function (b) { return '<div class="rb-info"><strong>' + esc(b[0]) + '</strong><span>' + esc(b[1]) + ' · ' + b[2] + '</span></div>'; };
+    var plural = function (n) { return n === 1 ? '1 brew uses' : n + ' brews use'; };
+
+    if (['rename-confirm', 'rename-saving', 'rename-error'].indexOf(state) > -1) {
+      document.getElementById('rn-list').innerHTML = pour.map(function (b) { return '<li class="rb-row">' + info(b) + '</li>'; }).join('');
+    }
+    if (['delete-reassign', 'delete-mixed', 'deleting', 'delete-error'].indexOf(state) > -1) {
+      var mixed = state === 'delete-mixed';
+      var name = mixed ? 'Pour Over' : 'Moka Pot', list = mixed ? pour : moka;
+      var dest = mixed ? { 1: 'Kalita Wave', 3: 'Kalita Wave', 7: 'Kalita Wave', 10: 'AeroPress' } : {};
+      document.querySelector('.step .m-name').textContent = name;
+      document.querySelectorAll('section[aria-labelledby="dl-title"] .n-brews').forEach(function (el) { el.textContent = plural(list.length); });
+      document.getElementById('dl-all').innerHTML = opts(name, 'Other');
+      document.getElementById('dl-list').innerHTML = list.map(function (b, i) {
+        var to = dest[i] || 'Other';
+        return '<li class="rb-row' + (to !== 'Other' ? ' changed' : '') + '">' + info(b) +
+          '<div class="rb-pick"><span class="dot" aria-hidden="true"></span><div class="select-wrap"><select class="select" aria-label="Move “' + esc(b[0]) + '” to">' + opts(name, to) + '</select><svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg></div></div></li>';
+      }).join('');
+      var counts = {}; list.forEach(function (b, i) { var t = dest[i] || 'Other'; counts[t] = (counts[t] || 0) + 1; });
+      document.getElementById('dl-summary').textContent = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).map(function (k) { return counts[k] + ' to ' + k; }).join(' · ');
+      if (state === 'deleting') document.querySelectorAll('.step select').forEach(function (el) { el.disabled = true; });
+    }
     if (state === 'save-error') { var j = document.getElementById('new-m'); j.value = 'Chemex'; document.querySelector('[data-field="add"]').classList.add('has-error'); }
     if (state === 'duplicate') { var i = document.getElementById('new-m'); i.value = 'pour over'; document.querySelector('[data-field="add"]').classList.add('has-error'); }
   })();

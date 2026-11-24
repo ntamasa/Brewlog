@@ -66,7 +66,7 @@ Regions top to bottom:
 ## Interactions
 - Client validation runs on submit, then live per field on blur/change once the field has been touched. Required fields: name, bean, origin, method, roast, rating, date.
 - Backend field errors map to the same inline slots (by field name); errors without a field go to the banner. Banner items link to and focus their field.
-- Method select: click/Enter/Space opens; arrows move; Enter selects; Esc closes. "Add new method…" → add-method state; Add saves the method through the backend, adds it to the list and selects it; empty or duplicate name shows an inline error in the box ("“Pour Over” already exists."). Cancel returns to the select.
+- Method select: click/Enter/Space opens; arrows move; Enter selects; Esc closes. "Add new method…" → add-method state; Add saves the method through the backend, adds it to the list and selects it; errors show inline in the box: empty "Enter a method name", too long "Method name can be at most 50 characters", duplicate "“Pour Over” already exists.", server failure "Couldn’t save the method. Try again." (same texts as the methods dialog). Cancel returns to the select.
 - "Manage methods…" opens the methods dialog on top; when it closes, the form keeps its values and the method list refreshes (a deleted selected method becomes "Other").
 - Rating: click a bean or use arrow keys within the radio group.
 - Save success → close drawer/sheet → brews (saved state with toast + highlight).

@@ -5,7 +5,7 @@
 
 ## Layout
 1. **App header** (sticky, 64px desktop / 56px phone, ivory at 92% with blur, hairline bottom): brand mark + "Brewlog" (links to landing) · spacer · `button-ghost` "Manage methods" with sliders icon (phone: `icon-button`, aria-label "Manage methods") · `button-primary` "+ Add brew" (desktop only).
-2. **Page head**: eyebrow "Tasting journal" (`label-caps`, terracotta) + `headline-lg` "Your brews" (phone `headline-md`); right-aligned muted count ("41 brews" / "3 of 41 brews" / "No brews yet"), `aria-live="polite"`.
+2. **Page head**: eyebrow "Tasting journal" (`label-caps`, terracotta) + `headline-lg` "Your brews" (phone `headline-md`); right-aligned muted count ("41 brews" / "3 of 41 brews" / "No brews yet"; singular for exactly 1: "1 brew", "1 of 41 brews"), `aria-live="polite"`.
 3. **Toolbar**, between hairlines:
    - Desktop: one row, labelled controls (`label-caps` labels): Search input with search icon (2.2fr) · Method select (All methods, then every method incl. custom ones A–Z, "Other" last) · Roast select (All roasts, Light, Medium, Dark) · Min. rating select (Any rating, 2+, 3+, 4+, 5 beans only) · Sort select (Newest first [default], Oldest first, Highest rated, Lowest rated).
    - Phone: Search input + `button-secondary` "Filters" with a terracotta count badge (number of active filters). Method, roast, min rating and sort live in the filters sheet.
@@ -38,7 +38,7 @@
 |---|---|---|
 | default | Brews loaded, no filters | 12 cards, page 1 of 4, newest first |
 | filtered | Search/filters active | Toolbar shows values (Pour Over, Light, 4+ beans, Highest rated); chip row; count "3 of 41 brews"; 3 cards; footer "Showing 1–3 of 3", no pagination when one page; Filters badge "3" on phone |
-| filters-sheet | Phone: "Filters" tapped | Bottom sheet (90% max height) "Filter & sort" over a backdrop: Method select, Roast segmented (All/Light/Medium/Dark), Minimum rating bean picker (44px targets), Sort select; footer "Clear all" + "Show 3 brews" (live result count). Desktop renders like filtered (sheet is phone-only) |
+| filters-sheet | Phone: "Filters" tapped | Bottom sheet (90% max height) "Filter & sort" over a backdrop: Method select, Roast segmented (All/Light/Medium/Dark), Minimum rating bean picker (44px targets), Sort select; footer "Clear all" + "Show 3 brews" (live result count; "Show 1 brew" for one). Desktop renders like filtered (sheet is phone-only) |
 | card-menu | ⋮ on a card | Popover menu under the ⋮: "Edit brew", "Delete brew" (error color) |
 | saved | Right after create/edit | Toast "“Kenyan Morning” saved to your journal" (4s); that card gets `brew-card-highlight` (terracotta-soft fill + terracotta border), fading back over ~1.2s |
 | empty | No brews at all | Toolbar hidden; dashed `panel` with cup art in a circle, "Your journal is waiting", short line, `button-primary` "+ Log your first brew"; count "No brews yet" |
