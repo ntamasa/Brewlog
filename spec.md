@@ -319,14 +319,14 @@ Three deployables in one repo: `backend/` (Spring Boot REST API, Liquibase-manag
 
 ### Repository and tooling
 - `backend/`: Gradle wrapper, Kotlin DSL (`settings.gradle.kts`, `build.gradle.kts`), Java toolchain 25 with the foojay resolver plugin, Spring Boot 4.2. Dependencies: web MVC, data JPA, Liquibase, PostgreSQL driver, Testcontainers PostgreSQL, spring-boot-testcontainers. Spotless with palantir-java-format.
-- `.nvmrc` (root): `24`, the single source of the Node.js major for CI.
-- `frontend/`: Angular 22 (`npx @angular/cli@22 new`), standalone components, zoneless, SCSS, Vitest. `package.json` `engines.node`: `^24.15.0`. Dependencies: `@angular/material`, `@angular/cdk`, `@angular/material-date-fns-adapter`, `date-fns`, `@ngrx/signals`, angular-eslint, Prettier. Scripts: `start` (with `proxy.conf.json` sending `/api` to `http://localhost:8080`), `test`, `lint`, `format:check`, `build`.
-- `e2e/`: own `package.json` with `@playwright/test` and `engines.node`: `^24.15.0`; `playwright.config.ts` with projects `desktop` (1440×900) and `phone` (390×844), baseURL `http://localhost:8081`.
+- `.nvmrc` (root): `22`, the single source of the Node.js major for CI.
+- `frontend/`: Angular 22 (`npx @angular/cli@22 new`), standalone components, zoneless, SCSS, Vitest. `package.json` `engines.node`: `^22.22.3`. Dependencies: `@angular/material`, `@angular/cdk`, `@angular/material-date-fns-adapter`, `date-fns`, `@ngrx/signals`, angular-eslint, Prettier. Scripts: `start` (with `proxy.conf.json` sending `/api` to `http://localhost:8080`), `test`, `lint`, `format:check`, `build`.
+- `e2e/`: own `package.json` with `@playwright/test` and `engines.node`: `^22.22.3`; `playwright.config.ts` with projects `desktop` (1440×900) and `phone` (390×844), baseURL `http://localhost:8081`.
 - `.env.example`: add `DB_URL`, `DB_USER`, `DB_PASSWORD`.
 - `README.md` (root, new): the prerequisites below, the run and test commands (`docker compose up -d --build`; `./gradlew spotlessCheck test` in `backend/`; `npm start`, `npm test`, `npm run lint`, `npm run format:check`, `npm run build` in `frontend/`; `npx playwright install chromium` and `npx playwright test` in `e2e/` against the running compose stack), and a link to `docs/business-rules.md`.
 
 ### Prerequisites
-- Node.js 24, at least 24.15.0 (Angular CLI 22 refuses older versions), for local frontend and e2e work. CI, the frontend Docker build and e2e use the same major.
+- Node.js 22.22.3 or later (22.x) (Angular CLI 22 refuses older versions), for local frontend and e2e work. CI, the frontend Docker build and e2e use the same major.
 - Docker Desktop installed and running: backend tests (Testcontainers), `docker compose` and e2e need its engine.
 - JDK 25 doesn't have to be installed: the Gradle toolchain downloads it (foojay).
 
@@ -386,7 +386,7 @@ Under `frontend/src/app/`, by feature:
 ### Deployment
 - `docker-compose.yml` (root): `db` (postgres:17, db/user/password `brewlog`, port 5432, volume `brewlog-data`, healthcheck), `backend` (build `./backend`, `DB_URL=jdbc:postgresql://db:5432/brewlog`, depends on a healthy db), `frontend` (build `./frontend`, port `8081:80`).
 - `backend/Dockerfile`: Gradle JDK 25 build stage → `eclipse-temurin:25-jre`, port 8080.
-- `frontend/Dockerfile`: `node:24` build → `nginx:1.29-alpine` with `frontend/nginx.conf` (`try_files $uri /index.html`; `location /api/ { proxy_pass http://backend:8080; }`).
+- `frontend/Dockerfile`: `node:22` build → `nginx:1.29-alpine` with `frontend/nginx.conf` (`try_files $uri /index.html`; `location /api/ { proxy_pass http://backend:8080; }`).
 
 ### CI
 - `.github/workflows/backend.yml`: on `pull_request` with paths `backend/**` and `.github/workflows/backend.yml`; Temurin 25; `./gradlew spotlessCheck test` in `backend/`.
@@ -429,7 +429,8 @@ sort NEWEST: brewDate desc, createdAt desc, id desc; OLDEST: all asc; HIGHEST: r
 - Spring Boot 4 uses Jackson 3 (`tools.jackson.*`) and renamed starters (e.g. `spring-boot-starter-webmvc`); implementers must not use Boot 3 names.
 - JDK 25 isn't installed locally: the Gradle toolchain downloads it (foojay); CI uses setup-java 25.
 - Testcontainers and E2E need a running Docker engine (Docker Desktop locally, see Prerequisites); tests fail fast with a clear message otherwise.
-- A Node older than 24.15.0 makes the Angular CLI refuse to run; `engines.node` makes npm warn on a wrong version.
+- A Node older than 22.22.3 makes the Angular CLI refuse to run; `engines.node` makes npm warn on a wrong version.
+- Node 22 reaches end of life in Apr 2027; a later feature moves to a newer Node.
 - Matching the ivory design with Material needs disciplined theming. Overrides are kept in `theme.scss` via the documented `mat.*-overrides` mixins, never `::ng-deep`.
 - Parallel saves of the same name: the unique indexes on `lower(name)` are the last guard and are mapped to DUPLICATE.
 - Time zones: the server allows today + 1 (B8); the client blocks after the browser's today.
