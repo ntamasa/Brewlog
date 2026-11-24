@@ -1,0 +1,2170 @@
+{
+  "maxStoryPoints": 3,
+  "epic": {
+    "key": "BREW-3",
+    "summary": "Brewlog",
+    "description": [
+      {
+        "from": "spec.md",
+        "heading": "Objective"
+      },
+      {
+        "from": "spec.md",
+        "heading": "Summary"
+      },
+      {
+        "from": "spec.md",
+        "heading": "Constraints"
+      },
+      {
+        "text": "## Technical design\n\nShared sections. Each story carries the sections only it needs (Frontend in every story with UI work; Repository and tooling, UI implementation, Deployment, CI in story S1 \"Landing page\"; Seams and tests in story S2 \"See my brews in the journal\")."
+      },
+      {
+        "from": "spec.md",
+        "heading": "Overview"
+      },
+      {
+        "from": "spec.md",
+        "heading": "Data model"
+      },
+      {
+        "from": "spec.md",
+        "heading": "API"
+      },
+      {
+        "from": "spec.md",
+        "heading": "Backend"
+      },
+      {
+        "from": "spec.md",
+        "heading": "Conventions"
+      },
+      {
+        "from": "spec.md",
+        "heading": "Hard logic"
+      },
+      {
+        "from": "spec.md",
+        "heading": "Risks"
+      }
+    ]
+  },
+  "issues": [
+    {
+      "id": "S1",
+      "type": "story",
+      "key": "BREW-4",
+      "summary": "Landing page",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S1.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R1"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B1"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Repository and tooling"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        },
+        {
+          "from": "spec.md",
+          "heading": "UI implementation"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Deployment"
+        },
+        {
+          "from": "spec.md",
+          "heading": "CI"
+        }
+      ],
+      "blockedBy": [],
+      "attachments": [
+        "design/screenshots/landing.default.desktop.png",
+        "design/screenshots/landing.default.mobile.png"
+      ]
+    },
+    {
+      "id": "S1.1",
+      "type": "subtask",
+      "key": "BREW-5",
+      "parent": "S1",
+      "summary": "Frontend scaffold, routes and frontend CI",
+      "description": [
+        {
+          "file": "tickets/S1.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S1.2",
+      "type": "subtask",
+      "key": "BREW-6",
+      "parent": "S1",
+      "summary": "Design foundation: tokens, theme, fonts, icon sprite, photos",
+      "description": [
+        {
+          "file": "tickets/S1.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.1"
+      ]
+    },
+    {
+      "id": "S1.3",
+      "type": "subtask",
+      "key": "BREW-7",
+      "parent": "S1",
+      "summary": "Landing page",
+      "description": [
+        {
+          "file": "tickets/S1.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.2"
+      ]
+    },
+    {
+      "id": "S1.4",
+      "type": "subtask",
+      "key": "BREW-8",
+      "parent": "S1",
+      "summary": "Backend scaffold, schema, seed and backend CI",
+      "description": [
+        {
+          "file": "tickets/S1.4.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.3"
+      ]
+    },
+    {
+      "id": "S1.5",
+      "type": "subtask",
+      "key": "BREW-9",
+      "parent": "S1",
+      "summary": "Docker Compose, Playwright e2e and e2e CI",
+      "description": [
+        {
+          "file": "tickets/S1.5.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.4"
+      ]
+    },
+    {
+      "id": "S2",
+      "type": "story",
+      "key": "BREW-10",
+      "summary": "See my brews in the journal",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S2.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R2"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B19"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B20"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B22"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B23"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Seams and tests"
+        }
+      ],
+      "blockedBy": [
+        "S1"
+      ],
+      "attachments": [
+        "design/screenshots/brews.default.desktop.png",
+        "design/screenshots/brews.default.mobile.png"
+      ]
+    },
+    {
+      "id": "S2.1",
+      "type": "subtask",
+      "key": "BREW-11",
+      "parent": "S2",
+      "summary": "Backend: entities, repositories and GET /api/brews (newest first, paged)",
+      "description": [
+        {
+          "file": "tickets/S2.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S2.2",
+      "type": "subtask",
+      "key": "BREW-12",
+      "parent": "S2",
+      "summary": "Frontend: models, BrewApi.list, format helpers, JournalStore",
+      "description": [
+        {
+          "file": "tickets/S2.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S2.1"
+      ]
+    },
+    {
+      "id": "S2.3",
+      "type": "subtask",
+      "key": "BREW-13",
+      "parent": "S2",
+      "summary": "Brew card, method icon and bean rating (display)",
+      "description": [
+        {
+          "file": "tickets/S2.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S2.2"
+      ]
+    },
+    {
+      "id": "S2.4",
+      "type": "subtask",
+      "key": "BREW-14",
+      "parent": "S2",
+      "summary": "Journal page with count, grid, footer and pagination",
+      "description": [
+        {
+          "file": "tickets/S2.4.md"
+        }
+      ],
+      "blockedBy": [
+        "S2.3"
+      ]
+    },
+    {
+      "id": "S3",
+      "type": "story",
+      "key": "BREW-15",
+      "summary": "Journal loading and error states",
+      "storyPoints": 1,
+      "description": [
+        {
+          "file": "tickets/S3.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R4"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S2"
+      ],
+      "attachments": [
+        "design/screenshots/brews.loading.desktop.png",
+        "design/screenshots/brews.loading.mobile.png",
+        "design/screenshots/brews.error.desktop.png",
+        "design/screenshots/brews.error.mobile.png"
+      ]
+    },
+    {
+      "id": "S3.1",
+      "type": "subtask",
+      "key": "BREW-16",
+      "parent": "S3",
+      "summary": "Skeleton cards and load-error panel with Try again",
+      "description": [
+        {
+          "file": "tickets/S3.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S4",
+      "type": "story",
+      "key": "BREW-17",
+      "summary": "Log a brew",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S4.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R3"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R12"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B2"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B3"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B8"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B10"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B21"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B22"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B24"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S3"
+      ],
+      "attachments": [
+        "design/screenshots/brew-form.create.desktop.png",
+        "design/screenshots/brew-form.create.mobile.png",
+        "design/screenshots/brew-form.saving.desktop.png",
+        "design/screenshots/brew-form.saving.mobile.png",
+        "design/screenshots/brew-form.method-open.desktop.png",
+        "design/screenshots/brew-form.method-open.mobile.png",
+        "design/screenshots/brews.saved.desktop.png",
+        "design/screenshots/brews.saved.mobile.png",
+        "design/screenshots/brews.empty.desktop.png",
+        "design/screenshots/brews.empty.mobile.png"
+      ]
+    },
+    {
+      "id": "S4.1",
+      "type": "subtask",
+      "key": "BREW-18",
+      "parent": "S4",
+      "summary": "Backend: GET /api/methods with brew counts",
+      "description": [
+        {
+          "file": "tickets/S4.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S4.2",
+      "type": "subtask",
+      "key": "BREW-19",
+      "parent": "S4",
+      "summary": "Backend: POST /api/brews with trimming",
+      "description": [
+        {
+          "file": "tickets/S4.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.1"
+      ]
+    },
+    {
+      "id": "S4.3",
+      "type": "subtask",
+      "key": "BREW-20",
+      "parent": "S4",
+      "summary": "Frontend: MethodApi, MethodStore, BrewApi.create, Toaster",
+      "description": [
+        {
+          "file": "tickets/S4.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.2"
+      ]
+    },
+    {
+      "id": "S4.4",
+      "type": "subtask",
+      "key": "BREW-21",
+      "parent": "S4",
+      "summary": "Bean rating input and method select controls",
+      "description": [
+        {
+          "file": "tickets/S4.4.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.3"
+      ]
+    },
+    {
+      "id": "S4.5",
+      "type": "subtask",
+      "key": "BREW-22",
+      "parent": "S4",
+      "summary": "Brew form in create mode",
+      "description": [
+        {
+          "file": "tickets/S4.5.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.4"
+      ]
+    },
+    {
+      "id": "S4.6",
+      "type": "subtask",
+      "key": "BREW-23",
+      "parent": "S4",
+      "summary": "Open the form from the journal, empty state, toast and highlight, e2e",
+      "description": [
+        {
+          "file": "tickets/S4.6.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.5"
+      ]
+    },
+    {
+      "id": "S5",
+      "type": "story",
+      "key": "BREW-24",
+      "summary": "Validate a brew before saving",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S5.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R13"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R14"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R15"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R17"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R18"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B2"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B3"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B4"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B6"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B7"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B8"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S4"
+      ],
+      "attachments": [
+        "design/screenshots/brew-form.validation-error.desktop.png",
+        "design/screenshots/brew-form.validation-error.mobile.png",
+        "design/screenshots/brew-form.one-error.desktop.png",
+        "design/screenshots/brew-form.one-error.mobile.png",
+        "design/screenshots/brew-form.field-limits.desktop.png",
+        "design/screenshots/brew-form.field-limits.mobile.png"
+      ]
+    },
+    {
+      "id": "S5.1",
+      "type": "subtask",
+      "key": "BREW-25",
+      "parent": "S5",
+      "summary": "Backend: brew validation and 400 field errors",
+      "description": [
+        {
+          "file": "tickets/S5.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S5.2",
+      "type": "subtask",
+      "key": "BREW-26",
+      "parent": "S5",
+      "summary": "Frontend: client validators, error messages, API error parser",
+      "description": [
+        {
+          "file": "tickets/S5.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S5.1"
+      ]
+    },
+    {
+      "id": "S5.3",
+      "type": "subtask",
+      "key": "BREW-27",
+      "parent": "S5",
+      "summary": "Brew form: inline errors, summary banner, notes counter",
+      "description": [
+        {
+          "file": "tickets/S5.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S5.2"
+      ]
+    },
+    {
+      "id": "S6",
+      "type": "story",
+      "key": "BREW-28",
+      "summary": "Save safely: duplicate names, deleted methods, failures, unsaved changes",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S6.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R16"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R19"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R20"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R21"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B5"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B25"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S5"
+      ],
+      "attachments": [
+        "design/screenshots/brew-form.duplicate-name.desktop.png",
+        "design/screenshots/brew-form.duplicate-name.mobile.png",
+        "design/screenshots/brew-form.method-gone.desktop.png",
+        "design/screenshots/brew-form.method-gone.mobile.png",
+        "design/screenshots/brew-form.server-error.desktop.png",
+        "design/screenshots/brew-form.server-error.mobile.png"
+      ]
+    },
+    {
+      "id": "S6.1",
+      "type": "subtask",
+      "key": "BREW-29",
+      "parent": "S6",
+      "summary": "Backend: duplicate names and missing methods",
+      "description": [
+        {
+          "file": "tickets/S6.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S6.2",
+      "type": "subtask",
+      "key": "BREW-30",
+      "parent": "S6",
+      "summary": "Brew form: duplicate-name, method-gone and server-error states, e2e",
+      "description": [
+        {
+          "file": "tickets/S6.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S6.1"
+      ]
+    },
+    {
+      "id": "S6.3",
+      "type": "subtask",
+      "key": "BREW-31",
+      "parent": "S6",
+      "summary": "Brew form: \"Discard changes?\" guard",
+      "description": [
+        {
+          "file": "tickets/S6.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S6.2"
+      ]
+    },
+    {
+      "id": "S7",
+      "type": "story",
+      "key": "BREW-32",
+      "summary": "Edit a brew",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S7.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R22"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R23"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R25"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B2"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B3"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B9"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B25"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S6"
+      ],
+      "attachments": [
+        "design/screenshots/brew-form.edit.desktop.png",
+        "design/screenshots/brew-form.edit.mobile.png",
+        "design/screenshots/brew-form.brew-gone.desktop.png",
+        "design/screenshots/brew-form.brew-gone.mobile.png",
+        "design/screenshots/brews.card-menu.desktop.png",
+        "design/screenshots/brews.card-menu.mobile.png"
+      ]
+    },
+    {
+      "id": "S7.1",
+      "type": "subtask",
+      "key": "BREW-33",
+      "parent": "S7",
+      "summary": "Backend: PATCH /api/brews/{id} with merge-patch semantics",
+      "description": [
+        {
+          "file": "tickets/S7.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S7.2",
+      "type": "subtask",
+      "key": "BREW-34",
+      "parent": "S7",
+      "summary": "Frontend: BrewApi.patch and changedFields",
+      "description": [
+        {
+          "file": "tickets/S7.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S7.1"
+      ]
+    },
+    {
+      "id": "S7.3",
+      "type": "subtask",
+      "key": "BREW-35",
+      "parent": "S7",
+      "summary": "Card menu \"Edit brew\", form edit mode and brew-gone state, e2e",
+      "description": [
+        {
+          "file": "tickets/S7.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S7.2"
+      ]
+    },
+    {
+      "id": "S8",
+      "type": "story",
+      "key": "BREW-36",
+      "summary": "Delete a brew",
+      "storyPoints": 2,
+      "description": [
+        {
+          "file": "tickets/S8.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R27"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R28"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B16"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B20"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B24"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B25"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S7"
+      ],
+      "attachments": [
+        "design/screenshots/brew-delete.default.desktop.png",
+        "design/screenshots/brew-delete.default.mobile.png",
+        "design/screenshots/brew-delete.deleting.desktop.png",
+        "design/screenshots/brew-delete.deleting.mobile.png",
+        "design/screenshots/brew-delete.error.desktop.png",
+        "design/screenshots/brew-delete.error.mobile.png",
+        "design/screenshots/brew-delete.gone.desktop.png",
+        "design/screenshots/brew-delete.gone.mobile.png"
+      ]
+    },
+    {
+      "id": "S8.1",
+      "type": "subtask",
+      "key": "BREW-37",
+      "parent": "S8",
+      "summary": "Backend: DELETE /api/brews/{id}",
+      "description": [
+        {
+          "file": "tickets/S8.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S8.2",
+      "type": "subtask",
+      "key": "BREW-38",
+      "parent": "S8",
+      "summary": "Delete confirmation dialog and reload after delete",
+      "description": [
+        {
+          "file": "tickets/S8.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S8.1"
+      ]
+    },
+    {
+      "id": "S8.3",
+      "type": "subtask",
+      "key": "BREW-39",
+      "parent": "S8",
+      "summary": "Card menu \"Delete brew\", toast and page handling, e2e",
+      "description": [
+        {
+          "file": "tickets/S8.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S8.2"
+      ]
+    },
+    {
+      "id": "S9",
+      "type": "story",
+      "key": "BREW-40",
+      "summary": "See a brew's details",
+      "storyPoints": 1,
+      "description": [
+        {
+          "file": "tickets/S9.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R26"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S8"
+      ],
+      "attachments": [
+        "design/screenshots/brew-detail.default.desktop.png",
+        "design/screenshots/brew-detail.default.mobile.png",
+        "design/screenshots/brew-detail.no-notes.desktop.png",
+        "design/screenshots/brew-detail.no-notes.mobile.png"
+      ]
+    },
+    {
+      "id": "S9.1",
+      "type": "subtask",
+      "key": "BREW-41",
+      "parent": "S9",
+      "summary": "Brew detail dialog opened from the card",
+      "description": [
+        {
+          "file": "tickets/S9.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S10",
+      "type": "story",
+      "key": "BREW-42",
+      "summary": "Search my brews",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S10.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R5"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R11"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B3"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B17"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B20"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B23"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S4"
+      ],
+      "attachments": [
+        "design/screenshots/brews.filtered.desktop.png",
+        "design/screenshots/brews.filtered.mobile.png",
+        "design/screenshots/brews.no-results.desktop.png",
+        "design/screenshots/brews.no-results.mobile.png"
+      ]
+    },
+    {
+      "id": "S10.1",
+      "type": "subtask",
+      "key": "BREW-43",
+      "parent": "S10",
+      "summary": "Backend: name search with literal % and _",
+      "description": [
+        {
+          "file": "tickets/S10.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S10.2",
+      "type": "subtask",
+      "key": "BREW-44",
+      "parent": "S10",
+      "summary": "Frontend: debounced search in the store and the URL",
+      "description": [
+        {
+          "file": "tickets/S10.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S10.1"
+      ]
+    },
+    {
+      "id": "S10.3",
+      "type": "subtask",
+      "key": "BREW-45",
+      "parent": "S10",
+      "summary": "Toolbar search, search chip, filtered count and no-results panel, e2e",
+      "description": [
+        {
+          "file": "tickets/S10.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S10.2"
+      ]
+    },
+    {
+      "id": "S11",
+      "type": "story",
+      "key": "BREW-46",
+      "summary": "Sort my brews",
+      "storyPoints": 2,
+      "description": [
+        {
+          "file": "tickets/S11.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R7"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B9"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B19"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S10"
+      ],
+      "attachments": [
+        "design/screenshots/brews.default.desktop.png",
+        "design/screenshots/brews.default.mobile.png"
+      ]
+    },
+    {
+      "id": "S11.1",
+      "type": "subtask",
+      "key": "BREW-47",
+      "parent": "S11",
+      "summary": "Backend: four sort orders with tie-breakers",
+      "description": [
+        {
+          "file": "tickets/S11.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S11.2",
+      "type": "subtask",
+      "key": "BREW-48",
+      "parent": "S11",
+      "summary": "Toolbar Sort select, store and URL, e2e",
+      "description": [
+        {
+          "file": "tickets/S11.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S11.1"
+      ]
+    },
+    {
+      "id": "S12",
+      "type": "story",
+      "key": "BREW-49",
+      "summary": "Filter my brews",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S12.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R6"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R44"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B18"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B19"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B21"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B23"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S11"
+      ],
+      "attachments": [
+        "design/screenshots/brews.filtered.desktop.png",
+        "design/screenshots/brews.filtered.mobile.png",
+        "design/screenshots/brews.filters-sheet.desktop.png",
+        "design/screenshots/brews.filters-sheet.mobile.png",
+        "design/screenshots/brews.filters-sheet-any.desktop.png",
+        "design/screenshots/brews.filters-sheet-any.mobile.png"
+      ]
+    },
+    {
+      "id": "S12.1",
+      "type": "subtask",
+      "key": "BREW-50",
+      "parent": "S12",
+      "summary": "Backend: method, roast and minimum-rating filters",
+      "description": [
+        {
+          "file": "tickets/S12.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S12.2",
+      "type": "subtask",
+      "key": "BREW-51",
+      "parent": "S12",
+      "summary": "Toolbar filters, chips, store and URL",
+      "description": [
+        {
+          "file": "tickets/S12.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S12.1"
+      ]
+    },
+    {
+      "id": "S12.3",
+      "type": "subtask",
+      "key": "BREW-52",
+      "parent": "S12",
+      "summary": "Phone Filters button, badge and \"Filter & sort\" sheet, e2e",
+      "description": [
+        {
+          "file": "tickets/S12.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S12.2"
+      ]
+    },
+    {
+      "id": "S13",
+      "type": "story",
+      "key": "BREW-53",
+      "summary": "Keep my journal view in the URL",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S13.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R8"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R9"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R10"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B18"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B20"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S12"
+      ],
+      "attachments": [
+        "design/screenshots/brews.default.desktop.png",
+        "design/screenshots/brews.default.mobile.png",
+        "design/screenshots/brews.filtered.desktop.png",
+        "design/screenshots/brews.filtered.mobile.png"
+      ]
+    },
+    {
+      "id": "S13.1",
+      "type": "subtask",
+      "key": "BREW-54",
+      "parent": "S13",
+      "summary": "Backend: 400 INVALID list params, empty pages past the last",
+      "description": [
+        {
+          "file": "tickets/S13.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S13.2",
+      "type": "subtask",
+      "key": "BREW-55",
+      "parent": "S13",
+      "summary": "Frontend: strict URL parsing, cleaning and last-page fallback",
+      "description": [
+        {
+          "file": "tickets/S13.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S13.1"
+      ]
+    },
+    {
+      "id": "S13.3",
+      "type": "subtask",
+      "key": "BREW-56",
+      "parent": "S13",
+      "summary": "Journal page: two-way URL sync, Back/reload, scroll, e2e",
+      "description": [
+        {
+          "file": "tickets/S13.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S13.2"
+      ]
+    },
+    {
+      "id": "S14",
+      "type": "story",
+      "key": "BREW-57",
+      "summary": "Add brew methods",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S14.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R29"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R30"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R39"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B3"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B4"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B10"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B11"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B12"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B21"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B22"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B23"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B24"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S6",
+        "S13"
+      ],
+      "attachments": [
+        "design/screenshots/methods.default.desktop.png",
+        "design/screenshots/methods.default.mobile.png",
+        "design/screenshots/methods.added.desktop.png",
+        "design/screenshots/methods.added.mobile.png",
+        "design/screenshots/methods.duplicate.desktop.png",
+        "design/screenshots/methods.duplicate.mobile.png",
+        "design/screenshots/methods.save-error.desktop.png",
+        "design/screenshots/methods.save-error.mobile.png",
+        "design/screenshots/methods.error.desktop.png",
+        "design/screenshots/methods.error.mobile.png",
+        "design/screenshots/brew-form.method-open.desktop.png",
+        "design/screenshots/brew-form.method-open.mobile.png"
+      ]
+    },
+    {
+      "id": "S14.1",
+      "type": "subtask",
+      "key": "BREW-58",
+      "parent": "S14",
+      "summary": "Backend: POST /api/methods with name rules",
+      "description": [
+        {
+          "file": "tickets/S14.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S14.2",
+      "type": "subtask",
+      "key": "BREW-59",
+      "parent": "S14",
+      "summary": "Frontend: MethodApi.create, MethodStore.add, dialog order, name checks and messages",
+      "description": [
+        {
+          "file": "tickets/S14.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S14.1"
+      ]
+    },
+    {
+      "id": "S14.3",
+      "type": "subtask",
+      "key": "BREW-60",
+      "parent": "S14",
+      "summary": "Brew methods dialog: list, add, load error, entry points, e2e",
+      "description": [
+        {
+          "file": "tickets/S14.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S14.2"
+      ]
+    },
+    {
+      "id": "S15",
+      "type": "story",
+      "key": "BREW-61",
+      "summary": "Add a method from the brew form",
+      "storyPoints": 1,
+      "description": [
+        {
+          "file": "tickets/S15.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R31"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B12"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S14"
+      ],
+      "attachments": [
+        "design/screenshots/brew-form.add-method.desktop.png",
+        "design/screenshots/brew-form.add-method.mobile.png",
+        "design/screenshots/brew-form.method-open.desktop.png",
+        "design/screenshots/brew-form.method-open.mobile.png"
+      ]
+    },
+    {
+      "id": "S15.1",
+      "type": "subtask",
+      "key": "BREW-62",
+      "parent": "S15",
+      "summary": "\"+ Add new method…\" inline box in the method select",
+      "description": [
+        {
+          "file": "tickets/S15.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S16",
+      "type": "story",
+      "key": "BREW-63",
+      "summary": "Rename a method",
+      "storyPoints": 2,
+      "description": [
+        {
+          "file": "tickets/S16.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R24"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R32"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B5"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B11"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B12"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B13"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B22"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S15",
+        "S7"
+      ],
+      "attachments": [
+        "design/screenshots/methods.renaming.desktop.png",
+        "design/screenshots/methods.renaming.mobile.png",
+        "design/screenshots/methods.duplicate.desktop.png",
+        "design/screenshots/methods.duplicate.mobile.png"
+      ]
+    },
+    {
+      "id": "S16.1",
+      "type": "subtask",
+      "key": "BREW-64",
+      "parent": "S16",
+      "summary": "Backend: PUT /api/methods/{id}, 404 and 409 PROTECTED",
+      "description": [
+        {
+          "file": "tickets/S16.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S16.2",
+      "type": "subtask",
+      "key": "BREW-65",
+      "parent": "S16",
+      "summary": "Methods dialog: inline rename",
+      "description": [
+        {
+          "file": "tickets/S16.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S16.1"
+      ]
+    },
+    {
+      "id": "S17",
+      "type": "story",
+      "key": "BREW-66",
+      "summary": "Confirm renames of methods with brews",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S17.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R33"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B13"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B19"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B22"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B23"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S16"
+      ],
+      "attachments": [
+        "design/screenshots/methods.rename-confirm.desktop.png",
+        "design/screenshots/methods.rename-confirm.mobile.png",
+        "design/screenshots/methods.rename-saving.desktop.png",
+        "design/screenshots/methods.rename-saving.mobile.png",
+        "design/screenshots/methods.rename-error.desktop.png",
+        "design/screenshots/methods.rename-error.mobile.png"
+      ]
+    },
+    {
+      "id": "S17.1",
+      "type": "subtask",
+      "key": "BREW-67",
+      "parent": "S17",
+      "summary": "Backend: GET /api/methods/{id}/brews",
+      "description": [
+        {
+          "file": "tickets/S17.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S17.2",
+      "type": "subtask",
+      "key": "BREW-68",
+      "parent": "S17",
+      "summary": "Rename step view in the methods dialog, e2e",
+      "description": [
+        {
+          "file": "tickets/S17.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S17.1"
+      ]
+    },
+    {
+      "id": "S18",
+      "type": "story",
+      "key": "BREW-69",
+      "summary": "Delete a method and protect \"Other\"",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S18.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R34"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R36"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R37"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B11"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B14"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B15"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B24"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S17"
+      ],
+      "attachments": [
+        "design/screenshots/methods.delete-confirm.desktop.png",
+        "design/screenshots/methods.delete-confirm.mobile.png",
+        "design/screenshots/methods.delete-error.desktop.png",
+        "design/screenshots/methods.delete-error.mobile.png",
+        "design/screenshots/methods.default.desktop.png",
+        "design/screenshots/methods.default.mobile.png"
+      ]
+    },
+    {
+      "id": "S18.1",
+      "type": "subtask",
+      "key": "BREW-70",
+      "parent": "S18",
+      "summary": "Backend: POST /api/methods/{id}/delete with reassignment and stale data",
+      "description": [
+        {
+          "file": "tickets/S18.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S18.2",
+      "type": "subtask",
+      "key": "BREW-71",
+      "parent": "S18",
+      "summary": "Methods dialog: delete a method without brews, protected \"Other\"",
+      "description": [
+        {
+          "file": "tickets/S18.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S18.1"
+      ]
+    },
+    {
+      "id": "S19",
+      "type": "story",
+      "key": "BREW-72",
+      "summary": "Reassign brews when deleting a method",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S19.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R35"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B14"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B21"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B23"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B24"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S18"
+      ],
+      "attachments": [
+        "design/screenshots/methods.delete-reassign.desktop.png",
+        "design/screenshots/methods.delete-reassign.mobile.png",
+        "design/screenshots/methods.delete-mixed.desktop.png",
+        "design/screenshots/methods.delete-mixed.mobile.png",
+        "design/screenshots/methods.deleting.desktop.png",
+        "design/screenshots/methods.deleting.mobile.png",
+        "design/screenshots/methods.delete-error.desktop.png",
+        "design/screenshots/methods.delete-error.mobile.png"
+      ]
+    },
+    {
+      "id": "S19.1",
+      "type": "subtask",
+      "key": "BREW-73",
+      "parent": "S19",
+      "summary": "Delete step view with per-brew targets and summary",
+      "description": [
+        {
+          "file": "tickets/S19.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S19.2",
+      "type": "subtask",
+      "key": "BREW-74",
+      "parent": "S19",
+      "summary": "Wire the delete step into the methods dialog, e2e",
+      "description": [
+        {
+          "file": "tickets/S19.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S19.1"
+      ]
+    },
+    {
+      "id": "S20",
+      "type": "story",
+      "key": "BREW-75",
+      "summary": "Methods changed elsewhere",
+      "storyPoints": 2,
+      "description": [
+        {
+          "file": "tickets/S20.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R38"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R40"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B14"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B24"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B25"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S19"
+      ],
+      "attachments": [
+        "design/screenshots/methods.gone.desktop.png",
+        "design/screenshots/methods.gone.mobile.png"
+      ]
+    },
+    {
+      "id": "S20.1",
+      "type": "subtask",
+      "key": "BREW-76",
+      "parent": "S20",
+      "summary": "Methods dialog: method gone (404) handling",
+      "description": [
+        {
+          "file": "tickets/S20.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S20.2",
+      "type": "subtask",
+      "key": "BREW-77",
+      "parent": "S20",
+      "summary": "Reload method data on close; open form switches a deleted method to \"Other\"",
+      "description": [
+        {
+          "file": "tickets/S20.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S20.1"
+      ]
+    },
+    {
+      "id": "S21",
+      "type": "story",
+      "key": "BREW-78",
+      "summary": "Clear answers for missing items and malformed requests",
+      "storyPoints": 1,
+      "description": [
+        {
+          "file": "tickets/S21.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R41"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S20",
+        "S9"
+      ]
+    },
+    {
+      "id": "S21.1",
+      "type": "subtask",
+      "key": "BREW-79",
+      "parent": "S21",
+      "summary": "Not-found and malformed-body contract on every endpoint and screen",
+      "description": [
+        {
+          "file": "tickets/S21.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S22",
+      "type": "story",
+      "key": "BREW-80",
+      "summary": "Use Brewlog on a phone",
+      "storyPoints": 3,
+      "description": [
+        {
+          "file": "tickets/S22.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R42"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S21"
+      ],
+      "attachments": [
+        "design/screenshots/landing.default.desktop.png",
+        "design/screenshots/landing.default.mobile.png",
+        "design/screenshots/brews.default.desktop.png",
+        "design/screenshots/brews.default.mobile.png",
+        "design/screenshots/brews.filters-sheet.desktop.png",
+        "design/screenshots/brews.filters-sheet.mobile.png",
+        "design/screenshots/brew-form.create.desktop.png",
+        "design/screenshots/brew-form.create.mobile.png",
+        "design/screenshots/brew-detail.default.desktop.png",
+        "design/screenshots/brew-detail.default.mobile.png",
+        "design/screenshots/methods.default.desktop.png",
+        "design/screenshots/methods.default.mobile.png"
+      ]
+    },
+    {
+      "id": "S22.1",
+      "type": "subtask",
+      "key": "BREW-81",
+      "parent": "S22",
+      "summary": "Breakpoint service and phone pagination",
+      "description": [
+        {
+          "file": "tickets/S22.1.md"
+        }
+      ],
+      "blockedBy": []
+    },
+    {
+      "id": "S22.2",
+      "type": "subtask",
+      "key": "BREW-82",
+      "parent": "S22",
+      "summary": "Bottom sheets for form, detail and methods on phones",
+      "description": [
+        {
+          "file": "tickets/S22.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S22.1"
+      ]
+    },
+    {
+      "id": "S22.3",
+      "type": "subtask",
+      "key": "BREW-83",
+      "parent": "S22",
+      "summary": "E2E checks of phone, tablet and desktop layouts",
+      "description": [
+        {
+          "file": "tickets/S22.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S22.2"
+      ]
+    },
+    {
+      "id": "S23",
+      "type": "story",
+      "key": "BREW-84",
+      "summary": "Page through a long journal",
+      "storyPoints": 1,
+      "description": [
+        {
+          "file": "tickets/S23.md"
+        },
+        {
+          "text": "## Acceptance criteria"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R43"
+        },
+        {
+          "text": "## Business rules"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B20"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Frontend"
+        }
+      ],
+      "blockedBy": [
+        "S22"
+      ],
+      "attachments": [
+        "design/screenshots/brews.many-pages.desktop.png",
+        "design/screenshots/brews.many-pages.mobile.png"
+      ]
+    },
+    {
+      "id": "S23.1",
+      "type": "subtask",
+      "key": "BREW-85",
+      "parent": "S23",
+      "summary": "Truncated desktop pagination with page gaps",
+      "description": [
+        {
+          "file": "tickets/S23.1.md"
+        }
+      ],
+      "blockedBy": []
+    }
+  ]
+}
