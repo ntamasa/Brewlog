@@ -83,6 +83,10 @@
         },
         {
           "from": "spec.md",
+          "heading": "Prerequisites"
+        },
+        {
+          "from": "spec.md",
           "heading": "Frontend"
         },
         {
@@ -167,7 +171,7 @@
       "type": "subtask",
       "key": "BREW-9",
       "parent": "S1",
-      "summary": "Docker Compose, Playwright e2e and e2e CI",
+      "summary": "Docker Compose, Playwright e2e, e2e CI and README",
       "description": [
         {
           "file": "tickets/S1.5.md"
