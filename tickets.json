@@ -17,7 +17,7 @@
         "heading": "Constraints"
       },
       {
-        "text": "## Technical design\n\nShared sections. Each story carries the sections only it needs (Frontend in every story with UI work; Repository and tooling, UI implementation, Deployment, CI in story S1 \"Landing page\"; Seams and tests in story S2 \"See my brews in the journal\")."
+        "text": "## Technical design\n\nShared sections. Each story carries the sections only it needs (Frontend in every story with UI work; Repository and tooling, Prerequisites, UI implementation, CI in story S1 \"Landing page\", and Deployment in its subtask \"Docker Compose, Playwright e2e, e2e CI and README\"; Seams and tests in story S2 \"See my brews in the journal\")."
       },
       {
         "from": "spec.md",
@@ -92,10 +92,6 @@
         {
           "from": "spec.md",
           "heading": "UI implementation"
-        },
-        {
-          "from": "spec.md",
-          "heading": "Deployment"
         },
         {
           "from": "spec.md",
@@ -175,6 +171,13 @@
       "description": [
         {
           "file": "tickets/S1.5.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Deployment"
         }
       ],
       "blockedBy": [
