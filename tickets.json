@@ -115,7 +115,8 @@
           "file": "tickets/S1.1.md"
         }
       ],
-      "blockedBy": []
+      "blockedBy": [],
+      "done": true
     },
     {
       "id": "S1.2",
