@@ -9,9 +9,9 @@
 
 ## Journal
 - **Search:** finds brews whose name contains the trimmed search text, ignoring case; % and _ match literally; an empty search means no search.
-- **Filters:** method (exact), roast level (exact) and minimum rating (rating ≥ 2, 3, 4 or 5) combine with each other, with search and with sort.
+- **Filters:** method (exact), roast level (exact) and minimum rating (rating ≥ 2, 3, 4 or 5) combine with each other, with search and with sort. No minimum rating is shown as "Any rating". The phone "Filters" badge counts the active search (non-blank), method, roast and minimum rating, is hidden at 0, and never counts sort.
 - **Sort:** Newest first (default): date descending, then most recently added. Oldest first: date ascending, then earliest added. Highest rated: rating descending, then newest date, then most recently added. Lowest rated: rating ascending, then newest date, then most recently added.
-- **Pagination:** 12 brews per page; any search, filter or sort change goes back to page 1; after a delete, the list stays on the same page, or goes to the previous one if the page became empty.
+- **Pagination:** 12 brews per page; any search, filter or sort change goes back to page 1; after a delete, the list stays on the same page, or goes to the previous one if the page became empty; with more than 7 pages, the desktop pagination shows the first and last page, the current page ±1 and a non-clickable "…" for each gap, but a gap of exactly one page shows that page's number.
 
 ## Brews
 - **Brew fields:** brew name, bean name, origin, brew method, roast level, rating and creation date are required; tasting notes are optional.

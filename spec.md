@@ -83,13 +83,13 @@ Deleting a brew needs a confirmation and is permanent; there is no undo.
 Search finds brews whose name contains the trimmed search text, ignoring case. The characters % and _ match literally. Empty search means no search. (from grilling)
 
 ### B18 — Filters
-The filters are method (exact method), roast level (exact) and minimum rating (rating ≥ value: 2, 3, 4 or 5). They combine with each other, with search and with sort (AND).
+The filters are method (exact method), roast level (exact) and minimum rating (rating ≥ value: 2, 3, 4 or 5). They combine with each other, with search and with sort (AND). No minimum rating is shown as "Any rating". The phone "Filters" badge counts the active search (non-blank after trimming), method, roast and minimum rating (0–4), is hidden at 0, and never counts sort. (from grilling)
 
 ### B19 — Sort
 Newest first (default): creation date descending, then most recently added first. Oldest first: date ascending, then earliest added first. Highest rated: rating descending, then newest date, then most recently added. Lowest rated: rating ascending, then newest date, then most recently added. (from grilling)
 
 ### B20 — Pagination
-The journal shows 12 brews per page. Any change to search, filter or sort goes back to page 1. After a delete, the list reloads on the same page, or on the previous page if the current page became empty. (from grilling)
+The journal shows 12 brews per page. Any change to search, filter or sort goes back to page 1. After a delete, the list reloads on the same page, or on the previous page if the current page became empty. With 7 or fewer pages, the desktop pagination shows every page number; with more than 7, it shows the first page, the last page, the current page ±1 and a non-clickable "…" for each gap, except that a gap of exactly one page shows that page's number. (from grilling)
 
 ### B21 — Method order
 The brew form's method dropdown and the journal's Method filter list methods A–Z (ignoring case), with "Other" last. The methods dialog lists the predefined methods in the fixed order of B10, then custom methods A–Z, then "Other". A renamed predefined method keeps its place in that order. (from grilling)
@@ -134,7 +134,7 @@ Example data: journal with 41 brews; today is 1 Nov 2026 in the browser and on t
 - **Screens:** `brews` (filtered)
 
 ### R6 — Filters combine
-**Given** 3 brews that are Pour Over, Light and rated 4 or more, **when** the user picks Method "Pour Over", Roast "Light", Min. rating "4+" and Sort "Highest rated", **then** exactly those 3 show, highest rating first. The count reads "3 of 41 brews", the footer reads "Showing 1–3 of 3" with no pagination, there are chips for method, roast and min rating (none for sort), and the phone "Filters" badge reads "3". Chip × removes only its filter. "Clear all" resets search and filters but keeps the sort. With exactly 1 match, the count reads "1 of 41 brews" and the phone sheet button reads "Show 1 brew".
+**Given** 3 brews that are Pour Over, Light and rated 4 or more, **when** the user picks Method "Pour Over", Roast "Light", Min. rating "4+" and Sort "Highest rated", **then** exactly those 3 show, highest rating first. The count reads "3 of 41 brews", the footer reads "Showing 1–3 of 3" with no pagination, there are chips for method, roast and min rating (none for sort), and the phone "Filters" badge reads "3". With the search "kenya" added, the badge reads "4"; with only the sort changed, the badge is hidden. Chip × removes only its filter. "Clear all" resets search and filters but keeps the sort. With exactly 1 match, the count reads "1 of 41 brews" and the phone sheet button reads "Show 1 brew".
 - **Rules:** B18, B19, B23
 - **Screens:** `brews` (filtered, filters-sheet)
 
@@ -165,9 +165,9 @@ Example data: journal with 41 brews; today is 1 Nov 2026 in the browser and on t
 - **Screens:** `brew-form` (create, saving), `brews` (saved)
 
 ### R13 — Required fields
-**Given** an empty create form except the date, **when** the user clicks "Add to journal", **then** nothing is sent, the banner reads "6 fields need your attention" with links to each invalid field, focus moves to the banner, and the field errors read "Enter a brew name", "Enter a bean name", "Enter where the beans are from", "Choose a brew method", "Choose a roast level" and "Choose a rating from 1 to 5 beans". A cleared date gives "Choose a date". After the first submit, a touched field re-validates on blur or change. The API rejects a missing or blank field with 400 `{field, code: "REQUIRED"}` (fields `name`, `beanName`, `origin`, `methodId`, `roast`, `rating`, `brewDate`) and saves nothing.
+**Given** an empty create form except the date, **when** the user clicks "Add to journal", **then** nothing is sent, the banner reads "6 fields need your attention" (with exactly 1 invalid field: "1 field needs your attention") with links to each invalid field, focus moves to the banner, and the field errors read "Enter a brew name", "Enter a bean name", "Enter where the beans are from", "Choose a brew method", "Choose a roast level" and "Choose a rating from 1 to 5 beans". A cleared date gives "Choose a date". After the first submit, a touched field re-validates on blur or change. The API rejects a missing or blank field with 400 `{field, code: "REQUIRED"}` (fields `name`, `beanName`, `origin`, `methodId`, `roast`, `rating`, `brewDate`) and saves nothing.
 - **Rules:** B2, B3
-- **Screens:** `brew-form` (validation-error)
+- **Screens:** `brew-form` (validation-error, one-error)
 
 ### R14 — Trimming
 **Given** name "  Kenyan Morning ", bean "   " and notes "   ", **when** saved, **then** the bean gets "Enter a bean name" (API: `beanName` REQUIRED). After fixing the bean, the name is stored as "Kenyan Morning" and the notes as null.
@@ -302,6 +302,16 @@ Example data: journal with 41 brews; today is 1 Nov 2026 in the browser and on t
 **Given** a 390 px viewport, **then** the landing stacks, the journal shows 1 card column, Search plus a "Filters" button (opening the "Filter & sort" sheet with "Show 3 brews"), the FAB "Add brew" and pagination "‹ PAGE 1 OF 4 ›". The form, detail and methods open as bottom sheets. **Given** 1440 px, **then** the journal shows 3 columns, the toolbar in one row, "+ Add brew" in the header and the form as a 520 px right drawer. At 768–1119 px it shows 2 columns.
 - **Screens:** `landing` (default), `brews` (default, filters-sheet), `brew-form` (create), `brew-detail` (default), `methods` (default)
 
+### R43 — Many pages
+**Given** 240 brews and a 1440 px viewport, **when** the user is on page 10, **then** the count reads "240 brews", the footer reads "Showing 109–120 of 240" and the pagination reads ‹ 1 … 9 10 11 … 20 ›, where "…" is not clickable. For 20 pages, page 1 shows "1 2 … 20", page 4 shows "1 2 3 4 5 … 20" and page 20 shows "1 … 19 20". **Given** exactly 7 pages, **then** all of 1–7 show with no "…". **Given** a 390 px viewport on page 10 of 20, **then** the pagination reads ‹ "PAGE 10 OF 20" ›.
+- **Rules:** B20
+- **Screens:** `brews` (many-pages)
+
+### R44 — Minimum rating bean picker
+**Given** the phone "Filter & sort" sheet with no minimum rating, **then** 1 bean is filled and the legend reads "Any rating". **When** the user taps bean 4, **then** 4 beans are filled, the legend reads "4+ beans" and the query gets `minRating=4`; bean 5 gives "5 beans only" and `minRating=5`. **When** the user then taps bean 1, **then** `minRating` is removed from the query, 1 bean is filled and the legend reads "Any rating". The beans' screen-reader labels read "Any rating", "At least 2 beans", "At least 3 beans", "At least 4 beans" and "At least 5 beans". `minRating=1` is never sent.
+- **Rules:** B18
+- **Screens:** `brews` (filters-sheet, filters-sheet-any)
+
 ## Technical design
 
 ### Overview
@@ -352,7 +362,7 @@ Package `com.brewlog`, by layer, under `backend/src/main/java/com/brewlog/`:
 Under `frontend/src/app/`, by feature:
 - `app.routes.ts`: `''` → `LandingPage`, `'journal'` → `JournalPage`, `'**'` → redirect `''`. `app.config.ts`: router, `provideHttpClient`, `provideDateFnsAdapter` with formats parse/display `d MMM yyyy`, `MAT_DATE_LOCALE` enGB, an icon registration `provideAppInitializer`.
 - `core/`: `models.ts` (`Brew`, `BrewMethod`, `BrewPage`, `BrewQuery`, `Roast`, `SortKey`, `ApiFieldError`); `brew-api.ts` (`BrewApi`: `list(query)`, `create(body)`, `patch(id, changes)`, `delete(id)`); `method-api.ts` (`MethodApi`: `list()`, `create(name)`, `rename(id, name)`, `brewsOf(id)`, `delete(id, reassignments)`); `api-error.ts` (`parseApiError(err): {kind: 'fields'|'notFound'|'protected'|'network', fields, code}`); `error-messages.ts` (field + code → exact message from the requirements); `format.ts` (`formatDate`, `brewCount(n)` → "1 brew"/"n brews", `methodsAz`, `methodsDialogOrder`); `toast.ts` (`Toaster.show(text)`: MatSnackBar, 4000 ms).
-- `journal/`: `journal.store.ts` (`JournalStore` signalStore: `query`, `items`, `page`, `totalPages`, `matchingCount`, `totalCount`, `status: 'loading'|'ready'|'error'`, `highlightId`; `rxMethod` load with 250 ms debounce on `q`; syncs `query` with the URL query params `q`, `methodId`, `roast`, `minRating`, `sort`, `page`); `journal-page`, `journal-toolbar`, `filters-sheet` (MatBottomSheet), `filter-chips`, `brew-card` (mat-card), `pagination` (custom numbered), `brew-detail-dialog` (MatDialog / MatBottomSheet), `brew-delete-dialog` (MatDialog).
+- `journal/`: `journal.store.ts` (`JournalStore` signalStore: `query`, `items`, `page`, `totalPages`, `matchingCount`, `totalCount`, `status: 'loading'|'ready'|'error'`, `highlightId`, computed `activeFilterCount` for the phone badge per B18; `rxMethod` load with 250 ms debounce on `q`; syncs `query` with the URL query params `q`, `methodId`, `roast`, `minRating`, `sort`, `page`); `journal-page`, `journal-toolbar`, `filters-sheet` (MatBottomSheet; its min-rating `bean-rating` input maps bean 1 to `minRating` null), `filter-chips`, `brew-card` (mat-card), `pagination` (custom numbered; `pageItems(page, totalPages): (number | 'gap')[]` in `pagination-items.ts` builds the desktop list per B20), `brew-detail-dialog` (MatDialog / MatBottomSheet), `brew-delete-dialog` (MatDialog).
 - `brew-form/`: `brew-form.ts` (reactive form, typed; desktop in a `mat-sidenav` `mode="over" position="end"` inside the journal page, phone in a MatBottomSheet); `brew-validators.ts` (client copies of B3–B8); `method-select` (mat-select with icons + "Add new method…" / "Manage methods…" options); `diff.ts` (`changedFields(original, value)` → the PATCH body, with emptied notes → null).
 - `methods/`: `method.store.ts` (`MethodStore`: `methods`, `status`, `load`, `add`, `rename`, `remove`); `methods-dialog` with step components `rename-step` and `delete-step` (MatDialog / MatBottomSheet on phone).
 - `shared/`: `bean-rating` (display + ControlValueAccessor input, custom), `method-icon` (mat-icon `svgIcon` from `iconKey`).
@@ -382,7 +392,7 @@ Under `frontend/src/app/`, by feature:
 | Backend unit: `BrewValidator`, `BrewService`, `BrewMethodService`, `BrewSort` | R13–R18, R23, R24, R36, B19 | JUnit 5, fixed `Clock` (2026-11-01) | repositories (Mockito) |
 | Backend integration: HTTP API via MockMvc | R2, R5–R10, R12–R19, R22–R25, R27–R30, R32–R38, R41 | `@SpringBootTest` + Testcontainers postgres:17 + Liquibase, data reset per test, fixed `Clock` | nothing |
 | Frontend unit: `BrewApi`, `MethodApi`, `parseApiError`, `error-messages`, `format`, `diff`, `brew-validators`, stores | R5–R10, R13–R23, R29–R39 | Vitest + TestBed, `HttpTestingController` | HTTP; stores get fake APIs |
-| Frontend unit: components (card, pagination, bean-rating, toolbar, chips, dialogs, method steps) | R2–R4, R11, R21, R26–R28, R33–R35, R37, R39 | TestBed + Material harnesses | stores faked |
+| Frontend unit: components (card, pagination, bean-rating, toolbar, chips, dialogs, method steps) and `pageItems` | R2–R4, R6, R11, R13, R43, R44, R21, R26–R28, R33–R35, R37, R39 | TestBed + Material harnesses | stores faked |
 | Frontend integration: `JournalPage`, `BrewForm`, `MethodsDialog` with real stores | R2, R6, R8, R12, R16, R19, R25, R35, R40 | TestBed, real stores and APIs, harnesses | HTTP (`HttpTestingController`) |
 | E2E (Playwright, `desktop` + `phone`) | (1) R1; (2) R12, R16; (3) R5–R8, R22, R27; (4) R30, R33, R35 | compose stack with a fresh volume, real browser | nothing |
 
