@@ -319,6 +319,8 @@ Three deployables in one repo: `backend/` (Spring Boot REST API, Liquibase-manag
 
 ### Repository and tooling
 - `backend/`: Gradle wrapper, Kotlin DSL (`settings.gradle.kts`, `build.gradle.kts`), Java toolchain 25 with the foojay resolver plugin, Spring Boot 4.2. Dependencies: web MVC, data JPA, Liquibase, PostgreSQL driver, Testcontainers PostgreSQL, spring-boot-testcontainers. Spotless with palantir-java-format.
+- `backend/` Gradle wrapper: Gradle 9.9.2. `backend/gradle/wrapper/gradle-wrapper.properties` has `distributionUrl=https\://services.gradle.org/distributions/gradle-9.9.2-bin.zip` and `distributionSha256Sum=971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b`; its other lines stay as the wrapper task writes them. There is no `gradle` on PATH, so the wrapper is made with the official distribution: download `https://services.gradle.org/distributions/gradle-9.9.2-bin.zip` to a temp dir outside the repo, check that its SHA-256 equals the published `gradle-9.9.2-bin.zip.sha256` (the value above), unzip it, run its `bin/gradle` (`bin\gradle.bat` in PowerShell) `wrapper --gradle-version 9.9.2 --distribution-type bin --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b` in `backend/`, then delete the temp dir. Result: `./gradlew --version` prints `Gradle 9.9.2`, and `backend/gradle/wrapper/gradle-wrapper.jar` has the SHA-256 `621008afc4f5d59357fcf06ffa644dd5aade5e091bdc363742710445f73cdaf8` (published `gradle-9.9.2-wrapper.jar.sha256`). `backend/gradlew` is committed executable (`git update-index --chmod=+x backend/gradlew`).
+- `backend/.gitattributes`: `/gradlew text eol=lf`, `*.bat text eol=crlf`, `*.jar binary`.
 - `.nvmrc` (root): `24`, the single source of the Node.js major for CI.
 - `frontend/`: Angular 22 (`npx @angular/cli@22 new`), standalone components, zoneless, SCSS, Vitest. `package.json` `engines.node`: `^24.15.0`. Dependencies: `@angular/material`, `@angular/cdk`, `@angular/material-date-fns-adapter`, `date-fns`, `@ngrx/signals`, angular-eslint, Prettier. Scripts: `start` (with `proxy.conf.json` sending `/api` to `http://localhost:8080`), `test`, `lint`, `format`, `format:check`, `build`.
 - `frontend/` scaffold: every file `ng new` generates stays as generated, except that `frontend/README.md` and `frontend/src/app/app.spec.ts` are deleted and the root `App` (`frontend/src/app/app.ts`, `app.html`) renders only `<router-outlet />`, with no `title`. The router tests live in `frontend/src/app/app.routes.spec.ts`. After scaffolding and these edits, `npm run format` runs once so every file passes `format:check`.
@@ -387,7 +389,7 @@ Under `frontend/src/app/`, by feature:
 
 ### Deployment
 - `docker-compose.yml` (root): `db` (postgres:17, db/user/password `brewlog`, port 5432, volume `brewlog-data`, healthcheck), `backend` (build `./backend`, `DB_URL=jdbc:postgresql://db:5432/brewlog`, depends on a healthy db), `frontend` (build `./frontend`, port `8081:80`).
-- `backend/Dockerfile`: Gradle JDK 25 build stage → `eclipse-temurin:25-jre`, port 8080.
+- `backend/Dockerfile`: build stage `gradle:9.9.2-jdk25` (its Gradle version always equals the wrapper's) running `gradle bootJar --no-daemon` → `eclipse-temurin:25-jre`, port 8080.
 - `frontend/Dockerfile`: `node:24` build → `nginx:1.29-alpine` with `frontend/nginx.conf` (`try_files $uri /index.html`; `location /api/ { proxy_pass http://backend:8080; }`).
 
 ### CI
@@ -433,7 +435,8 @@ sort NEWEST: brewDate desc, createdAt desc, id desc; OLDEST: all asc; HIGHEST: r
 - JDK 25 isn't installed locally: the Gradle toolchain downloads it (foojay); CI uses setup-java 25.
 - Testcontainers and E2E need a running Docker engine (Docker Desktop locally, see Prerequisites); tests fail fast with a clear message otherwise.
 - A Node older than 24.15.0 makes the Angular CLI refuse to run; `engines.node` makes npm warn on a wrong version.
-- Line endings: on Windows with git `core.autocrlf=true` (no `.gitattributes`), checkouts and `ng new` output are CRLF, while CI checks out LF. `endOfLine: "auto"` in `frontend/.prettierrc` keeps `format:check` passing in both.
+- Line endings: on Windows with git `core.autocrlf=true` (no root `.gitattributes`), checkouts and `ng new` output are CRLF, while CI checks out LF. `endOfLine: "auto"` in `frontend/.prettierrc` keeps `format:check` passing in both. `backend/.gitattributes` keeps `backend/gradlew` LF on every checkout, so it also runs in Linux containers.
+- The Gradle version lives in two places, `backend/gradle/wrapper/gradle-wrapper.properties` (with its SHA-256) and the `backend/Dockerfile` build-stage tag: an upgrade changes both, regenerating the wrapper with the new version and sum.
 - Matching the ivory design with Material needs disciplined theming. Overrides are kept in `theme.scss` via the documented `mat.*-overrides` mixins, never `::ng-deep`.
 - Parallel saves of the same name: the unique indexes on `lower(name)` are the last guard and are mapped to DUPLICATE.
 - Time zones: the server allows today + 1 (B8); the client blocks after the browser's today.
