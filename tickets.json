@@ -396,7 +396,8 @@
       "attachments": [
         "design/screenshots/brews.default.desktop.png",
         "design/screenshots/brews.default.mobile.png"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S2.1",
@@ -537,7 +538,8 @@
       ],
       "blockedBy": [
         "S2.8"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S3",
