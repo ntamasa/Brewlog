@@ -13,7 +13,7 @@
       <p class="t-caps eyebrow">Tasting journal</p>
       <h1 class="t-headline-lg">Your brews</h1>
     </div>
-    <p class="muted" aria-live="polite">{{ countText() }}</p>
+    <p class="count t-body-sm" aria-live="polite">{{ countText() }}</p>
   </div>
 
   <div class="brew-grid">
@@ -23,7 +23,7 @@
   </div>
 
   <div class="list-foot">
-    <p class="muted">{{ footerText() }}</p>
+    <p class="t-body-sm">{{ footerText() }}</p>
     <app-pagination
       [page]="store.page()"
       [totalPages]="store.totalPages()"

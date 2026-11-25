@@ -27,6 +27,10 @@
   margin-bottom: var(--spacing-sm);
 }
 
+.count {
+  color: var(--color-on-surface-muted);
+}
+
 .brew-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -37,8 +41,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-md);
-  padding: var(--spacing-xl) 0 var(--spacing-3xl);
+  gap: var(--spacing-lg);
+  padding: var(--spacing-2xl) 0 var(--spacing-4xl);
+}
+
+.list-foot .t-body-sm {
+  color: var(--color-on-surface-muted);
 }
 
 @media (max-width: 1119px) {
@@ -55,5 +63,15 @@
   .brew-grid {
     grid-template-columns: 1fr;
     gap: var(--spacing-md);
+  }
+
+  .list-foot {
+    flex-direction: column-reverse;
+    padding-bottom: calc(var(--spacing-4xl) + var(--spacing-xl));
+    gap: var(--spacing-md);
+  }
+
+  .list-foot app-pagination {
+    width: 100%;
   }
 }
