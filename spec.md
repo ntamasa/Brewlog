@@ -366,9 +366,10 @@ Errors are Spring `ProblemDetail` with extra properties: 400 `errors: [{field, c
 ### Backend
 Package `com.brewlog`, by layer, under `backend/src/main/java/com/brewlog/`:
 - `BrewlogApplication`; `config/ClockConfig` (`@Bean Clock clock()` = system default zone, replaced in tests).
-- `entity/`: `Brew`, `BrewMethod` (field `isProtected` → column `is_protected`), `Roast` enum.
+- `entity/`: `Brew`, `BrewMethod` (field `isProtected` → column `is_protected`), `Roast` enum. Both entities keep their `protected` no-arg constructor for JPA and get (from grilling): `Brew`: `public Brew(String name, String beanName, String origin, BrewMethod method, Roast roast, int rating, LocalDate brewDate, String notes)` and the setters `setName(String)`, `setBeanName(String)`, `setOrigin(String)`, `setMethod(BrewMethod)`, `setRoast(Roast)`, `setRating(int)`, `setBrewDate(LocalDate)`, `setNotes(String)` (rating stored as `short`; no setter for `id` or `createdAt`, B9). `BrewMethod`: `public BrewMethod(String name, String iconKey, boolean predefined, boolean isProtected, Integer position)` and `setName(String)`; nothing else on a method ever changes.
 - `repository/`: `BrewRepository extends JpaRepository<Brew, Long>, JpaSpecificationExecutor<Brew>` (`existsByNameIgnoreCaseAndIdNot`, `findByMethodId`, `countByMethodId`); `BrewMethodRepository` (`existsByNameIgnoreCaseAndIdNot`, `findByIsProtectedTrue`, `findAllWithBrewCount()` JPQL projection).
 - `service/`: `BrewService` (`BrewPage list(BrewQuery)`, `BrewResponse create(BrewRequest)`, `BrewResponse patch(long id, JsonNode patch)`, `void delete(long id)`); `BrewValidator` (`List<FieldErrorDto> validate(BrewDraft, Long selfId)`: normalises (B3) and checks B4–B8 plus method existence); `BrewSpecifications` (`nameContains`, `methodIs`, `roastIs`, `ratingAtLeast`); `BrewSort` (`Sort toSort(SortKey)`); `BrewMethodService` (`list`, `create`, `rename(long id, String name)`, `brewsOf(long id)`, `DeleteMethodResponse delete(long id, DeleteMethodRequest)`).
+- Entity mapping (from grilling): `BrewService.create` and `patch` are `@Transactional` and map the validated `BrewDraft` onto the entity in `BrewService` itself, with the method from `brewMethodRepository.getReferenceById(methodId)` (the transaction lets the response load the method's name and icon key, since open-in-view is off): `create` → `new Brew(…)` with the draft's values, `patch` → the 8 setters with the draft's values; then `saveAndFlush`. `BrewMethodService.create` → `new BrewMethod(name, "cup", false, false, null)` (B22); `rename` → `setName(name)`; `delete` → `brew.setMethod(target)` for each reassigned brew.
 - `controller/`: `BrewController`, `BrewMethodController`; `BrewQueryParams` binds and validates the list params (INVALID).
 - `dto/`: records `BrewRequest`, `BrewResponse`, `MethodRef`, `BrewPage`, `BrewQuery`, `SortKey`, `MethodRequest`, `MethodResponse` (`@JsonProperty("protected")`), `MethodBrewResponse`, `DeleteMethodRequest`, `Reassignment`, `DeleteMethodResponse`, `FieldErrorDto(String field, ErrorCode code)`.
 - `exception/`: `ErrorCode` enum, `ValidationException(List<FieldErrorDto>)`, `NotFoundException(ErrorCode)`, `ProtectedMethodException`, `ApiExceptionHandler extends ResponseEntityExceptionHandler` (maps these exceptions plus `DataIntegrityViolationException` on `ux_brew_name` / `ux_brew_method_name` to DUPLICATE).
@@ -441,13 +442,14 @@ patch(id, node):                         // node = JsonNode (Jackson 3, tools.ja
   brew = find(id) or 404 BREW_NOT_FOUND
   draft = BrewDraft.from(brew); for each field present in node: draft.set(field, node.get(field))  // null allowed
   errors = validator.validate(draft, selfId=id); if any → 400
-  apply; save; on unique violation → 400 name DUPLICATE
+  method = getReferenceById(draft.methodId); brew.setName(draft.name) … brew.setMethod(method) … (all 8 setters)
+  saveAndFlush(brew); on unique violation → 400 name DUPLICATE
 
 delete method M (transaction):
   M = find or 404; M.isProtected → 409 PROTECTED
   if any r.methodId == M.id → 400 reassignments INVALID
   other = findByIsProtectedTrue(); targets = existing ids among r.methodId
-  for b in brewRepo.findByMethodId(M.id): b.method = r[b.id] in targets ? that : other
+  for b in brewRepo.findByMethodId(M.id): b.setMethod(r[b.id] in targets ? that : other)
   delete M; return count of those brews
 
 nameContains(q): lower(name) LIKE '%' + escape(lower(q)) + '%' ESCAPE '\'   // escape \ % _
