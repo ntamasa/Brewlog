@@ -86,10 +86,8 @@ class BrewListIT extends IntegrationTest {
     void emptyJournalListsNothing() throws Exception {
         mvc.perform(get("/api/brews"))
                 .andExpect(status().isOk())
-                .andExpect(
-                        content().json(
-                                "{\"items\":[],\"page\":1,\"totalPages\":0,\"matchingCount\":0,\"totalCount\":0}",
-                                true));
+                .andExpect(content()
+                        .json("{\"items\":[],\"page\":1,\"totalPages\":0,\"matchingCount\":0,\"totalCount\":0}", true));
     }
 
     @Test
@@ -111,7 +109,9 @@ class BrewListIT extends IntegrationTest {
     private void insertNumberedBrews(int count) {
         LocalDate first = LocalDate.parse("2026-09-01");
         for (int i = 1; i <= count; i++) {
-            TestData.brew(String.format("Brew %02d", i)).date(first.plusDays(i).toString()).insert(jdbc);
+            TestData.brew(String.format("Brew %02d", i))
+                    .date(first.plusDays(i).toString())
+                    .insert(jdbc);
         }
     }
 
