@@ -11,7 +11,9 @@ describe('BrewApi.list', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(BrewApi);
     http = TestBed.inject(HttpTestingController);
   });
@@ -42,7 +44,9 @@ describe('BrewApi.list', () => {
       })
       .subscribe();
 
-    http.expectOne('/api/brews?q=kenya&methodId=2&roast=LIGHT&minRating=4&sort=HIGHEST&page=2').flush(EMPTY_PAGE);
+    http
+      .expectOne('/api/brews?q=kenya&methodId=2&roast=LIGHT&minRating=4&sort=HIGHEST&page=2')
+      .flush(EMPTY_PAGE);
   });
 
   it('sends no q parameter when the search is only spaces', () => {
