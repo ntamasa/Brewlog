@@ -35,7 +35,9 @@ async function iconNames(loader: HarnessLoader): Promise<string[]> {
 
 describe('BrewCard', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
   });
 
   it('shows the method, brew name, bean and origin, rating, roast, notes and date', async () => {

@@ -1,0 +1,5 @@
+<span class="rating" role="img" [attr.aria-label]="label()">
+  @for (filled of beans(); track $index) {
+    <mat-icon class="bean" [class.off]="!filled" [svgIcon]="filled ? 'bean-fill' : 'bean'" />
+  }
+</span>

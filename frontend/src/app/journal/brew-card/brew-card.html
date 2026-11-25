@@ -1,0 +1,33 @@
+<mat-card class="brew-card" [class.brew-card-highlight]="highlighted()">
+  <div class="card-top">
+    <div class="method">
+      <app-method-icon [iconKey]="brew().method.iconKey" />
+      <span class="t-caps">{{ brew().method.name }}</span>
+    </div>
+  </div>
+  <div>
+    <h3>{{ brew().name }}</h3>
+    <p class="t-body-sm muted">{{ brew().beanName }} · {{ brew().origin }}</p>
+  </div>
+  <div class="meta-row">
+    <app-bean-rating [value]="brew().rating" />
+    <span class="roast-tag t-caps">
+      <span
+        class="swatch"
+        aria-hidden="true"
+        [class.swatch-light]="brew().roast === 'LIGHT'"
+        [class.swatch-medium]="brew().roast === 'MEDIUM'"
+        [class.swatch-dark]="brew().roast === 'DARK'"
+      ></span>
+      {{ brew().roast }}
+    </span>
+  </div>
+  @if (brew().notes !== null) {
+    <p class="notes">{{ brew().notes }}</p>
+  } @else {
+    <p class="notes empty">No tasting notes</p>
+  }
+  <p class="date t-body-sm muted">
+    <time>{{ date() }}</time>
+  </p>
+</mat-card>

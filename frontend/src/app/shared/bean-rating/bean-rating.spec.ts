@@ -13,7 +13,9 @@ async function iconNames(loader: HarnessLoader): Promise<string[]> {
 
 describe('BeanRating', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
   });
 
   it('fills as many beans as the value and labels the score', async () => {
