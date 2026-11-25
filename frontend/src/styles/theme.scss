@@ -1,0 +1,224 @@
+@use '@angular/material' as mat;
+@use './theme-colors';
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: theme-colors.$primary-palette,
+        tertiary: theme-colors.$tertiary-palette,
+        theme-type: light,
+      ),
+      typography: (
+        plain-family: Inter,
+        brand-family: 'Cormorant Garamond',
+      ),
+      density: 0,
+    )
+  );
+
+  @include mat.theme-overrides(
+    (
+      primary: var(--color-primary),
+      on-primary: var(--color-on-primary),
+      on-tertiary: var(--color-on-primary),
+      on-error: var(--color-on-primary),
+      inverse-on-surface: var(--color-on-primary),
+      secondary: var(--color-secondary),
+      tertiary: var(--color-tertiary),
+      tertiary-container: var(--color-tertiary-soft),
+      on-tertiary-container: var(--color-on-surface),
+      on-background: var(--color-on-surface),
+      on-surface: var(--color-on-surface),
+      background: var(--color-neutral),
+      surface: var(--color-surface),
+      surface-container-lowest: var(--color-surface),
+      surface-container-low: var(--color-surface),
+      surface-container: var(--color-surface),
+      surface-container-high: var(--color-surface),
+      surface-container-highest: var(--color-surface),
+      on-surface-variant: var(--color-on-surface-muted),
+      outline: var(--color-outline),
+      outline-variant: var(--color-outline),
+      error: var(--color-error),
+      on-error-container: var(--color-error),
+      error-container: var(--color-error-soft),
+      inverse-surface: var(--color-primary),
+    )
+  );
+
+  @include mat.button-overrides(
+    (
+      filled-container-shape: var(--radius-sm),
+      outlined-container-shape: var(--radius-sm),
+      text-container-shape: var(--radius-sm),
+      filled-container-height: var(--spacing-control-height),
+      outlined-container-height: var(--spacing-control-height),
+      text-container-height: var(--spacing-control-height),
+      filled-label-text-size: var(--text-label-md),
+      outlined-label-text-size: var(--text-label-md),
+      text-label-text-size: var(--text-label-md),
+      filled-label-text-weight: var(--font-weight-label-md),
+      outlined-label-text-weight: var(--font-weight-label-md),
+      text-label-text-weight: var(--font-weight-label-md),
+      filled-label-text-tracking: normal,
+      outlined-label-text-tracking: normal,
+      text-label-text-tracking: normal,
+      filled-horizontal-padding: var(--spacing-lg),
+      outlined-horizontal-padding: var(--spacing-lg),
+      text-horizontal-padding: var(--spacing-md),
+      filled-container-color: var(--color-primary),
+      filled-label-text-color: var(--color-on-primary),
+      outlined-outline-color: var(--color-outline),
+      outlined-label-text-color: var(--color-on-surface),
+      text-label-text-color: var(--color-on-surface),
+    )
+  );
+
+  @include mat.icon-button-overrides(
+    (
+      container-shape: var(--radius-sm),
+      state-layer-size: var(--spacing-control-height),
+      icon-size: 20px,
+      icon-color: var(--color-on-surface),
+      state-layer-color: var(--color-on-surface),
+    )
+  );
+
+  @include mat.fab-overrides(
+    (
+      container-color: var(--color-primary),
+      foreground-color: var(--color-on-primary),
+      state-layer-color: var(--color-on-primary),
+      container-shape: var(--radius-full),
+      container-elevation-shadow: 0 16px 40px -16px
+        color-mix(in srgb, var(--color-primary) 60%, transparent),
+      hover-container-elevation-shadow: 0 16px 40px -16px
+        color-mix(in srgb, var(--color-primary) 60%, transparent),
+      focus-container-elevation-shadow: 0 16px 40px -16px
+        color-mix(in srgb, var(--color-primary) 60%, transparent),
+      pressed-container-elevation-shadow: 0 16px 40px -16px
+        color-mix(in srgb, var(--color-primary) 60%, transparent),
+    )
+  );
+
+  @include mat.form-field-overrides(
+    (
+      outlined-outline-color: var(--color-outline),
+      outlined-hover-outline-color: var(--color-outline-strong),
+      outlined-focus-outline-color: var(--color-tertiary),
+      outlined-container-shape: var(--radius-sm),
+      outlined-input-text-color: var(--color-on-surface),
+      outlined-input-text-placeholder-color: var(--color-on-surface-muted),
+      outlined-label-text-color: var(--color-on-surface-muted),
+      outlined-focus-label-text-color: var(--color-tertiary),
+      error-text-color: var(--color-error),
+      container-text-size: var(--text-body-md),
+    )
+  );
+
+  @include mat.select-overrides(
+    (
+      enabled-trigger-text-color: var(--color-on-surface),
+      disabled-trigger-text-color: var(--color-on-surface-muted),
+      enabled-arrow-color: var(--color-on-surface-muted),
+      focused-arrow-color: var(--color-tertiary),
+      panel-background-color: var(--color-surface),
+    )
+  );
+
+  @include mat.dialog-overrides(
+    (
+      container-color: var(--color-surface),
+      container-shape: var(--radius-md),
+      subhead-color: var(--color-on-surface),
+      supporting-text-color: var(--color-on-surface-muted),
+    )
+  );
+
+  @include mat.bottom-sheet-overrides(
+    (
+      container-background-color: var(--color-surface),
+      container-shape: var(--radius-md),
+    )
+  );
+
+  @include mat.snack-bar-overrides(
+    (
+      container-color: var(--color-primary),
+      supporting-text-color: var(--color-on-primary),
+      container-shape: var(--radius-sm),
+    )
+  );
+
+  @include mat.card-overrides(
+    (
+      outlined-container-color: var(--color-surface),
+      outlined-outline-color: var(--color-outline),
+      outlined-container-shape: var(--radius-md),
+    )
+  );
+
+  @include mat.button-toggle-overrides(
+    (
+      shape: var(--radius-sm),
+      background-color: var(--color-surface),
+      divider-color: var(--color-outline),
+      text-color: var(--color-on-surface),
+      selected-state-background-color: var(--color-primary),
+      selected-state-text-color: var(--color-on-primary),
+    )
+  );
+
+  @include mat.datepicker-overrides(
+    (
+      calendar-date-selected-state-background-color: var(--color-primary),
+      calendar-date-selected-state-text-color: var(--color-on-primary),
+    )
+  );
+
+  @include mat.menu-overrides(
+    (
+      container-color: var(--color-surface),
+      container-shape: var(--radius-sm),
+    )
+  );
+
+  @include mat.sidenav-overrides(
+    (
+      container-background-color: var(--color-surface),
+    )
+  );
+}
+
+.btn-accent {
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--color-tertiary),
+      filled-label-text-color: var(--color-on-primary),
+    )
+  );
+}
+
+.btn-danger {
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--color-error),
+      filled-label-text-color: var(--color-on-primary),
+    )
+  );
+}
+
+.btn-secondary {
+  background-color: var(--color-surface);
+}
+
+.btn-on-scrim {
+  @include mat.button-overrides(
+    (
+      outlined-label-text-color: var(--color-on-scrim),
+      outlined-outline-color: color-mix(in srgb, var(--color-on-scrim) 55%, transparent),
+      outlined-state-layer-color: var(--color-on-scrim),
+    )
+  );
+}
