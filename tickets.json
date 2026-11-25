@@ -473,7 +473,8 @@
       ],
       "blockedBy": [
         "S2.4"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S2.6",
@@ -488,6 +489,37 @@
       ],
       "blockedBy": [
         "S2.5"
+      ],
+      "done": true
+    },
+    {
+      "id": "S2.7",
+      "type": "subtask",
+      "key": "BREW-96",
+      "parent": "S2",
+      "summary": "Fix: current page stays an espresso circle with its ivory number on hover",
+      "description": [
+        {
+          "file": "tickets/S2.7.md"
+        }
+      ],
+      "blockedBy": [
+        "S2.6"
+      ]
+    },
+    {
+      "id": "S2.8",
+      "type": "subtask",
+      "key": "BREW-97",
+      "parent": "S2",
+      "summary": "Fix: pagination aria-labels: \"Pages, page x of y\" on the nav, \"Previous page\" and \"Next page\" on the arrows",
+      "description": [
+        {
+          "file": "tickets/S2.8.md"
+        }
+      ],
+      "blockedBy": [
+        "S2.7"
       ]
     },
     {
