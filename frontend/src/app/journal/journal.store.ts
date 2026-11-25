@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
 import { Brew, BrewQuery, DEFAULT_QUERY } from '../core/models';
 
@@ -46,6 +46,10 @@ export const JournalStore = signalStore(
                 status: 'ready',
               }),
             ),
+            catchError(() => {
+              patchState(store, { status: 'error' });
+              return EMPTY;
+            }),
           ),
         ),
       ),

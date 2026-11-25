@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { brewCount } from '../../core/format';
 import { BrewCard } from '../brew-card/brew-card';
@@ -11,7 +12,7 @@ const PAGE_SIZE = 12;
 
 @Component({
   selector: 'app-journal-page',
-  imports: [RouterLink, MatIconModule, BrewCard, Pagination],
+  imports: [RouterLink, MatButtonModule, MatIconModule, BrewCard, Pagination],
   templateUrl: './journal-page.html',
   styleUrl: './journal-page.scss',
 })
@@ -19,6 +20,7 @@ export class JournalPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   protected readonly store = inject(JournalStore);
+  protected readonly skeletonCards: readonly number[] = [1, 2, 3, 4, 5, 6];
 
   protected readonly countText = computed(() => brewCount(this.store.totalCount()));
   protected readonly footerText = computed(() => {

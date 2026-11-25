@@ -49,6 +49,100 @@
   color: var(--color-on-surface-muted);
 }
 
+.skel-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+}
+
+.skel-card .card-top {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.skel-card .meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-outline);
+}
+
+.skeleton {
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-surface) 70%, transparent),
+    transparent
+  );
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.panel {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-4xl) var(--spacing-lg);
+  border: 1px dashed var(--color-outline-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  margin-bottom: var(--spacing-4xl);
+}
+
+.panel .art {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-outline);
+  display: grid;
+  place-items: center;
+  color: var(--color-tertiary);
+  margin-bottom: var(--spacing-md);
+  background: var(--color-neutral);
+}
+
+.panel .art .mat-icon.icon {
+  width: 56px;
+  height: 56px;
+  stroke-width: 1;
+}
+
+.panel p.muted {
+  max-width: 420px;
+}
+
+.panel .mdc-button {
+  margin-top: var(--spacing-md);
+}
+
+.panel.error .art {
+  color: var(--color-error);
+}
+
 @media (max-width: 1119px) {
   .brew-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -73,5 +167,9 @@
 
   .list-foot app-pagination {
     width: 100%;
+  }
+
+  .panel {
+    padding: var(--spacing-3xl) var(--spacing-lg);
   }
 }
