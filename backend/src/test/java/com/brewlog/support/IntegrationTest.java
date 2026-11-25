@@ -1,7 +1,10 @@
 package com.brewlog.support;
 
+import jakarta.persistence.EntityManagerFactory;
 import java.sql.Connection;
 import javax.sql.DataSource;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
 @AutoConfigureMockMvc
 @Import({TestcontainersConfig.class, FixedClockConfig.class})
 public abstract class IntegrationTest {
@@ -26,11 +29,18 @@ public abstract class IntegrationTest {
     @Autowired
     private DataSource dataSource;
 
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
     @BeforeEach
     protected void resetDatabase() throws Exception {
         try (Connection connection = dataSource.getConnection()) {
             ScriptUtils.executeSqlScript(connection, new ClassPathResource("reset.sql"));
             ScriptUtils.executeSqlScript(connection, new ClassPathResource("db/changelog/002-seed-methods.sql"));
         }
+    }
+
+    protected Statistics hibernateStatistics() {
+        return entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
     }
 }

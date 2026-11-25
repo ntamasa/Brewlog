@@ -1,0 +1,36 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.page {
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-on-surface);
+  font: inherit;
+  font-size: var(--text-label-md);
+  font-weight: var(--font-weight-label-md);
+  cursor: pointer;
+}
+
+.page:hover:not(:disabled):not([aria-current='page']) {
+  background: var(--color-surface-sunken);
+}
+
+.page:disabled {
+  color: var(--color-outline-strong);
+  cursor: default;
+}
+
+.page[aria-current='page'] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
