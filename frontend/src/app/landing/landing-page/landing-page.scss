@@ -342,6 +342,10 @@ footer {
   }
 }
 
+.hero :focus-visible {
+  outline-color: var(--color-on-scrim);
+}
+
 /* Sample card: its own .brew-card rules from components.css */
 .brew-card {
   position: relative;
