@@ -260,12 +260,13 @@ Warm paper neutrals, espresso ink and a single burnt-terracotta accent.
 
 - **Primary (#2B1D16) Espresso Ink:** body text, headlines and the primary button (ivory text on espresso). Hover: #45302A.
 - **Secondary (#6B5A4E) Mocha:** metadata, helper text, secondary labels (6.1:1 on neutral).
-- **Tertiary (#B4532A) Burnt Terracotta:** the only accent. Bean ratings, method icons, links, focus rings, active filter chips, the accent CTA on the landing page. 4.9:1 on neutral, so it may carry text at 14px+. Soft tint #F3E2D6 for chips and the "just saved" card highlight.
+- **Tertiary (#B4532A) Burnt Terracotta:** the only accent. Bean ratings, method icons, links, focus rings (except over the hero scrim, see Scrim), active filter chips, the accent CTA on the landing page. 4.9:1 on neutral, so it may carry text at 14px+. Soft tint #F3E2D6 for chips and the "just saved" card highlight.
 - **Neutral (#F7F2E9) Ivory Paper:** page background. **Surface (#FFFDF8):** cards, dialogs, drawer, inputs. **Surface sunken (#EFE8DC):** skeletons, toolbar wells.
 - **Outline (#DCD2C3):** 1px hairlines on cards, inputs, dividers. **Outline strong (#B5A592):** input hover and dashed empty-state frames.
 - **Error (#A3302A)** with soft tint #F7E3DF. Success needs no color: confirmations use the espresso toast.
 - **Roast swatches:** light #C9A27A, medium #8A5A3B, dark #3B2820. Always paired with the roast word, never color alone.
 - **Scrim (#1A120D at 72%)** over the hero photo; **Backdrop (#2B1D16 at 50%)** behind dialogs, drawer and sheets.
+- **Focus rings:** 2px solid, 2px offset, on keyboard focus (`:focus-visible`) only. Terracotta everywhere except on controls over the hero scrim (brand link, "Open journal →", both hero CTAs), which use On-scrim (#FAF6EE): terracotta reaches only 1.0–3.8:1 against the photo there, ivory 4.0–16:1 (WCAG non-text minimum 3:1).
 
 ## Typography
 
