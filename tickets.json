@@ -13,11 +13,7 @@
         "heading": "Summary"
       },
       {
-        "from": "spec.md",
-        "heading": "Constraints"
-      },
-      {
-        "text": "## Technical design\n\nShared sections below. The others are in the issues that use them: Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; Repository and tooling, Prerequisites and CI in story BREW-4; UI implementation (Material buttons, shared helpers, the component SCSS rule and the style budgets every screen follows) in subtask BREW-87 (`jira.mjs read BREW-87`); Deployment in BREW-9; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
+        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91; Deployment in BREW-89; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
       },
       {
         "from": "spec.md",
@@ -64,11 +60,22 @@
           "heading": "R1"
         },
         {
+          "from": "spec.md",
+          "heading": "R45"
+        },
+        {
           "text": "## Business rules"
         },
         {
           "from": "spec.md",
           "heading": "B1"
+        },
+        {
+          "text": "## Constraints (from the spec, for the whole epic)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Constraints"
         },
         {
           "text": "## Technical design (from the spec)"
@@ -89,7 +96,9 @@
       "blockedBy": [],
       "attachments": [
         "design/screenshots/landing.default.desktop.png",
-        "design/screenshots/landing.default.mobile.png"
+        "design/screenshots/landing.default.mobile.png",
+        "design/screenshots/landing.default.desktop_deprecated.png",
+        "design/screenshots/landing.default.mobile_deprecated.png"
       ]
     },
     {
@@ -222,6 +231,104 @@
       ],
       "blockedBy": [
         "S1.4"
+      ],
+      "done": true
+    },
+    {
+      "id": "S1.8",
+      "type": "subtask",
+      "key": "BREW-88",
+      "parent": "S1",
+      "summary": "Fix: CI workflows: named steps, contents: read, e2e paths, npm audit gate with typescript-eslint 8.74.0",
+      "description": [
+        {
+          "file": "tickets/S1.8.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.5"
+      ]
+    },
+    {
+      "id": "S1.9",
+      "type": "subtask",
+      "key": "BREW-89",
+      "parent": "S1",
+      "summary": "Fix: compose db published on 127.0.0.1 only",
+      "description": [
+        {
+          "file": "tickets/S1.9.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Deployment"
+        }
+      ],
+      "blockedBy": [
+        "S1.8"
+      ]
+    },
+    {
+      "id": "S1.10",
+      "type": "subtask",
+      "key": "BREW-90",
+      "parent": "S1",
+      "summary": "Fix: SchemaIT names the violated check constraints; test reset replays 002-seed-methods.sql",
+      "description": [
+        {
+          "file": "tickets/S1.10.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.9"
+      ]
+    },
+    {
+      "id": "S1.11",
+      "type": "subtask",
+      "key": "BREW-91",
+      "parent": "S1",
+      "summary": "Fix: icon build script reads icons.js as data with an allow-list; sprite allow-list test",
+      "description": [
+        {
+          "file": "tickets/S1.11.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.10"
+      ]
+    },
+    {
+      "id": "S1.12",
+      "type": "subtask",
+      "key": "BREW-92",
+      "parent": "S1",
+      "summary": "Fix: brand-mark test starts from the scrolled-down page",
+      "description": [
+        {
+          "file": "tickets/S1.12.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.11"
+      ]
+    },
+    {
+      "id": "S1.13",
+      "type": "subtask",
+      "key": "BREW-93",
+      "parent": "S1",
+      "summary": "Fix: keyboard focus rings, ivory in the hero (R45)",
+      "description": [
+        {
+          "file": "tickets/S1.13.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.12"
       ]
     },
     {

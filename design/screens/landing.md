@@ -33,6 +33,7 @@
 - "Open my journal" / "Open journal" → app page (brews).
 - "How it works" → smooth-scroll to the How it works section (instant under reduced motion).
 - Brand mark → landing (top).
+- Keyboard focus (`:focus-visible`): 2px solid ring, 2px offset. Inside the hero (brand link, "Open journal →", "Open my journal", "How it works") the ring is `on-scrim` ivory; everywhere else on the page it's `tertiary` terracotta.
 
 ## Design decisions
 - Premium "ivory editorial luxury" look, light theme only — the user asked for a premium, expensive look; replaces the earlier playful direction.
@@ -41,3 +42,4 @@
 - Sections: hero + features + how-it-works + closing CTA + footer — explains enough for a single-user private app without a long marketing page.
 - Cormorant Garamond for display, Inter for UI; terracotta accent used sparingly (eyebrows, icons, numerals, one CTA).
 - Viewports designed: 390 mobile, 1440 desktop.
+- Ivory (`on-scrim`) focus rings in the hero, terracotta elsewhere: measured on the screenshots, terracotta reaches only 1.0–1.4:1 behind the nav link and 1.9–3.8:1 around the CTAs, below WCAG's 3:1 for non-text; ivory reaches 4.0–16:1 (from review of PR #3).
