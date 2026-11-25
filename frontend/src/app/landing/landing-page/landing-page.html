@@ -1,0 +1,203 @@
+<header class="hero">
+  <img
+    class="hero-photo"
+    src="images/hero-pour-over.jpg"
+    alt="Hot water poured from a gooseneck kettle into a white ceramic pour-over dripper"
+  />
+  <div class="hero-scrim" aria-hidden="true"></div>
+  <nav class="hero-nav" aria-label="Main">
+    <a class="brand" routerLink="/"
+      ><mat-icon svgIcon="logo" class="icon brand-mark" aria-hidden="true"></mat-icon
+      ><span class="brand-name">Brewlog</span></a
+    >
+    <a class="nav-link" routerLink="/journal"
+      >Open journal
+      <mat-icon svgIcon="arrow-right" class="icon icon-sm" aria-hidden="true"></mat-icon
+    ></a>
+  </nav>
+  <div class="hero-body">
+    <p class="eyebrow t-caps">A private coffee tasting journal</p>
+    <h1 class="t-display-xl">Remember every cup <em>worth remembering.</em></h1>
+    <p class="lede t-body-lg">
+      Brewlog keeps a quiet record of what you brewed, how you brewed it and how it tasted, so your
+      best cup is never a happy accident again.
+    </p>
+    <div class="ctas">
+      <a matButton="filled" class="btn-accent" routerLink="/journal">Open my journal</a>
+      <a matButton="outlined" class="btn-on-scrim" routerLink="/" fragment="how">How it works</a>
+    </div>
+  </div>
+  <div class="hero-foot t-caps" aria-hidden="true">
+    <span>Bean &amp; origin</span><span>Method</span><span>Roast</span><span>Rating</span
+    ><span>Tasting notes</span>
+  </div>
+</header>
+
+<main>
+  <section class="block" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="t-caps">What it keeps</p>
+        <h2 id="features-title" class="t-display-md">A ledger for the cups you love.</h2>
+      </div>
+      <div class="features">
+        <figure>
+          <img
+            src="images/beans.jpg"
+            alt="Close-up of freshly roasted coffee beans"
+            loading="lazy"
+          />
+          <figcaption>
+            <span class="rating" aria-hidden="true"
+              ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+              ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+              ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+              ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+              ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+            ></span>
+            <span class="t-body-sm">Ethiopia Guji, washed. Light roast, pour over.</span>
+          </figcaption>
+        </figure>
+        <div class="feature-list">
+          <div class="feature">
+            <mat-icon svgIcon="notebook" class="icon" aria-hidden="true"></mat-icon>
+            <h3 class="t-headline-sm">Log every brew</h3>
+            <p class="muted">
+              Bean, origin, method, roast, a rating out of five beans and your tasting notes, dated
+              the day you brewed it.
+            </p>
+          </div>
+          <div class="feature">
+            <mat-icon svgIcon="search" class="icon" aria-hidden="true"></mat-icon>
+            <h3 class="t-headline-sm">Find any cup again</h3>
+            <p class="muted">
+              Search by name, filter by method, roast or rating, and sort by date or score. They all
+              work together.
+            </p>
+          </div>
+          <div class="feature">
+            <mat-icon svgIcon="pour-over" class="icon" aria-hidden="true"></mat-icon>
+            <h3 class="t-headline-sm">Your methods, your words</h3>
+            <p class="muted">
+              Espresso to cold brew out of the box. Add your own, rename them, retire them. Your
+              history follows along.
+            </p>
+          </div>
+          <div class="feature">
+            <mat-icon svgIcon="lock" class="icon" aria-hidden="true"></mat-icon>
+            <h3 class="t-headline-sm">Private by design</h3>
+            <p class="muted">
+              One journal, one person. It runs on your own machine and every entry is kept safe in
+              your own database.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block how" id="how" aria-labelledby="how-title">
+    <div class="container how-grid">
+      <div>
+        <div class="section-head">
+          <p class="t-caps">How it works</p>
+          <h2 id="how-title" class="t-display-md">Brew. Log. Rediscover.</h2>
+        </div>
+        <ol class="steps">
+          <li>
+            <span class="num" aria-hidden="true">i.</span>
+            <div>
+              <h3 class="t-headline-sm">Brew as you always do</h3>
+              <p class="muted">
+                Pull the shot, bloom the pour over, press the plunger. Nothing changes at the
+                counter.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="num" aria-hidden="true">ii.</span>
+            <div>
+              <h3 class="t-headline-sm">Log it in under a minute</h3>
+              <p class="muted">
+                Name the brew, pick the method and roast, tap a rating and jot what you tasted.
+                Today’s date is filled in for you.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="num" aria-hidden="true">iii.</span>
+            <div>
+              <h3 class="t-headline-sm">Rediscover your best</h3>
+              <p class="muted">
+                Sort by rating, filter to five beans, and brew that perfect Kenyan again, exactly
+                the way you did.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <div>
+        <figure>
+          <img
+            src="images/cup-notebook.jpg"
+            alt="A cup of black coffee beside a leather notebook and pen on a wooden table in sunlight"
+            loading="lazy"
+          />
+        </figure>
+        <div class="sample" aria-hidden="true">
+          <article class="brew-card">
+            <div class="card-top">
+              <div class="method">
+                <mat-icon svgIcon="pour-over" class="icon icon-lg"></mat-icon
+                ><span class="t-caps">Pour Over</span>
+              </div>
+            </div>
+            <h3>Kenyan Morning</h3>
+            <p class="t-body-sm muted">Kiambu AA · Kenya</p>
+            <div class="meta-row">
+              <span class="rating"
+                ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+                ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+                ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+                ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+                ><mat-icon svgIcon="bean-fill" class="icon bean"></mat-icon
+              ></span>
+              <span class="roast-tag t-caps"><span class="swatch swatch-light"></span>Light</span>
+            </div>
+            <p class="notes">
+              Blackcurrant and grapefruit up front, a syrupy body and a long, sweet tomato-leaf
+              finish.
+            </p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block closing" aria-labelledby="closing-title">
+    <div class="container">
+      <div class="rule" aria-hidden="true"></div>
+      <h2 id="closing-title" class="t-display-md">Your next great cup starts with the last one.</h2>
+      <p class="t-body-lg muted">
+        Open the journal and log today’s brew. It takes less time than the bloom.
+      </p>
+      <a matButton="filled" routerLink="/journal"
+        >Open my journal
+        <mat-icon svgIcon="arrow-right" iconPositionEnd aria-hidden="true"></mat-icon
+      ></a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container foot">
+    <a class="brand" routerLink="/"
+      ><mat-icon svgIcon="logo" class="icon brand-mark" aria-hidden="true"></mat-icon
+      ><span class="brand-name">Brewlog</span></a
+    >
+    <p class="t-body-sm muted">
+      A private coffee tasting journal that runs on your own machine. Photography from Unsplash:
+      Nadia Valko, Mona Jain, Andres Molina.
+    </p>
+  </div>
+</footer>
