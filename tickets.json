@@ -17,7 +17,7 @@
         "heading": "Constraints"
       },
       {
-        "text": "## Technical design\n\nShared sections. Each story carries the sections only it needs (Frontend in every story with UI work; Repository and tooling, Prerequisites, CI in story S1 \"Landing page\", UI implementation in its subtask \"Design foundation: tokens, theme, fonts, icon sprite, photos\", and Deployment in its subtask \"Docker Compose, Playwright e2e, e2e CI and README\"; Seams and tests in story S2 \"See my brews in the journal\")."
+        "text": "## Technical design\n\nShared sections. Each story carries the sections only it needs (Frontend in every story with UI work; Repository and tooling, Prerequisites, CI in story S1 \"Landing page\", UI implementation, including the Material button mapping every screen follows, in its subtask BREW-6 \"Design foundation: tokens, palettes, Material theme, button overrides, fonts\" (read it with `jira.mjs read BREW-6`), and Deployment in its subtask \"Docker Compose, Playwright e2e, e2e CI and README\"; Seams and tests in story S2 \"See my brews in the journal\")."
       },
       {
         "from": "spec.md",
@@ -119,7 +119,7 @@
       "type": "subtask",
       "key": "BREW-6",
       "parent": "S1",
-      "summary": "Design foundation: tokens, theme, fonts, icon sprite, photos",
+      "summary": "Design foundation: tokens, palettes, Material theme, button overrides, fonts",
       "description": [
         {
           "file": "tickets/S1.2.md"
@@ -137,6 +137,21 @@
       ]
     },
     {
+      "id": "S1.6",
+      "type": "subtask",
+      "key": "BREW-86",
+      "parent": "S1",
+      "summary": "Icon sprite, icon registration and landing photos",
+      "description": [
+        {
+          "file": "tickets/S1.6.md"
+        }
+      ],
+      "blockedBy": [
+        "S1.2"
+      ]
+    },
+    {
       "id": "S1.3",
       "type": "subtask",
       "key": "BREW-7",
@@ -148,7 +163,8 @@
         }
       ],
       "blockedBy": [
-        "S1.2"
+        "S1.2",
+        "S1.6"
       ]
     },
     {
