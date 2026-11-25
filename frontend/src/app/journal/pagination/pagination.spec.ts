@@ -19,6 +19,10 @@ function button(fixture: ComponentFixture<Pagination>, text: string): HTMLButton
   return found;
 }
 
+function nav(fixture: ComponentFixture<Pagination>): HTMLElement {
+  return fixture.nativeElement.querySelector('nav');
+}
+
 describe('Pagination', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({});
@@ -33,6 +37,47 @@ describe('Pagination', () => {
     expect(button(fixture, '1').getAttribute('aria-current')).toBe('page');
     expect(button(fixture, '‹').disabled).toBe(true);
     expect(button(fixture, '›').disabled).toBe(false);
+  });
+
+  it('labels the nav with the current page and its total, and the arrows by their action', () => {
+    const fixture = render(1, 4);
+
+    expect(nav(fixture).getAttribute('aria-label')).toBe('Pages, page 1 of 4');
+    expect(button(fixture, '‹').getAttribute('aria-label')).toBe('Previous page');
+    expect(button(fixture, '›').getAttribute('aria-label')).toBe('Next page');
+  });
+
+  it('updates the nav label when the page changes', () => {
+    const fixture = render(2, 4);
+
+    fixture.componentRef.setInput('page', 3);
+    fixture.detectChanges();
+
+    expect(nav(fixture).getAttribute('aria-label')).toBe('Pages, page 3 of 4');
+  });
+
+  it('keeps the previous arrow labelled while it is disabled on the first page', () => {
+    const fixture = render(1, 4);
+
+    expect(button(fixture, '‹').disabled).toBe(true);
+    expect(button(fixture, '‹').getAttribute('aria-label')).toBe('Previous page');
+  });
+
+  it('keeps the next arrow labelled while it is disabled on the last page', () => {
+    const fixture = render(4, 4);
+
+    expect(nav(fixture).getAttribute('aria-label')).toBe('Pages, page 4 of 4');
+    expect(button(fixture, '›').disabled).toBe(true);
+    expect(button(fixture, '›').getAttribute('aria-label')).toBe('Next page');
+  });
+
+  it('leaves the page number buttons unlabelled, so their name stays their number', () => {
+    const fixture = render(1, 4);
+
+    for (const label of ['1', '2', '3', '4']) {
+      expect(button(fixture, label).getAttribute('aria-label')).toBeNull();
+    }
+    expect(button(fixture, '1').getAttribute('aria-current')).toBe('page');
   });
 
   it('emits the clicked page number', () => {
@@ -75,5 +120,6 @@ describe('Pagination', () => {
     const fixture = render(1, 1);
 
     expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(0);
+    expect(nav(fixture)).toBeNull();
   });
 });
