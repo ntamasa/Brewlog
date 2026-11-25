@@ -505,7 +505,8 @@
       ],
       "blockedBy": [
         "S2.6"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S2.8",
@@ -520,6 +521,22 @@
       ],
       "blockedBy": [
         "S2.7"
+      ],
+      "done": true
+    },
+    {
+      "id": "S2.9",
+      "type": "subtask",
+      "key": "BREW-98",
+      "parent": "S2",
+      "summary": "Fix: brew page loads its methods in the same query (@EntityGraph on both findAll overloads)",
+      "description": [
+        {
+          "file": "tickets/S2.9.md"
+        }
+      ],
+      "blockedBy": [
+        "S2.8"
       ]
     },
     {
