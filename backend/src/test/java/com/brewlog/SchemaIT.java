@@ -16,6 +16,33 @@ class SchemaIT extends IntegrationTest {
                     + " VALUES ('%s', 'Test Bean', 'Test Origin', 1, '%s', %d, DATE '2026-11-01')";
 
     @Test
+    void resetRestoresTheSeedWithIdsOneToSeven() throws Exception {
+        jdbc.update("INSERT INTO brew_method (name, icon_key, predefined, is_protected, position)"
+                + " VALUES ('Siphon', 'cup', false, false, NULL)");
+        jdbc.update("INSERT INTO brew (name, bean_name, origin, method_id, roast, rating, brew_date)"
+                + " SELECT 'Kenyan Morning', 'Test Bean', 'Test Origin', id, 'LIGHT', 5, DATE '2026-11-01'"
+                + " FROM brew_method WHERE name = 'Siphon'");
+        assertThat(countMethods()).isEqualTo(8);
+        assertThat(countBrews()).isEqualTo(1);
+
+        resetDatabase();
+
+        assertThat(countBrews()).isZero();
+        List<List<Object>> rows = jdbc.query(
+                "SELECT id, name FROM brew_method ORDER BY id",
+                (rs, rowNum) -> row(rs.getLong("id"), rs.getString("name")));
+        assertThat(rows)
+                .containsExactly(
+                        row(1L, "Espresso"),
+                        row(2L, "Pour Over"),
+                        row(3L, "French Press"),
+                        row(4L, "AeroPress"),
+                        row(5L, "Moka Pot"),
+                        row(6L, "Cold Brew"),
+                        row(7L, "Other"));
+    }
+
+    @Test
     void seedsTheSevenPredefinedMethodsInOrder() {
         List<List<Object>> rows = jdbc.query(
                 "SELECT name, icon_key, predefined, is_protected, position FROM brew_method ORDER BY id",
@@ -73,6 +100,7 @@ class SchemaIT extends IntegrationTest {
         Throwable thrown = catchThrowable(() -> jdbc.update(String.format(INSERT_VALID_BREW, "Too High", "LIGHT", 6)));
 
         assertThat(thrown).isInstanceOf(DataIntegrityViolationException.class);
+        assertThat(thrown.getMessage()).contains("brew_rating_check");
         assertThat(countBrews()).isZero();
     }
 
@@ -81,6 +109,7 @@ class SchemaIT extends IntegrationTest {
         Throwable thrown = catchThrowable(() -> jdbc.update(String.format(INSERT_VALID_BREW, "Too Low", "LIGHT", 0)));
 
         assertThat(thrown).isInstanceOf(DataIntegrityViolationException.class);
+        assertThat(thrown.getMessage()).contains("brew_rating_check");
         assertThat(countBrews()).isZero();
     }
 
@@ -89,6 +118,7 @@ class SchemaIT extends IntegrationTest {
         Throwable thrown = catchThrowable(() -> jdbc.update(String.format(INSERT_VALID_BREW, "Bold Brew", "BOLD", 5)));
 
         assertThat(thrown).isInstanceOf(DataIntegrityViolationException.class);
+        assertThat(thrown.getMessage()).contains("brew_roast_check");
         assertThat(countBrews()).isZero();
     }
 
