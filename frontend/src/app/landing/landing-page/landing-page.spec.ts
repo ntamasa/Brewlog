@@ -124,15 +124,29 @@ describe('landing page', () => {
     expect(arrow?.hasAttribute('iconPositionEnd')).toBe(true);
   });
 
-  it('keeps the URL at / when the brand mark is clicked (R1)', async () => {
+  it('goes to / with no fragment from both brand marks after scrolling down (R1)', async () => {
     const harness = await render('/');
     await harness.fixture.whenStable();
     const router = TestBed.inject(Router);
 
-    click(harness, 'a.brand', 'Brewlog');
+    click(harness, '.hero a', 'How it works');
     await harness.fixture.whenStable();
+    expect(router.url).toBe('/#how');
 
+    click(harness, '.hero-nav a.brand', 'Brewlog');
+    await harness.fixture.whenStable();
     expect(router.url).toBe('/');
+    expect(router.parseUrl(router.url).fragment).toBeNull();
+
+    await harness.navigateByUrl('/');
+    click(harness, '.hero a', 'How it works');
+    await harness.fixture.whenStable();
+    expect(router.url).toBe('/#how');
+
+    click(harness, 'footer a.brand', 'Brewlog');
+    await harness.fixture.whenStable();
+    expect(router.url).toBe('/');
+    expect(router.parseUrl(router.url).fragment).toBeNull();
   });
 
   it('has exactly 3 Material buttons and none of the prototype button classes (R1)', async () => {
