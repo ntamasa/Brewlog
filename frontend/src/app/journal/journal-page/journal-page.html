@@ -13,21 +13,66 @@
       <p class="t-caps eyebrow">Tasting journal</p>
       <h1 class="t-headline-lg">Your brews</h1>
     </div>
-    <p class="count t-body-sm" aria-live="polite">{{ countText() }}</p>
+    <p class="count t-body-sm" aria-live="polite">
+      @if (store.status() === 'loading') {
+        <span class="skeleton" style="display: inline-block; width: 72px; height: 12px"></span>
+      } @else if (store.status() === 'ready') {
+        {{ countText() }}
+      }
+    </p>
   </div>
 
-  <div class="brew-grid">
-    @for (brew of store.items(); track brew.id) {
-      <app-brew-card [brew]="brew" />
+  @switch (store.status()) {
+    @case ('loading') {
+      <section class="brew-grid" aria-label="Loading brews" aria-busy="true">
+        @for (n of skeletonCards; track n) {
+          <div class="brew-card skel-card" aria-hidden="true">
+            <div class="card-top">
+              <div class="skeleton" style="width: 40px; height: 40px"></div>
+              <div class="skeleton" style="width: 88px; height: 12px"></div>
+            </div>
+            <div class="skeleton" style="width: 70%; height: 24px"></div>
+            <div class="skeleton" style="width: 50%; height: 12px"></div>
+            <div class="meta-row">
+              <div class="skeleton" style="width: 106px; height: 16px"></div>
+              <div class="skeleton" style="width: 60px; height: 12px"></div>
+            </div>
+            <div class="skeleton" style="width: 100%; height: 12px"></div>
+            <div class="skeleton" style="width: 85%; height: 12px"></div>
+          </div>
+        }
+      </section>
     }
-  </div>
+    @case ('error') {
+      <section class="panel error" role="alert">
+        <div class="art" aria-hidden="true">
+          <mat-icon svgIcon="alert" class="icon" aria-hidden="true"></mat-icon>
+        </div>
+        <h2 class="t-headline-md">We couldn’t load your brews</h2>
+        <p class="muted">
+          The Brewlog server didn’t respond. Check that the backend is running, then try again. Your
+          entries are safe.
+        </p>
+        <button matButton="filled" type="button" (click)="store.reload()">
+          <mat-icon svgIcon="refresh" class="icon icon-sm" aria-hidden="true"></mat-icon>Try again
+        </button>
+      </section>
+    }
+    @case ('ready') {
+      <div class="brew-grid">
+        @for (brew of store.items(); track brew.id) {
+          <app-brew-card [brew]="brew" />
+        }
+      </div>
 
-  <div class="list-foot">
-    <p class="t-body-sm">{{ footerText() }}</p>
-    <app-pagination
-      [page]="store.page()"
-      [totalPages]="store.totalPages()"
-      (pageChange)="onPageChange($event)"
-    />
-  </div>
+      <div class="list-foot">
+        <p class="t-body-sm">{{ footerText() }}</p>
+        <app-pagination
+          [page]="store.page()"
+          [totalPages]="store.totalPages()"
+          (pageChange)="onPageChange($event)"
+        />
+      </div>
+    }
+  }
 </main>
