@@ -1,0 +1,169 @@
+/* Shared helpers: the components.css rules every screen uses, kept once here so no component SCSS copies them. */
+
+/* ---------- Type helpers ---------- */
+.serif {
+  font-family: var(--font-headline-md), Georgia, serif;
+}
+.t-display-xl {
+  font-family: var(--font-display-xl), Georgia, serif;
+  font-size: var(--text-display-xl);
+  font-weight: var(--font-weight-display-xl);
+  line-height: 1;
+  letter-spacing: var(--tracking-display-xl);
+}
+.t-display-md {
+  font-family: var(--font-display-md), Georgia, serif;
+  font-size: var(--text-display-md);
+  font-weight: var(--font-weight-display-md);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-display-md);
+}
+.t-headline-lg {
+  font-family: var(--font-headline-lg), Georgia, serif;
+  font-size: var(--text-headline-lg);
+  font-weight: var(--font-weight-headline-lg);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-headline-lg);
+}
+.t-headline-md {
+  font-family: var(--font-headline-md), Georgia, serif;
+  font-size: var(--text-headline-md);
+  font-weight: var(--font-weight-headline-md);
+  line-height: 1.15;
+}
+.t-headline-sm {
+  font-family: var(--font-headline-sm), Georgia, serif;
+  font-size: var(--text-headline-sm);
+  font-weight: var(--font-weight-headline-sm);
+  line-height: 1.2;
+}
+.t-title-md {
+  font-size: var(--text-title-md);
+  font-weight: var(--font-weight-title-md);
+  line-height: 1.4;
+}
+.t-body-lg {
+  font-size: var(--text-body-lg);
+  line-height: 1.65;
+}
+.t-body-sm {
+  font-size: var(--text-body-sm);
+  line-height: 1.5;
+}
+.t-label-md {
+  font-size: var(--text-label-md);
+  font-weight: var(--font-weight-label-md);
+  line-height: 1.3;
+}
+.t-caps {
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  letter-spacing: var(--tracking-label-caps);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+.muted {
+  color: var(--color-on-surface-muted);
+}
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+/* ---------- Icons ---------- */
+.mat-icon.icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mat-icon.icon-lg {
+  width: 40px;
+  height: 40px;
+}
+.mat-icon.icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- Roast + rating ---------- */
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  flex: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+.swatch-light {
+  background: var(--color-roast-light);
+}
+.swatch-medium {
+  background: var(--color-roast-medium);
+}
+.swatch-dark {
+  background: var(--color-roast-dark);
+}
+.roast-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--color-on-surface-muted);
+}
+.rating {
+  display: inline-flex;
+  gap: 3px;
+  color: var(--color-tertiary);
+  align-items: center;
+}
+.rating .mat-icon.bean {
+  width: 18px;
+  height: 18px;
+}
+.rating .mat-icon.bean.off {
+  color: var(--color-outline-strong);
+}
+
+/* ---------- App header ---------- */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--color-on-surface);
+  text-decoration: none;
+}
+.brand .mat-icon.brand-mark {
+  width: 28px;
+  height: 28px;
+  color: var(--color-tertiary);
+}
+.brand-name {
+  font-family: var(--font-headline-md), Georgia, serif;
+  font-size: var(--text-headline-sm);
+  font-weight: var(--font-weight-headline-md);
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Page container ---------- */
+.container {
+  max-width: calc(var(--spacing-content-max) + 2 * var(--spacing-page-margin));
+  margin: 0 auto;
+  padding: 0 var(--spacing-page-margin);
+}
+@media (max-width: 767px) {
+  .container {
+    padding: 0 var(--spacing-page-margin-mobile);
+  }
+}
