@@ -420,7 +420,6 @@ Each of the three app workflows has top-level `permissions:` `contents: read`, a
 - `.github/workflows/backend.yml`: on `pull_request` with paths `backend/**` and `.github/workflows/backend.yml`; steps "Check out code" (`actions/checkout@v4`), "Setup Java JDK" (`actions/setup-java@v4`, Temurin 25), "Check formatting" (`./gradlew spotlessCheck`), "Run tests" (`./gradlew test`), the last two in `backend/`.
 - `.github/workflows/frontend.yml`: on `pull_request` with paths `frontend/**` and `.github/workflows/frontend.yml`; steps "Check out code" (`actions/checkout@v4`), "Setup Node.js" (`actions/setup-node@v4` with `node-version-file: .nvmrc`), "Install dependencies" (`npm ci`), "Audit dependencies" (`npm audit --audit-level=moderate`), "Lint" (`npm run lint`), "Check formatting" (`npm run format:check`), "Run tests" (`npm test`), "Build" (`npm run build`), the npm steps in `frontend/`.
 - `.github/workflows/e2e.yml`: on `pull_request` with paths `backend/**`, `.github/workflows/backend.yml`, `frontend/**`, `.github/workflows/frontend.yml`, `e2e/**`, `docker-compose.yml` and `.github/workflows/e2e.yml`, so it runs whenever backend or frontend CI runs and whenever its own files change (from grilling); steps "Check out code" (`actions/checkout@v4`), "Reset the stack" (`docker compose down -v`), "Start the stack" (`docker compose up -d --build --wait`), "Setup Node.js" (`actions/setup-node@v4` with `node-version-file: .nvmrc`), "Install dependencies" (`npm ci`), "Audit dependencies" (`npm audit --audit-level=moderate`), "Install Playwright browser" (`npx playwright install --with-deps chromium`), "Run e2e tests" (`npx playwright test`), the last four in `e2e/`.
-- `.github/workflows/factory-merge-gate.yml`: its single step (`actions/github-script@v7`) is named "Run merge gate"; nothing else changes. (from grilling)
 
 ### Seams and tests
 | Seam | Covers | Setup | Mocked |
@@ -470,7 +469,6 @@ sort NEWEST: brewDate desc, createdAt desc, id desc; OLDEST: all asc; HIGHEST: r
 - Gradle wrapper and jar: the wrapper checks (Gradle 9.9.2, wrapper jar SHA-256, line endings and mode, no leftover zip) and the single-jar check run once, when the wrapper and build are made; CI doesn't repeat them (from grilling). They stay guarded indirectly: CI's `./gradlew` fails if `gradlew` loses its LF endings or exec bit, `distributionSha256Sum` rejects any other distribution, and the e2e Docker build fails without `build/libs/brewlog.jar`. A tampered `gradle-wrapper.jar` is left to review.
 - The test reset replays only `002-seed-methods.sql`: a later changeset that changes seeded rows must also run in `resetDatabase()`.
 - The npm audit steps fail a PR on any newly published moderate or higher advisory, even one unrelated to the PR, until the package is upgraded.
-- `factory-merge-gate.yml` is installed by the github-setup skill: rerunning it rewrites the file and drops the "Run merge gate" step name.
 
 ## Out of scope
 - Authentication and multiple user accounts.
@@ -483,3 +481,4 @@ sort NEWEST: brewDate desc, createdAt desc, id desc; OLDEST: all asc; HIGHEST: r
 - An endpoint to fetch a single brew (detail and edit use the list data).
 - An advisory audit of the backend's Gradle dependencies.
 - CI re-checks of the Gradle wrapper and the single `brewlog.jar` (Technical design → Risks).
+- Any change to `.github/workflows/factory-merge-gate.yml`, including a name for its step: it is a copy of the github-setup skill's template and stays exactly as installed (from grilling).
