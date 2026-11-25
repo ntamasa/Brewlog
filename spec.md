@@ -398,7 +398,7 @@ Under `frontend/src/app/`, by feature:
 - Material mapping: buttons → `matButton` / `matIconButton` / `matFab` (above); selects → mat-select; roast → mat-button-toggle-group; card ⋮ → mat-menu; toast → MatSnackBar; dialogs → MatDialog; phone sheets → MatBottomSheet; date → mat-datepicker with `[max]` = today.
 
 ### Deployment
-- `docker-compose.yml` (root): `db` (postgres:17, db/user/password `brewlog`, port 5432, named volume `brewlog-data` mounted at `/var/lib/postgresql/data` (postgres:17's `PGDATA`) and declared under the top-level `volumes:`, healthcheck), `backend` (build `./backend`, `DB_URL=jdbc:postgresql://db:5432/brewlog`, depends on a healthy db), `frontend` (build `./frontend`, port `8081:80`).
+- `docker-compose.yml` (root): `db` (postgres:17, db/user/password `brewlog`, port `5432:5432`, named volume `brewlog-data` mounted at `/var/lib/postgresql/data` (postgres:17's `PGDATA`) and declared under the top-level `volumes:`, healthcheck), `backend` (build `./backend`, `DB_URL=jdbc:postgresql://db:5432/brewlog`, depends on a healthy db), `frontend` (build `./frontend`, port `8081:80`).
 - `backend/Dockerfile`: build stage `FROM gradle:9.9.2-jdk25 AS build` (its Gradle version always equals the wrapper's), `WORKDIR /workspace`, `COPY settings.gradle.kts build.gradle.kts ./`, `COPY src ./src` (no wrapper files), `RUN gradle bootJar --no-daemon` → `FROM eclipse-temurin:25-jre`, `COPY --from=build /workspace/build/libs/brewlog.jar /app/app.jar` (the exact file, no wildcard), port 8080.
 - `frontend/Dockerfile`: `node:24` build → `nginx:1.29-alpine` with `frontend/nginx.conf` (`try_files $uri /index.html`; `location /api/ { proxy_pass http://backend:8080; }`).
 
