@@ -335,9 +335,9 @@ Three deployables in one repo: `backend/` (Spring Boot REST API, Liquibase-manag
 - JDK 25 doesn't have to be installed: the Gradle toolchain downloads it (foojay).
 
 ### Data model
-Liquibase: `backend/src/main/resources/db/changelog/db.changelog-master.yaml` includes `001-init.sql` and `002-seed-methods.sql` (formatted SQL).
+Liquibase: `backend/src/main/resources/db/changelog/db.changelog-master.yaml` includes `001-init.sql` (one changeset, `--changeset brewlog:001-init`) and `002-seed-methods.sql` (one changeset, `--changeset brewlog:002-seed-methods`), both formatted SQL starting with `--liquibase formatted sql`.
 - `brew_method`: `id BIGINT GENERATED ALWAYS AS IDENTITY PK`, `name VARCHAR(50) NOT NULL`, `icon_key VARCHAR(20) NOT NULL`, `predefined BOOLEAN NOT NULL`, `is_protected BOOLEAN NOT NULL DEFAULT false`, `position INT NULL`; `UNIQUE INDEX ux_brew_method_name ON (lower(name))`.
-- `brew`: `id BIGINT IDENTITY PK`, `name VARCHAR(100) NOT NULL`, `bean_name VARCHAR(100) NOT NULL`, `origin VARCHAR(100) NOT NULL`, `method_id BIGINT NOT NULL REFERENCES brew_method(id)`, `roast VARCHAR(6) NOT NULL CHECK (roast IN ('LIGHT','MEDIUM','DARK'))`, `rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5)`, `brew_date DATE NOT NULL`, `notes VARCHAR(2000) NULL`, `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`; `UNIQUE INDEX ux_brew_name ON (lower(name))`, indexes on `method_id` and `(brew_date, created_at)`.
+- `brew`: `id BIGINT GENERATED ALWAYS AS IDENTITY PK`, `name VARCHAR(100) NOT NULL`, `bean_name VARCHAR(100) NOT NULL`, `origin VARCHAR(100) NOT NULL`, `method_id BIGINT NOT NULL REFERENCES brew_method(id)`, `roast VARCHAR(6) NOT NULL CHECK (roast IN ('LIGHT','MEDIUM','DARK'))`, `rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5)`, `brew_date DATE NOT NULL`, `notes VARCHAR(2000) NULL`, `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`; `UNIQUE INDEX ux_brew_name ON (lower(name))`, indexes on `method_id` and `(brew_date, created_at)`.
 - Seed: Espresso/espresso/1, Pour Over/pour-over/2, French Press/french-press/3, AeroPress/aeropress/4, Moka Pot/moka-pot/5, Cold Brew/cold-brew/6 (all `predefined` true), Other/cup/99 (`predefined` and `is_protected` true).
 
 ### API
