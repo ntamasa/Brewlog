@@ -1,0 +1,1 @@
+TRUNCATE brew, brew_method RESTART IDENTITY CASCADE;

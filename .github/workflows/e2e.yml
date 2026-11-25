@@ -1,0 +1,42 @@
+name: e2e
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+      - 'frontend/**'
+      - '.github/workflows/frontend.yml'
+      - 'e2e/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/e2e.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Reset the stack
+        run: docker compose down -v
+      - name: Start the stack
+        run: docker compose up -d --build --wait
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install dependencies
+        run: npm ci
+        working-directory: e2e
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+        working-directory: e2e
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - name: Run e2e tests
+        run: npx playwright test
+        working-directory: e2e

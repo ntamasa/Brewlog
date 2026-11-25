@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: brewlog
+      POSTGRES_USER: brewlog
+      POSTGRES_PASSWORD: brewlog
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - brewlog-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brewlog"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/brewlog
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8081:80"
+    depends_on: [backend]
+
+volumes:
+  brewlog-data:
