@@ -1,5 +1,6 @@
 package com.brewlog;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -104,6 +105,28 @@ class BrewListIT extends IntegrationTest {
         mvc.perform(get("/api/brews"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(singleBrewPage(id, "null"), true));
+    }
+
+    @Test
+    @DisplayName("the page's brews come with their methods in the same query, plus one count")
+    void pageLoadsMethodsInTheSameQuery() throws Exception {
+        TestData.brew("Double Shot").method(1).date("2026-10-03").insert(jdbc);
+        TestData.brew("Morning Pour").method(2).date("2026-10-02").insert(jdbc);
+        TestData.brew("Sunday Press").method(3).date("2026-10-01").insert(jdbc);
+
+        hibernateStatistics().clear();
+        mvc.perform(get("/api/brews"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].method.id").value(1))
+                .andExpect(jsonPath("$.items[0].method.name").value("Espresso"))
+                .andExpect(jsonPath("$.items[0].method.iconKey").value("espresso"))
+                .andExpect(jsonPath("$.items[1].method.id").value(2))
+                .andExpect(jsonPath("$.items[1].method.name").value("Pour Over"))
+                .andExpect(jsonPath("$.items[1].method.iconKey").value("pour-over"))
+                .andExpect(jsonPath("$.items[2].method.id").value(3))
+                .andExpect(jsonPath("$.items[2].method.name").value("French Press"))
+                .andExpect(jsonPath("$.items[2].method.iconKey").value("french-press"));
+        assertThat(hibernateStatistics().getPrepareStatementCount()).isEqualTo(2);
     }
 
     private void insertNumberedBrews(int count) {
