@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
@@ -10,6 +11,7 @@ import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
 import { enGB } from 'date-fns/locale';
 import { routes } from './app.routes';
 import { BREWLOG_DATE_FORMATS } from './core/date-formats';
+import { registerIcons } from './core/icons';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,6 +22,7 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
     ),
     provideHttpClient(),
+    provideAppInitializer(registerIcons),
     provideDateFnsAdapter(BREWLOG_DATE_FORMATS),
     { provide: MAT_DATE_LOCALE, useValue: enGB },
   ],
