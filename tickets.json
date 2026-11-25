@@ -17,7 +17,7 @@
         "heading": "Constraints"
       },
       {
-        "text": "## Technical design\n\nShared sections below. The others are in the issues that use them: Frontend in every story with UI work; Repository and tooling, Prerequisites and CI in story BREW-4; UI implementation (Material buttons, shared helpers, the component SCSS rule and the style budgets every screen follows) in subtask BREW-87 (`jira.mjs read BREW-87`); Deployment in BREW-9; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
+        "text": "## Technical design\n\nShared sections below. The others are in the issues that use them: Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; Repository and tooling, Prerequisites and CI in story BREW-4; UI implementation (Material buttons, shared helpers, the component SCSS rule and the style budgets every screen follows) in subtask BREW-87 (`jira.mjs read BREW-87`); Deployment in BREW-9; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
       },
       {
         "from": "spec.md",
@@ -80,10 +80,6 @@
         {
           "from": "spec.md",
           "heading": "Prerequisites"
-        },
-        {
-          "from": "spec.md",
-          "heading": "Frontend"
         },
         {
           "from": "spec.md",
@@ -169,7 +165,8 @@
       ],
       "blockedBy": [
         "S1.6"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S1.3",
@@ -186,7 +183,8 @@
         "S1.2",
         "S1.6",
         "S1.7"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S1.4",
