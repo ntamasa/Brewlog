@@ -1,0 +1,30 @@
+@if (totalPages() > 1) {
+  <nav class="pagination">
+    <button
+      type="button"
+      class="page page-nav"
+      [disabled]="page() === 1"
+      (click)="pageChange.emit(page() - 1)"
+    >
+      ‹
+    </button>
+    @for (n of pages(); track n) {
+      <button
+        type="button"
+        class="page"
+        [attr.aria-current]="n === page() ? 'page' : null"
+        (click)="pageChange.emit(n)"
+      >
+        {{ n }}
+      </button>
+    }
+    <button
+      type="button"
+      class="page page-nav"
+      [disabled]="page() === totalPages()"
+      (click)="pageChange.emit(page() + 1)"
+    >
+      ›
+    </button>
+  </nav>
+}

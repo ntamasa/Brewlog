@@ -1,0 +1,33 @@
+<header class="app-header">
+  <div class="app-header-inner container">
+    <a class="brand" routerLink="/"
+      ><mat-icon svgIcon="logo" class="icon brand-mark" aria-hidden="true"></mat-icon
+      ><span class="brand-name">Brewlog</span></a
+    >
+  </div>
+</header>
+
+<main class="container">
+  <div class="page-head">
+    <div>
+      <p class="t-caps eyebrow">Tasting journal</p>
+      <h1 class="t-headline-lg">Your brews</h1>
+    </div>
+    <p class="muted" aria-live="polite">{{ countText() }}</p>
+  </div>
+
+  <div class="brew-grid">
+    @for (brew of store.items(); track brew.id) {
+      <app-brew-card [brew]="brew" />
+    }
+  </div>
+
+  <div class="list-foot">
+    <p class="muted">{{ footerText() }}</p>
+    <app-pagination
+      [page]="store.page()"
+      [totalPages]="store.totalPages()"
+      (pageChange)="onPageChange($event)"
+    />
+  </div>
+</main>

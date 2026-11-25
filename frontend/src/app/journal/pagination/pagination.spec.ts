@@ -10,9 +10,9 @@ function render(page: number, totalPages: number): ComponentFixture<Pagination> 
 }
 
 function button(fixture: ComponentFixture<Pagination>, text: string): HTMLButtonElement {
-  const found = Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('button')).find(
-    (b) => b.textContent.trim() === text,
-  );
+  const found = Array.from<HTMLButtonElement>(
+    fixture.nativeElement.querySelectorAll('button'),
+  ).find((b) => b.textContent.trim() === text);
   if (!found) {
     throw new Error(`no button "${text}"`);
   }
