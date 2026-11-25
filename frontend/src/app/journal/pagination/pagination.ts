@@ -13,4 +13,7 @@ export class Pagination {
   protected readonly pages = computed(() =>
     Array.from({ length: this.totalPages() }, (_, i) => i + 1),
   );
+  protected readonly navLabel = computed(
+    () => `Pages, page ${this.page()} of ${this.totalPages()}`,
+  );
 }
