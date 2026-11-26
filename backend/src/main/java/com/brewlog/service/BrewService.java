@@ -2,9 +2,13 @@ package com.brewlog.service;
 
 import com.brewlog.dto.BrewPage;
 import com.brewlog.dto.BrewQuery;
+import com.brewlog.dto.BrewRequest;
 import com.brewlog.dto.BrewResponse;
 import com.brewlog.dto.MethodRef;
 import com.brewlog.entity.Brew;
+import com.brewlog.entity.BrewMethod;
+import com.brewlog.entity.Roast;
+import com.brewlog.repository.BrewMethodRepository;
 import com.brewlog.repository.BrewRepository;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -18,9 +22,31 @@ public class BrewService {
     static final int PAGE_SIZE = 12;
 
     private final BrewRepository brewRepository;
+    private final BrewMethodRepository brewMethodRepository;
+    private final BrewValidator validator;
 
-    public BrewService(BrewRepository brewRepository) {
+    public BrewService(
+            BrewRepository brewRepository, BrewMethodRepository brewMethodRepository, BrewValidator validator) {
         this.brewRepository = brewRepository;
+        this.brewMethodRepository = brewMethodRepository;
+        this.validator = validator;
+    }
+
+    @Transactional
+    public BrewResponse create(BrewRequest request) {
+        BrewDraft draft = BrewDraft.from(request);
+        validator.validate(draft, null);
+        BrewMethod method = brewMethodRepository.getReferenceById(draft.methodId);
+        Brew brew = new Brew(
+                draft.name,
+                draft.beanName,
+                draft.origin,
+                method,
+                Roast.valueOf(draft.roast),
+                draft.rating,
+                draft.brewDate,
+                draft.notes);
+        return toResponse(brewRepository.saveAndFlush(brew));
     }
 
     @Transactional(readOnly = true)
