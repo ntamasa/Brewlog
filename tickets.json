@@ -13,15 +13,11 @@
         "heading": "Summary"
       },
       {
-        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91; Deployment in BREW-89; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
+        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91; Data model in stories BREW-17 and BREW-57 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
       },
       {
         "from": "spec.md",
         "heading": "Overview"
-      },
-      {
-        "from": "spec.md",
-        "heading": "Data model"
       },
       {
         "from": "spec.md",
@@ -574,7 +570,8 @@
         "design/screenshots/brews.loading.mobile.png",
         "design/screenshots/brews.error.desktop.png",
         "design/screenshots/brews.error.mobile.png"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S3.1",
@@ -587,7 +584,8 @@
           "file": "tickets/S3.1.md"
         }
       ],
-      "blockedBy": []
+      "blockedBy": [],
+      "done": true
     },
     {
       "id": "S4",
@@ -643,6 +641,10 @@
         },
         {
           "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Data model"
         },
         {
           "from": "spec.md",
@@ -1694,6 +1696,10 @@
         },
         {
           "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Data model"
         },
         {
           "from": "spec.md",
