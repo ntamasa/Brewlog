@@ -1,0 +1,88 @@
+<header class="head">
+  <h2 class="t-headline-md">Log a brew</h2>
+  <button matIconButton type="button" aria-label="Close without saving" (click)="closed.emit()">
+    <mat-icon svgIcon="close" class="icon" aria-hidden="true"></mat-icon>
+  </button>
+</header>
+
+<div class="body" [formGroup]="form">
+  <p class="t-body-sm muted intro">Everything is required except tasting notes.</p>
+
+  <mat-form-field>
+    <mat-label>Brew name</mat-label>
+    <input matInput formControlName="name" cdkFocusInitial />
+    <mat-hint>A name only you would recognise, like “Sunday Moka”. Must be unique.</mat-hint>
+  </mat-form-field>
+
+  <div class="pair">
+    <mat-form-field>
+      <mat-label>Bean name</mat-label>
+      <input matInput formControlName="beanName" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Origin</mat-label>
+      <input matInput formControlName="origin" placeholder="Country or region" />
+    </mat-form-field>
+  </div>
+
+  <app-method-select formControlName="methodId" [methods]="methods()" />
+
+  <div class="field">
+    <span class="t-caps label">Roast level</span>
+    <mat-button-toggle-group formControlName="roast" aria-label="Roast level">
+      <mat-button-toggle value="LIGHT"
+        ><span class="swatch swatch-light" aria-hidden="true"></span>Light</mat-button-toggle
+      >
+      <mat-button-toggle value="MEDIUM"
+        ><span class="swatch swatch-medium" aria-hidden="true"></span>Medium</mat-button-toggle
+      >
+      <mat-button-toggle value="DARK"
+        ><span class="swatch swatch-dark" aria-hidden="true"></span>Dark</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+  </div>
+
+  <div class="field">
+    <span class="t-caps label">Rating</span>
+    <app-bean-rating mode="input" formControlName="rating" />
+  </div>
+
+  <mat-form-field>
+    <mat-label>Date</mat-label>
+    <input matInput [matDatepicker]="picker" [max]="today" formControlName="brewDate" />
+    <mat-datepicker-toggle matIconSuffix [for]="picker">
+      <mat-icon matDatepickerToggleIcon svgIcon="calendar" aria-hidden="true"></mat-icon>
+    </mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+    <mat-hint>Defaults to today. Change it if you’re logging an earlier brew.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Tasting notes <span class="optional">Optional</span></mat-label>
+    <textarea
+      matInput
+      formControlName="notes"
+      rows="5"
+      placeholder="Aroma, acidity, body, finish… and anything you’d change next time."
+    ></textarea>
+  </mat-form-field>
+</div>
+
+<footer class="foot">
+  <button matButton="outlined" type="button" class="btn-secondary" (click)="closed.emit()">
+    Cancel
+  </button>
+  <button
+    matButton="filled"
+    type="button"
+    [disabled]="saving()"
+    [attr.aria-busy]="saving() ? 'true' : null"
+    (click)="submit()"
+  >
+    @if (saving()) {
+      <span class="spinner" aria-hidden="true"></span>Saving…
+    } @else {
+      Add to journal
+    }
+  </button>
+</footer>
