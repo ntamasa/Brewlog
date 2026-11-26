@@ -14,8 +14,12 @@ describe('Toaster.show', () => {
   it('opens the snack bar with the text and shows it for 4000 ms', () => {
     TestBed.inject(Toaster).show('“Kenyan Morning” saved to your journal');
 
-    expect(snackBar.open).toHaveBeenCalledWith('“Kenyan Morning” saved to your journal', undefined, {
-      duration: 4000,
-    });
+    expect(snackBar.open).toHaveBeenCalledWith(
+      '“Kenyan Morning” saved to your journal',
+      undefined,
+      {
+        duration: 4000,
+      },
+    );
   });
 });
