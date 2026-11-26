@@ -13,7 +13,7 @@
         "heading": "Summary"
       },
       {
-        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91; Data model in stories BREW-17 and BREW-57 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
+        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91; Backend in each backend subtask that isn't Done (BREW-25, BREW-29, BREW-33, BREW-37, BREW-43, BREW-47, BREW-50, BREW-54, BREW-58, BREW-64, BREW-67, BREW-70, BREW-79); Data model in stories BREW-17 and BREW-57 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
       },
       {
         "from": "spec.md",
@@ -22,10 +22,6 @@
       {
         "from": "spec.md",
         "heading": "API"
-      },
-      {
-        "from": "spec.md",
-        "heading": "Backend"
       },
       {
         "from": "spec.md",
@@ -616,6 +612,13 @@
           "text": "R46's last sentence, the phone \"Filter & sort\" min-rating picker, is built and tested in BREW-52 (story BREW-49 \"Filter my brews\"), which reuses this story's bean rating input."
         },
         {
+          "from": "spec.md",
+          "heading": "R47"
+        },
+        {
+          "text": "This story builds R47's brew form part: focus on Brew name when the create form opens, and back on \"+ Add brew\", the FAB or \"+ Log your first brew\" when it closes without saving (BREW-23, BREW-31). Its other parts come with their overlays: the edit form in BREW-35, \"Delete this brew?\" in BREW-39, the detail in BREW-41, the \"Filter & sort\" sheet in BREW-52, the methods dialog in BREW-60, and the 390 px form, detail and methods sheets in BREW-82."
+        },
+        {
           "text": "## Business rules"
         },
         {
@@ -689,7 +692,8 @@
           "file": "tickets/S4.1.md"
         }
       ],
-      "blockedBy": []
+      "blockedBy": [],
+      "done": true
     },
     {
       "id": "S4.2",
@@ -704,7 +708,8 @@
       ],
       "blockedBy": [
         "S4.1"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S4.3",
@@ -719,7 +724,8 @@
       ],
       "blockedBy": [
         "S4.2"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S4.4",
@@ -734,7 +740,8 @@
       ],
       "blockedBy": [
         "S4.3"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S4.5",
@@ -855,6 +862,13 @@
       "description": [
         {
           "file": "tickets/S5.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -962,6 +976,13 @@
       "description": [
         {
           "file": "tickets/S6.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -1073,6 +1094,13 @@
       "description": [
         {
           "file": "tickets/S7.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -1178,6 +1206,13 @@
       "description": [
         {
           "file": "tickets/S8.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -1331,6 +1366,13 @@
       "description": [
         {
           "file": "tickets/S10.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -1422,6 +1464,13 @@
       "description": [
         {
           "file": "tickets/S11.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -1510,6 +1559,13 @@
       "description": [
         {
           "file": "tickets/S12.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -1607,6 +1663,13 @@
       "description": [
         {
           "file": "tickets/S13.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -1745,6 +1808,13 @@
       "description": [
         {
           "file": "tickets/S14.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -1906,6 +1976,13 @@
       "description": [
         {
           "file": "tickets/S16.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -1990,6 +2067,13 @@
       "description": [
         {
           "file": "tickets/S17.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -2086,6 +2170,13 @@
       "description": [
         {
           "file": "tickets/S18.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
@@ -2310,6 +2401,13 @@
       "description": [
         {
           "file": "tickets/S21.1.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
         }
       ],
       "blockedBy": []
