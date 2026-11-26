@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.method-field {
+  width: 100%;
+}
+
+.method-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}

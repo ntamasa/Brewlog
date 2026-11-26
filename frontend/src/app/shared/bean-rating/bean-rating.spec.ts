@@ -188,7 +188,9 @@ describe('BeanRating in input mode', () => {
   it('when focus leaves the group, the control is marked touched', () => {
     radios(root)[0].focus();
 
-    radios(root)[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+    radios(root)[0].dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: null }),
+    );
 
     expect(host.control.touched).toBe(true);
   });

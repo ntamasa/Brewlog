@@ -1,0 +1,18 @@
+<mat-form-field class="method-field">
+  <mat-select
+    placeholder="Choose a method"
+    [value]="value()"
+    [disabled]="isDisabled()"
+    (selectionChange)="select($event.value)"
+    (closed)="touch()"
+  >
+    @for (method of sorted(); track method.id) {
+      <mat-option [value]="method.id">
+        <span class="method-option">
+          <app-method-icon [iconKey]="method.iconKey" />
+          {{ method.name }}
+        </span>
+      </mat-option>
+    }
+  </mat-select>
+</mat-form-field>

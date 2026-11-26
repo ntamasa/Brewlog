@@ -9,7 +9,15 @@ import { BrewMethod } from '../../core/models';
 import { MethodSelect } from './method-select';
 
 function method(id: number, name: string, iconKey: string, isProtected = false): BrewMethod {
-  return { id, name, iconKey, predefined: id !== 8, protected: isProtected, position: id, brewCount: 0 };
+  return {
+    id,
+    name,
+    iconKey,
+    predefined: id !== 8,
+    protected: isProtected,
+    position: id,
+    brewCount: 0,
+  };
 }
 
 const METHODS: BrewMethod[] = [

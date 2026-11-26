@@ -1,5 +1,36 @@
-<span class="rating" role="img" [attr.aria-label]="label()">
-  @for (filled of beans(); track $index) {
-    <mat-icon class="bean" [class.off]="!filled" [svgIcon]="filled ? 'bean-fill' : 'bean'" />
-  }
-</span>
+@if (mode() === 'display') {
+  <span class="rating" role="img" [attr.aria-label]="label()">
+    @for (filled of beans(); track $index) {
+      <mat-icon class="bean" [class.off]="!filled" [svgIcon]="filled ? 'bean-fill' : 'bean'" />
+    }
+  </span>
+} @else {
+  <div class="input-row">
+    <div
+      #group
+      class="rating-input"
+      role="radiogroup"
+      aria-label="Rating"
+      (focusout)="onFocusOut($event, group)"
+    >
+      @for (bean of beanNumbers; track bean) {
+        <label [class.on]="bean <= (current() ?? 0)">
+          <input
+            #beanInput
+            type="radio"
+            [name]="groupName"
+            [value]="bean"
+            [checked]="bean === current()"
+            [tabIndex]="bean === (current() ?? 1) ? 0 : -1"
+            [disabled]="isDisabled()"
+            (change)="select(bean)"
+            (keydown)="onKey($event, bean)"
+          />
+          <span class="sr-only">{{ bean }} of 5 beans</span>
+          <mat-icon class="bean" [svgIcon]="bean <= (current() ?? 0) ? 'bean-fill' : 'bean'" />
+        </label>
+      }
+    </div>
+    <span class="t-body-sm">{{ current() === null ? 'Not rated' : current() + ' of 5' }}</span>
+  </div>
+}
