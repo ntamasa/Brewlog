@@ -316,6 +316,11 @@ Example data: journal with 41 brews; today is 1 Nov 2026 in the browser and on t
 **Given** `/` at 1440 px, **when** the user presses Tab until the hero's "Open my journal" has focus, **then** a 2px solid #FAF6EE ring shows around it with a 2px gap; "How it works" gets the same ring with a 3px gap, and the hero's brand link and "Open journal →" get a 2px solid #FAF6EE outline, offset 2px. **When** focus reaches the closing "Open my journal →", **then** its ring is 2px solid #B4532A with a 2px gap. **When** the user clicks "How it works" with the mouse instead, **then** no ring shows.
 - **Screens:** `landing` (default)
 
+### R46 — Bean rating keyboard
+**Given** the create form with the rating "Not rated", **when** the user moves focus into the rating with Tab or Shift+Tab, **then** focus is on bean 1, the group's only Tab stop, and the rating stays "Not rated". **When** they press ArrowLeft or ArrowDown, **then** it stays "Not rated"; **when** they press ArrowRight or ArrowUp instead, **then** bean 1 is checked and the text reads "1 of 5"; Space on the focused bean 1 does the same. **Given** the rating 4, **then** bean 4 is the only Tab stop; ArrowRight or ArrowUp checks bean 5 ("5 of 5") and ArrowLeft or ArrowDown checks bean 3 ("3 of 5"), and focus moves to the newly checked bean. **Given** the rating 5, ArrowRight and ArrowUp keep 5; **given** 1, ArrowLeft and ArrowDown keep 1. The phone "Filter & sort" min-rating picker uses the same keys: from "Any rating" (bean 1), ArrowRight gives "2+ beans" and `minRating=2`, ArrowLeft keeps "Any rating" with no `minRating`, and at "5 beans only" ArrowRight keeps `minRating=5`.
+- **Rules:** B6, B18
+- **Screens:** `brew-form` (create), `brews` (filters-sheet, filters-sheet-any)
+
 ## Technical design
 
 ### Overview
@@ -382,7 +387,7 @@ Under `frontend/src/app/`, by feature:
 - `journal/`: `journal.store.ts` (`JournalStore` signalStore: `query`, `items`, `page`, `totalPages`, `matchingCount`, `totalCount`, `status: 'loading'|'ready'|'error'`, `highlightId`, computed `activeFilterCount` for the phone badge per B18; `rxMethod` load with 250 ms debounce on `q`; syncs `query` with the URL query params `q`, `methodId`, `roast`, `minRating`, `sort`, `page`); `journal-page`, `journal-toolbar`, `filters-sheet` (MatBottomSheet; its min-rating `bean-rating` input maps bean 1 to `minRating` null), `filter-chips`, `brew-card` (mat-card), `pagination` (custom numbered; `pageItems(page, totalPages): (number | 'gap')[]` in `pagination-items.ts` builds the desktop list per B20), `brew-detail-dialog` (MatDialog / MatBottomSheet), `brew-delete-dialog` (MatDialog).
 - `brew-form/`: `brew-form.ts` (reactive form, typed; desktop in a `mat-sidenav` `mode="over" position="end"` inside the journal page, phone in a MatBottomSheet); `brew-validators.ts` (client copies of B3–B8); `method-select` (mat-select with icons + "Add new method…" / "Manage methods…" options); `diff.ts` (`changedFields(original, value)` → the PATCH body, with emptied notes → null).
 - `methods/`: `method.store.ts` (`MethodStore`: `methods`, `status`, `load`, `add`, `rename`, `remove`); `methods-dialog` with step components `rename-step` and `delete-step` (MatDialog / MatBottomSheet on phone).
-- `shared/`: `bean-rating` (display + ControlValueAccessor input, custom), `method-icon` (mat-icon `svgIcon` from `iconKey`).
+- `shared/`: `bean-rating` (display + ControlValueAccessor input, custom; in input mode it handles the arrow keys itself with `preventDefault`, because native radios wrap at the ends and treat ArrowUp as the previous radio, R46), `method-icon` (mat-icon `svgIcon` from `iconKey`).
 - `landing/landing-page`.
 - Breakpoints via CDK `BreakpointObserver`: phone < 768 px, tablet 768–1119 px, desktop ≥ 1120 px.
 
@@ -429,7 +434,7 @@ Each of the three app workflows has top-level `permissions:` `contents: read`, a
 | Backend integration: HTTP API via MockMvc | R2, R5–R10, R12–R19, R22–R25, R27–R30, R32–R38, R41 | `@SpringBootTest` + Testcontainers postgres:17 + Liquibase, fixed `Clock`; `IntegrationTest.resetDatabase()` (`@BeforeEach`) runs `classpath:reset.sql` (only `TRUNCATE brew, brew_method RESTART IDENTITY CASCADE;`), then `classpath:db/changelog/002-seed-methods.sql` (its Liquibase lines are SQL comments), so the seed has one source and Espresso is id 1 … Other id 7 in every test (from grilling) | nothing |
 | Frontend unit: `BrewApi`, `MethodApi`, `parseApiError`, `error-messages`, `format`, `diff`, `brew-validators`, stores | R5–R10, R13–R23, R29–R39 | Vitest + TestBed, `HttpTestingController` | HTTP; stores get fake APIs |
 | Frontend unit: generated sprite `frontend/public/icons.svg` (a `<symbol id>` per icon key; only the whitelisted elements and attributes of UI implementation → Icon build script) | B22, R29 | Vitest, `frontend/src/app/core/icons-sprite.spec.ts`, sprite imported as text (UI implementation) | nothing |
-| Frontend unit: components (card, pagination, bean-rating, toolbar, chips, dialogs, method steps) and `pageItems` | R2–R4, R6, R11, R13, R43, R44, R21, R26–R28, R33–R35, R37, R39 | TestBed + Material harnesses | stores faked |
+| Frontend unit: components (card, pagination, bean-rating, toolbar, chips, dialogs, method steps) and `pageItems` | R2–R4, R6, R11, R13, R43, R44, R46, R21, R26–R28, R33–R35, R37, R39 | TestBed + Material harnesses | stores faked |
 | Frontend integration: `JournalPage`, `BrewForm`, `MethodsDialog` with real stores | R2, R6, R8, R12, R16, R19, R25, R35, R40 | TestBed, real stores and APIs, harnesses | HTTP (`HttpTestingController`) |
 | E2E (Playwright, `desktop` + `phone`) | (1) R1, R45; (2) R12, R16; (3) R5–R8, R22, R27; (4) R30, R33, R35 | compose stack with a fresh volume, real browser | nothing |
 
