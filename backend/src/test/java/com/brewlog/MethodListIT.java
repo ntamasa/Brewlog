@@ -18,8 +18,16 @@ class MethodListIT extends IntegrationTest {
     void seededMethodsAreListedInOrder() throws Exception {
         mvc.perform(get("/api/methods"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].name", contains(
-                        "AeroPress", "Cold Brew", "Espresso", "French Press", "Moka Pot", "Pour Over", "Other")))
+                .andExpect(jsonPath(
+                        "$[*].name",
+                        contains(
+                                "AeroPress",
+                                "Cold Brew",
+                                "Espresso",
+                                "French Press",
+                                "Moka Pot",
+                                "Pour Over",
+                                "Other")))
                 .andExpect(jsonPath("$[0].id").value(4))
                 .andExpect(jsonPath("$[0].name").value("AeroPress"))
                 .andExpect(jsonPath("$[0].iconKey").value("aeropress"))
@@ -47,21 +55,22 @@ class MethodListIT extends IntegrationTest {
     @Test
     @DisplayName("a custom method is placed A-Z among the predefined ones, with a null position")
     void customMethodIsSortedAmongPredefined() throws Exception {
-        jdbc.update(
-                "INSERT INTO brew_method (name, icon_key, predefined, is_protected, position)"
-                        + " VALUES ('chemex', 'cup', false, false, null)");
+        jdbc.update("INSERT INTO brew_method (name, icon_key, predefined, is_protected, position)"
+                + " VALUES ('chemex', 'cup', false, false, null)");
 
         mvc.perform(get("/api/methods"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].name", contains(
-                        "AeroPress",
-                        "chemex",
-                        "Cold Brew",
-                        "Espresso",
-                        "French Press",
-                        "Moka Pot",
-                        "Pour Over",
-                        "Other")))
+                .andExpect(jsonPath(
+                        "$[*].name",
+                        contains(
+                                "AeroPress",
+                                "chemex",
+                                "Cold Brew",
+                                "Espresso",
+                                "French Press",
+                                "Moka Pot",
+                                "Pour Over",
+                                "Other")))
                 .andExpect(jsonPath("$[1].position").value(nullValue()))
                 .andExpect(jsonPath("$[1].predefined").value(false));
     }
@@ -69,21 +78,22 @@ class MethodListIT extends IntegrationTest {
     @Test
     @DisplayName("Other stays last even after a custom method that sorts after it alphabetically would")
     void otherStaysLastAfterCustomMethodZebra() throws Exception {
-        jdbc.update(
-                "INSERT INTO brew_method (name, icon_key, predefined, is_protected, position)"
-                        + " VALUES ('zebra', 'cup', false, false, null)");
+        jdbc.update("INSERT INTO brew_method (name, icon_key, predefined, is_protected, position)"
+                + " VALUES ('zebra', 'cup', false, false, null)");
 
         mvc.perform(get("/api/methods"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].name", contains(
-                        "AeroPress",
-                        "Cold Brew",
-                        "Espresso",
-                        "French Press",
-                        "Moka Pot",
-                        "Pour Over",
-                        "zebra",
-                        "Other")))
+                .andExpect(jsonPath(
+                        "$[*].name",
+                        contains(
+                                "AeroPress",
+                                "Cold Brew",
+                                "Espresso",
+                                "French Press",
+                                "Moka Pot",
+                                "Pour Over",
+                                "zebra",
+                                "Other")))
                 .andExpect(jsonPath("$[7].protected").value(true));
     }
 }
