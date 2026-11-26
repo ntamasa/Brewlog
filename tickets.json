@@ -609,6 +609,13 @@
           "heading": "R12"
         },
         {
+          "from": "spec.md",
+          "heading": "R46"
+        },
+        {
+          "text": "R46's last sentence, the phone \"Filter & sort\" min-rating picker, is built and tested in BREW-52 (story BREW-49 \"Filter my brews\"), which reuses this story's bean rating input."
+        },
+        {
           "text": "## Business rules"
         },
         {
@@ -618,6 +625,10 @@
         {
           "from": "spec.md",
           "heading": "B3"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B6"
         },
         {
           "from": "spec.md",
