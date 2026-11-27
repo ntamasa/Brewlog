@@ -1670,6 +1670,21 @@
       ]
     },
     {
+      "id": "S10.5",
+      "type": "subtask",
+      "key": "BREW-114",
+      "parent": "S10",
+      "summary": "Fix: a search typed again after clearing it is sent again",
+      "description": [
+        {
+          "file": "tickets/S10.5.md"
+        }
+      ],
+      "blockedBy": [
+        "S10.3"
+      ]
+    },
+    {
       "id": "S10.4",
       "type": "subtask",
       "key": "BREW-113",
@@ -1681,7 +1696,8 @@
         }
       ],
       "blockedBy": [
-        "S10.3"
+        "S10.3",
+        "S10.5"
       ]
     },
     {
