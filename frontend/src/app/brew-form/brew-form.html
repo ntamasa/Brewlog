@@ -43,7 +43,12 @@
 
   <fieldset class="field" data-field="roast">
     <legend class="field-label">Roast level</legend>
-    <mat-button-toggle-group formControlName="roast" aria-label="Roast level">
+    <mat-button-toggle-group
+      class="segmented"
+      formControlName="roast"
+      aria-label="Roast level"
+      hideSingleSelectionIndicator
+    >
       <mat-button-toggle value="LIGHT"
         ><span class="swatch swatch-light" aria-hidden="true"></span>Light</mat-button-toggle
       >

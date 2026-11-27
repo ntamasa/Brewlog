@@ -272,3 +272,29 @@ html {
 .mat-mdc-form-field .mat-mdc-select-arrow-wrapper {
   display: none;
 }
+
+/* Segmented control: equal-width segments, espresso selection from the theme, no checkmark. */
+.mat-button-toggle-group.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: 100%;
+  padding: var(--spacing-xxs);
+  gap: var(--spacing-xxs);
+  background-color: var(--color-surface);
+  @include mat.button-toggle-overrides(
+    (
+      height: 38px,
+      background-color: transparent,
+    )
+  );
+}
+.mat-button-toggle-group.segmented .mat-button-toggle {
+  border-radius: var(--radius-sm);
+}
+.mat-button-toggle-group.segmented .mat-button-toggle + .mat-button-toggle {
+  border-left: 0;
+}
+.mat-button-toggle-group.segmented .swatch {
+  margin-right: var(--spacing-sm);
+}
