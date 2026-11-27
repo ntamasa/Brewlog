@@ -4,10 +4,12 @@ import com.brewlog.dto.BrewPage;
 import com.brewlog.dto.BrewQuery;
 import com.brewlog.dto.BrewRequest;
 import com.brewlog.dto.BrewResponse;
+import com.brewlog.dto.FieldErrorDto;
 import com.brewlog.dto.MethodRef;
 import com.brewlog.entity.Brew;
 import com.brewlog.entity.BrewMethod;
 import com.brewlog.entity.Roast;
+import com.brewlog.exception.ValidationException;
 import com.brewlog.repository.BrewMethodRepository;
 import com.brewlog.repository.BrewRepository;
 import java.util.List;
@@ -35,7 +37,10 @@ public class BrewService {
     @Transactional
     public BrewResponse create(BrewRequest request) {
         BrewDraft draft = BrewDraft.from(request);
-        validator.validate(draft, null);
+        List<FieldErrorDto> errors = validator.validate(draft, null);
+        if (!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
         BrewMethod method = brewMethodRepository.getReferenceById(draft.methodId);
         Brew brew = new Brew(
                 draft.name,
