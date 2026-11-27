@@ -103,6 +103,7 @@
     matButton="filled"
     type="button"
     [disabled]="saving()"
+    disabledInteractive
     [attr.aria-busy]="saving() ? 'true' : null"
     (click)="submit()"
   >
