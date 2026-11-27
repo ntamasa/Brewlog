@@ -955,7 +955,8 @@
       ],
       "blockedBy": [
         "S4.15"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S4.17",
@@ -970,6 +971,22 @@
       ],
       "blockedBy": [
         "S4.16"
+      ],
+      "done": true
+    },
+    {
+      "id": "S4.18",
+      "type": "subtask",
+      "key": "BREW-111",
+      "parent": "S4",
+      "summary": "Fix: method icon e2e test checks only the field icon, after the panel has closed",
+      "description": [
+        {
+          "file": "tickets/S4.18.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.17"
       ]
     },
     {
