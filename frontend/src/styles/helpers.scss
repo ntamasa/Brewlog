@@ -131,6 +131,17 @@ h3 {
   width: 16px;
   height: 16px;
   margin-top: 2px;
+  flex: none;
+}
+/* In a mat-form-field, Material's later-loaded `.mat-mdc-form-field-error { display: block }`
+   and `.mat-mdc-form-field-subscript-wrapper .mat-icon { width: 1em; height: 1em }` would win
+   at equal specificity, so these carry one class more. */
+.mat-mdc-form-field .field-error {
+  display: flex;
+}
+.mat-mdc-form-field .field-error .mat-icon {
+  width: 16px;
+  height: 16px;
 }
 
 /* ---------- Roast + rating ---------- */
