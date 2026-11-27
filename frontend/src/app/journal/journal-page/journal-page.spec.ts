@@ -7,7 +7,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatButtonToggleHarness } from '@angular/material/button-toggle/testing';
 import { MATERIAL_ANIMATIONS, MAT_DATE_LOCALE } from '@angular/material/core';
-import { MatFormFieldHarness } from '@angular/material/form-field/testing';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
 import { MatSelectHarness } from '@angular/material/select/testing';
@@ -18,6 +18,7 @@ import { enGB } from 'date-fns/locale';
 import { type Mock, vi } from 'vitest';
 import { routes } from '../../app.routes';
 import { BREWLOG_DATE_FORMATS } from '../../core/date-formats';
+import { BREWLOG_FORM_FIELD_OPTIONS } from '../../core/form-field-options';
 import { registerIcons } from '../../core/icons';
 import { Brew, BrewMethod, BrewPage } from '../../core/models';
 import { JournalPage } from './journal-page';
@@ -86,16 +87,17 @@ function showFab(page: HTMLElement): HTMLButtonElement {
   return fab;
 }
 
-async function field(loader: HarnessLoader, label: string): Promise<MatInputHarness> {
-  const formField = await loader.getHarness(MatFormFieldHarness.with({ floatingLabelText: label }));
-  return (await formField.getControl(MatInputHarness))!;
+async function field(loader: HarnessLoader, selector: string): Promise<MatInputHarness> {
+  return loader.getHarness(MatInputHarness.with({ selector }));
 }
 
 async function fillValid(loader: HarnessLoader, page: HTMLElement): Promise<void> {
-  await (await field(loader, 'Brew name')).setValue('Kenyan Morning');
-  await (await field(loader, 'Bean name')).setValue('AA Kiambu');
-  await (await field(loader, 'Origin')).setValue('Kenya');
-  await (await loader.getHarness(MatSelectHarness)).clickOptions({ text: 'Pour Over' });
+  await (await field(loader, '#name')).setValue('Kenyan Morning');
+  await (await field(loader, '#bean')).setValue('AA Kiambu');
+  await (await field(loader, '#origin')).setValue('Kenya');
+  await (
+    await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }))
+  ).clickOptions({ text: 'Pour Over' });
   await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Light' }))).check();
   page.querySelectorAll<HTMLInputElement>('.rating-input input[type="radio"]')[4].click();
 }
@@ -161,6 +163,7 @@ describe('JournalPage', () => {
         { provide: MAT_DATE_LOCALE, useValue: enGB },
         { provide: MATERIAL_ANIMATIONS, useValue: { animationsDisabled: true } },
         { provide: MatSnackBar, useValue: { open: vi.fn() } },
+        { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: BREWLOG_FORM_FIELD_OPTIONS },
       ],
     });
     http = TestBed.inject(HttpTestingController);

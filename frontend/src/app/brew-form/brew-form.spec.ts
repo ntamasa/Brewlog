@@ -10,6 +10,7 @@ import {
   MatCalendarHarness,
   MatDatepickerInputHarness,
 } from '@angular/material/datepicker/testing';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatFormFieldHarness } from '@angular/material/form-field/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
@@ -18,6 +19,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { enGB } from 'date-fns/locale';
 import { type Mock, vi } from 'vitest';
 import { BREWLOG_DATE_FORMATS } from '../core/date-formats';
+import { BREWLOG_FORM_FIELD_OPTIONS } from '../core/form-field-options';
 import { Brew, BrewMethod } from '../core/models';
 import { BrewForm } from './brew-form';
 
@@ -87,11 +89,8 @@ describe('BrewForm', () => {
     loader = TestbedHarnessEnvironment.loader(fixture);
   }
 
-  async function field(label: string): Promise<MatInputHarness> {
-    const formField = await loader.getHarness(
-      MatFormFieldHarness.with({ floatingLabelText: label }),
-    );
-    return (await formField.getControl(MatInputHarness))!;
+  async function field(selector: string): Promise<MatInputHarness> {
+    return loader.getHarness(MatInputHarness.with({ selector }));
   }
 
   function radios(): HTMLInputElement[] {
@@ -103,21 +102,25 @@ describe('BrewForm', () => {
   }
 
   async function fillValid(): Promise<void> {
-    await (await field('Brew name')).setValue('Kenyan Morning');
-    await (await field('Bean name')).setValue('AA Kiambu');
-    await (await field('Origin')).setValue('Kenya');
-    await (await loader.getHarness(MatSelectHarness)).clickOptions({ text: 'Pour Over' });
+    await (await field('#name')).setValue('Kenyan Morning');
+    await (await field('#bean')).setValue('AA Kiambu');
+    await (await field('#origin')).setValue('Kenya');
+    await (
+      await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }))
+    ).clickOptions({ text: 'Pour Over' });
     await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Light' }))).check();
     radios()[4].click();
     fixture.detectChanges();
   }
 
   async function fillValidExcept(skipped: 'method' | 'roast' | 'rating' | 'date'): Promise<void> {
-    await (await field('Brew name')).setValue('Kenyan Morning');
-    await (await field('Bean name')).setValue('AA Kiambu');
-    await (await field('Origin')).setValue('Kenya');
+    await (await field('#name')).setValue('Kenyan Morning');
+    await (await field('#bean')).setValue('AA Kiambu');
+    await (await field('#origin')).setValue('Kenya');
     if (skipped !== 'method') {
-      await (await loader.getHarness(MatSelectHarness)).clickOptions({ text: 'Pour Over' });
+      await (
+        await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }))
+      ).clickOptions({ text: 'Pour Over' });
     }
     if (skipped !== 'roast') {
       await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Light' }))).check();
@@ -134,18 +137,24 @@ describe('BrewForm', () => {
     expect(await button.isDisabled()).toBe(false);
     expect(fixture.nativeElement.querySelector('button[aria-busy]')).toBeNull();
 
-    expect(await (await field('Brew name')).isDisabled()).toBe(false);
-    expect(await (await field('Brew name')).getValue()).toBe('Kenyan Morning');
-    expect(await (await field('Bean name')).getValue()).toBe('AA Kiambu');
-    expect(await (await field('Origin')).getValue()).toBe('Kenya');
-    expect(await (await loader.getHarness(MatSelectHarness)).getValueText()).toBe('Pour Over');
+    expect(await (await field('#name')).isDisabled()).toBe(false);
+    expect(await (await field('#name')).getValue()).toBe('Kenyan Morning');
+    expect(await (await field('#bean')).getValue()).toBe('AA Kiambu');
+    expect(await (await field('#origin')).getValue()).toBe('Kenya');
+    expect(
+      await (
+        await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }))
+      ).getValueText(),
+    ).toBe('Pour Over');
     expect(
       await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Light' }))).isChecked(),
     ).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('5 of 5');
-    expect(await (await loader.getHarness(MatDatepickerInputHarness)).getValue()).toBe(
-      '1 Nov 2026',
-    );
+    expect(
+      await (
+        await loader.getHarness(MatDatepickerInputHarness.with({ selector: '#date' }))
+      ).getValue(),
+    ).toBe('1 Nov 2026');
     expect(fixture.nativeElement.querySelector('h2').textContent).toContain('Log a brew');
     expect(saved).not.toHaveBeenCalled();
     expect(closed).not.toHaveBeenCalled();
@@ -163,6 +172,7 @@ describe('BrewForm', () => {
         provideDateFnsAdapter(BREWLOG_DATE_FORMATS),
         { provide: MAT_DATE_LOCALE, useValue: enGB },
         { provide: MatSnackBar, useValue: { open: vi.fn() } },
+        { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: BREWLOG_FORM_FIELD_OPTIONS },
       ],
     });
     http = TestBed.inject(HttpTestingController);
@@ -177,16 +187,78 @@ describe('BrewForm', () => {
 
   // Happy path
 
+  it('labels Brew name, Bean name, Origin, Date and Tasting notes above their inputs', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const labels: [string, string][] = [
+      ['name', 'Brew name'],
+      ['bean', 'Bean name'],
+      ['origin', 'Origin'],
+      ['date', 'Date'],
+    ];
+    for (const [id, text] of labels) {
+      const label = el.querySelector(`label.field-label[for="${id}"]`);
+      expect(label?.textContent?.trim()).toBe(text);
+      expect(el.querySelector(`#${id}`)).not.toBeNull();
+    }
+    expect(el.querySelector('#name')?.tagName).toBe('INPUT');
+    expect(el.querySelector('#bean')?.tagName).toBe('INPUT');
+    expect(el.querySelector('#origin')?.tagName).toBe('INPUT');
+    expect(el.querySelector('#date')?.tagName).toBe('INPUT');
+
+    const notes = el.querySelector('label.field-label[for="notes"]');
+    expect(notes?.textContent?.trim().startsWith('Tasting notes')).toBe(true);
+    expect(notes?.querySelector('span.opt')?.textContent?.trim()).toBe('Optional');
+    expect(el.querySelector('#notes')?.tagName).toBe('TEXTAREA');
+  });
+
+  it('builds every form field as an outlined field with no floating label or mat-label', async () => {
+    const fields = await loader.getAllHarnesses(MatFormFieldHarness);
+    expect(fields.length).toBeGreaterThan(0);
+    for (const formField of fields) {
+      expect(await formField.getAppearance()).toBe('outline');
+      expect(await formField.hasLabel()).toBe(false);
+    }
+    expect(fixture.nativeElement.querySelector('mat-label')).toBeNull();
+  });
+
+  it('shows the name and date help text as hints, each marked as field-help', async () => {
+    const name = await loader.getHarness(
+      MatFormFieldHarness.with({ ancestor: '[data-field="name"]' }),
+    );
+    expect(await name.getTextHints()).toEqual([
+      'A name only you would recognise, like “Sunday Moka”. Must be unique.',
+    ]);
+    const date = await loader.getHarness(
+      MatFormFieldHarness.with({ ancestor: '[data-field="date"]' }),
+    );
+    expect(await date.getTextHints()).toEqual([
+      'Defaults to today. Change it if you’re logging an earlier brew.',
+    ]);
+    const hints = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('mat-hint'));
+    expect(hints.length).toBe(2);
+    for (const hint of hints) {
+      expect(hint.classList.contains('field-help')).toBe(true);
+    }
+  });
+
+  it('groups Roast level and Rating as fieldsets with their legends, and Rating has the id rating', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const roast = el.querySelector('fieldset.field[data-field="roast"]');
+    expect(roast?.querySelector('legend.field-label')?.textContent?.trim()).toBe('Roast level');
+    const rating = el.querySelector('fieldset.field[data-field="rating"]#rating');
+    expect(rating?.querySelector('legend.field-label')?.textContent?.trim()).toBe('Rating');
+  });
+
   it('in create mode shows an empty form with the date defaulting to today', async () => {
     expect(fixture.nativeElement.querySelector('h2').textContent).toContain('Log a brew');
-    expect(await (await field('Brew name')).getValue()).toBe('');
-    expect(await (await field('Bean name')).getValue()).toBe('');
-    expect(await (await field('Origin')).getValue()).toBe('');
+    expect(await (await field('#name')).getValue()).toBe('');
+    expect(await (await field('#bean')).getValue()).toBe('');
+    expect(await (await field('#origin')).getValue()).toBe('');
     expect(form.form.controls.notes.value).toBe('');
     expect(fixture.nativeElement.querySelector('textarea').value).toBe('');
 
     expect(form.form.controls.methodId.value).toBeNull();
-    const method = await loader.getHarness(MatSelectHarness);
+    const method = await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }));
     expect(await method.isEmpty()).toBe(true);
     expect(await method.getValueText()).toBe('Choose a method');
 
@@ -199,9 +271,11 @@ describe('BrewForm', () => {
     expect(radios().some((radio) => radio.checked)).toBe(false);
     expect(fixture.nativeElement.textContent).toContain('Not rated');
 
-    expect(await (await loader.getHarness(MatDatepickerInputHarness)).getValue()).toBe(
-      '1 Nov 2026',
-    );
+    expect(
+      await (
+        await loader.getHarness(MatDatepickerInputHarness.with({ selector: '#date' }))
+      ).getValue(),
+    ).toBe('1 Nov 2026');
   });
 
   it('with the valid form, sends one POST and emits the saved brew once the server answers 201', async () => {
@@ -213,8 +287,12 @@ describe('BrewForm', () => {
 
     const busy = fixture.nativeElement.querySelector('button[aria-busy="true"]');
     expect(busy.textContent).toContain('Saving…');
-    expect(await (await field('Brew name')).isDisabled()).toBe(true);
-    expect(await (await loader.getHarness(MatSelectHarness)).isDisabled()).toBe(true);
+    expect(await (await field('#name')).isDisabled()).toBe(true);
+    expect(
+      await (
+        await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }))
+      ).isDisabled(),
+    ).toBe(true);
 
     request.flush(SAVED, { status: 201, statusText: 'Created' });
     fixture.detectChanges();
@@ -242,7 +320,9 @@ describe('BrewForm', () => {
   // Negative
 
   it('opens the calendar with 2 Nov 2026 disabled and 1 Nov 2026 enabled', async () => {
-    await (await loader.getHarness(MatDatepickerInputHarness)).openCalendar();
+    await (
+      await loader.getHarness(MatDatepickerInputHarness.with({ selector: '#date' }))
+    ).openCalendar();
     const calendar =
       await TestbedHarnessEnvironment.documentRootLoader(fixture).getHarness(MatCalendarHarness);
 
@@ -300,7 +380,7 @@ describe('BrewForm', () => {
 
   it('with the bean name of only spaces sends no POST', async () => {
     await fillValid();
-    await (await field('Bean name')).setValue('   ');
+    await (await field('#bean')).setValue('   ');
     await addToJournal();
 
     http.expectNone('/api/brews');
@@ -331,7 +411,9 @@ describe('BrewForm', () => {
     fixture.destroy();
     mount();
     await fillValidExcept('date');
-    await (await loader.getHarness(MatDatepickerInputHarness)).setValue('');
+    await (
+      await loader.getHarness(MatDatepickerInputHarness.with({ selector: '#date' }))
+    ).setValue('');
     await addToJournal();
     http.expectNone('/api/brews');
     expect(saved).not.toHaveBeenCalled();
@@ -339,10 +421,29 @@ describe('BrewForm', () => {
 
   it('with a date typed as 2 Nov 2026 sends no POST', async () => {
     await fillValid();
-    await (await loader.getHarness(MatDatepickerInputHarness)).setValue('2 Nov 2026');
+    await (
+      await loader.getHarness(MatDatepickerInputHarness.with({ selector: '#date' }))
+    ).setValue('2 Nov 2026');
     await addToJournal();
 
     http.expectNone('/api/brews');
     expect(saved).not.toHaveBeenCalled();
+  });
+
+  it('with only the default date shows no field in the error state', async () => {
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    expect(fixture.nativeElement.querySelectorAll('.mat-form-field-invalid').length).toBe(0);
+  });
+
+  it('a Brew name cleared after typing and blurred shows no error state and no mat-error', async () => {
+    await (await field('#name')).setValue('Kenyan Morning');
+    await (await field('#name')).setValue('');
+    await (await field('#name')).blur();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.mat-form-field-invalid').length).toBe(0);
+    expect(fixture.nativeElement.querySelector('mat-error')).toBeNull();
   });
 });

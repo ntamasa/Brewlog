@@ -4,7 +4,10 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
+import { MatIconHarness } from '@angular/material/icon/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
+import { BREWLOG_FORM_FIELD_OPTIONS } from '../../core/form-field-options';
 import { BrewMethod } from '../../core/models';
 import { MethodSelect } from './method-select';
 
@@ -47,7 +50,11 @@ describe('MethodSelect', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [MethodHost],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: BREWLOG_FORM_FIELD_OPTIONS },
+      ],
     });
     fixture = TestBed.createComponent(MethodHost);
     host = fixture.componentInstance;
@@ -84,5 +91,18 @@ describe('MethodSelect', () => {
 
     const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
     expect(await select.isDisabled()).toBe(true);
+  });
+
+  it('labels the field Brew method, and its chevron icon opens the select', async () => {
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const label = fixture.nativeElement.querySelector('span.field-label#method-label');
+    expect(label.textContent.trim()).toBe('Brew method');
+
+    const select = fixture.nativeElement.querySelector('mat-select#method-btn');
+    expect(select.getAttribute('aria-labelledby')).toContain('method-label');
+
+    const chevron = await loader.getHarness(MatIconHarness.with({ name: 'chevron-down' }));
+    await (await chevron.host()).click();
+    expect(await (await loader.getHarness(MatSelectHarness)).isOpen()).toBe(true);
   });
 });
