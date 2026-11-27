@@ -11,7 +11,6 @@ import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { enGB } from 'date-fns/locale';
@@ -21,6 +20,7 @@ import { BREWLOG_DATE_FORMATS } from '../../core/date-formats';
 import { BREWLOG_FORM_FIELD_OPTIONS } from '../../core/form-field-options';
 import { registerIcons } from '../../core/icons';
 import { Brew, BrewMethod, BrewPage } from '../../core/models';
+import { Toaster } from '../../core/toast';
 import { JournalPage } from './journal-page';
 
 const SAVED: Brew = {
@@ -150,7 +150,7 @@ function buttonWithText(element: HTMLElement, text: string): HTMLButtonElement {
 
 describe('JournalPage', () => {
   let http: HttpTestingController;
-  let snackBar: { open: Mock };
+  let toaster: { show: Mock };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -162,12 +162,12 @@ describe('JournalPage', () => {
         provideDateFnsAdapter(BREWLOG_DATE_FORMATS),
         { provide: MAT_DATE_LOCALE, useValue: enGB },
         { provide: MATERIAL_ANIMATIONS, useValue: { animationsDisabled: true } },
-        { provide: MatSnackBar, useValue: { open: vi.fn() } },
+        { provide: Toaster, useValue: { show: vi.fn() } },
         { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: BREWLOG_FORM_FIELD_OPTIONS },
       ],
     });
     http = TestBed.inject(HttpTestingController);
-    snackBar = TestBed.inject(MatSnackBar) as unknown as { open: Mock };
+    toaster = TestBed.inject(Toaster) as unknown as { show: Mock };
   });
 
   it('shows the count, twelve cards in order, the footer and the page numbers for page 1', async () => {
@@ -384,11 +384,8 @@ describe('JournalPage', () => {
     await harness.fixture.whenStable();
 
     await expectFormClosed(element);
-    expect(snackBar.open).toHaveBeenCalledWith(
-      '“Kenyan Morning” saved to your journal',
-      undefined,
-      expect.objectContaining({ duration: 4000 }),
-    );
+    expect(toaster.show).toHaveBeenCalledTimes(1);
+    expect(toaster.show).toHaveBeenCalledWith('“Kenyan Morning” saved to your journal');
     http.expectOne('/api/brews?sort=NEWEST&page=2').flush({
       items: [SAVED, brewAt(8)],
       page: 2,

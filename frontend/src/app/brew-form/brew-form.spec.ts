@@ -15,10 +15,10 @@ import { MatFormFieldHarness } from '@angular/material/form-field/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { enGB } from 'date-fns/locale';
 import { type Mock, vi } from 'vitest';
 import { BREWLOG_DATE_FORMATS } from '../core/date-formats';
+import { Toaster } from '../core/toast';
 import { BREWLOG_FORM_FIELD_OPTIONS } from '../core/form-field-options';
 import { Brew, BrewMethod } from '../core/models';
 import { BrewForm } from './brew-form';
@@ -73,7 +73,7 @@ describe('BrewForm', () => {
   let form: BrewForm;
   let loader: HarnessLoader;
   let http: HttpTestingController;
-  let snackBar: { open: Mock };
+  let toaster: { show: Mock };
   let saved: Mock;
   let closed: Mock;
 
@@ -158,7 +158,7 @@ describe('BrewForm', () => {
     expect(fixture.nativeElement.querySelector('h2').textContent).toContain('Log a brew');
     expect(saved).not.toHaveBeenCalled();
     expect(closed).not.toHaveBeenCalled();
-    expect(snackBar.open).not.toHaveBeenCalled();
+    expect(toaster.show).not.toHaveBeenCalled();
   }
 
   beforeEach(() => {
@@ -171,12 +171,12 @@ describe('BrewForm', () => {
         provideHttpClientTesting(),
         provideDateFnsAdapter(BREWLOG_DATE_FORMATS),
         { provide: MAT_DATE_LOCALE, useValue: enGB },
-        { provide: MatSnackBar, useValue: { open: vi.fn() } },
+        { provide: Toaster, useValue: { show: vi.fn() } },
         { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: BREWLOG_FORM_FIELD_OPTIONS },
       ],
     });
     http = TestBed.inject(HttpTestingController);
-    snackBar = TestBed.inject(MatSnackBar) as unknown as { open: Mock };
+    toaster = TestBed.inject(Toaster) as unknown as { show: Mock };
     mount();
   });
 

@@ -60,6 +60,11 @@ test.describe("brew form", () => {
     await expect(
       page.getByText(`“${name}” saved to your journal`),
     ).toBeVisible();
+    const bar = page.locator("mat-snack-bar-container");
+    await expect(bar).toContainText(`“${name}” saved to your journal`);
+    await expect(
+      bar.locator('mat-icon[data-mat-icon-name="check"]'),
+    ).toBeVisible();
     await expect(drawer).not.toHaveClass(/mat-drawer-opened/);
     await expect(
       page.locator("app-brew-card h3", { hasText: name }),
