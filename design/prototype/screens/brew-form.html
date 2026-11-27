@@ -63,7 +63,7 @@
   <div class="handle-host"><span class="sheet-handle" aria-hidden="true"></span></div>
   <div class="drawer-head">
     <h2 id="form-title" class="t-headline-md">
-      <span data-states="create validation-error server-error method-open add-method saving field-limits method-gone one-error">Log a brew</span>
+      <span data-states="create validation-error server-error method-open add-method add-method-saving saving field-limits method-gone one-error">Log a brew</span>
       <span data-states="edit duplicate-name brew-gone">Edit brew</span>
     </h2>
     <a class="icon-btn" href="brews.html" aria-label="Close without saving"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></a>
@@ -113,7 +113,7 @@
     <div class="field" data-field="name">
       <label class="field-label" for="name">Brew name</label>
       <input class="input" id="name" autocomplete="off" aria-describedby="name-help name-err">
-      <p class="field-help" id="name-help" data-states="create edit method-open add-method saving server-error method-gone brew-gone one-error">A name only you would recognise, like “Sunday Moka”. Must be unique.</p>
+      <p class="field-help" id="name-help" data-states="create edit method-open add-method add-method-saving saving server-error method-gone brew-gone one-error">A name only you would recognise, like “Sunday Moka”. Must be unique.</p>
       <p class="field-error" id="name-err" data-states="validation-error"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Enter a brew name</p>
       <p class="field-error" data-states="duplicate-name"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>You already have a brew called “Kenyan morning”. Brew names must be unique, ignoring capitals.</p>
       <p class="field-error" data-states="field-limits"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Brew name can be at most 100 characters</p>
@@ -155,11 +155,11 @@
           <li role="option" class="add"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg>Manage methods…</li>
         </ul>
       </div>
-      <div class="add-method" data-states="add-method">
+      <div class="add-method" data-states="add-method add-method-saving">
         <label class="field-label" for="new-method">New method name</label>
         <div class="row">
           <input class="input is-focus" id="new-method" value="Chemex">
-          <button type="button" class="btn btn-primary">Add</button>
+          <button type="button" class="btn btn-primary" id="new-method-add">Add</button>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--spacing-sm)">
           <p class="field-help">It will be saved and selected for this brew.</p>
@@ -194,7 +194,7 @@
       <label class="field-label" for="date">Date</label>
       <div class="date-field"><input class="input" id="date"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg></div>
       <p class="field-error" data-states="field-limits"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>The date can’t be in the future</p>
-      <p class="field-help" data-states="create validation-error server-error method-open add-method saving method-gone one-error">Defaults to today. Change it if you’re logging an earlier brew.</p>
+      <p class="field-help" data-states="create validation-error server-error method-open add-method add-method-saving saving method-gone one-error">Defaults to today. Change it if you’re logging an earlier brew.</p>
     </div>
 
     <!-- Notes -->
@@ -209,12 +209,12 @@
   </div>
 
   <div class="drawer-foot">
-    <a class="btn btn-secondary" href="brews.html" data-states="create edit validation-error duplicate-name server-error method-open add-method saving field-limits method-gone one-error">Cancel</a>
+    <a class="btn btn-secondary" href="brews.html" data-states="create edit validation-error duplicate-name server-error method-open add-method add-method-saving saving field-limits method-gone one-error">Cancel</a>
     <a class="btn btn-secondary" href="brews.html" data-states="brew-gone">Close</a>
-    <button class="btn btn-primary" type="submit" data-states="create validation-error server-error method-open add-method field-limits method-gone one-error">Add to journal</button>
+    <button class="btn btn-primary" type="submit" data-states="create validation-error server-error method-open add-method add-method-saving field-limits method-gone one-error">Add to journal</button>
     <button class="btn btn-primary" type="submit" data-states="brew-gone">Save as new brew</button>
     <button class="btn btn-primary" type="submit" data-states="edit duplicate-name">Save changes</button>
-    <button class="btn btn-primary" type="button" aria-busy="true" data-states="saving"><span class="spinner" aria-hidden="true"></span>Saving…</button>
+    <button class="btn btn-primary" type="button" aria-busy="true" aria-disabled="true" data-states="saving"><span class="spinner" aria-hidden="true"></span>Saving…</button>
   </div>
 </form>
 
@@ -236,6 +236,7 @@
       create: { name: '', bean: '', origin: '', roast: '', rating: 0, date: '1 Nov 2026', notes: '' },
       'method-open': { name: 'Huila Sunrise', bean: 'Pink Bourbon', origin: 'Colombia', roast: '', rating: 0, date: '1 Nov 2026', notes: '' },
       'add-method': { name: 'Huila Sunrise', bean: 'Pink Bourbon', origin: 'Colombia', roast: '', rating: 0, date: '1 Nov 2026', notes: '' },
+      'add-method-saving': { name: 'Huila Sunrise', bean: 'Pink Bourbon', origin: 'Colombia', roast: '', rating: 0, date: '1 Nov 2026', notes: '' },
       'validation-error': { name: '', bean: 'Pink Bourbon', origin: '', roast: 'Light', rating: 0, date: '1 Nov 2026', notes: '' },
       'one-error': { name: 'Huila Sunrise', bean: 'Pink Bourbon', origin: '', roast: 'Light', rating: 4, date: '1 Nov 2026', notes: 'Red grape and panela, silky body.' },
       'server-error': fresh, saving: fresh,
@@ -264,6 +265,11 @@
     // Errors
     var errs = { 'validation-error': ['name', 'origin', 'rating'], 'duplicate-name': ['name'], 'field-limits': ['name', 'origin', 'date', 'notes'], 'method-gone': ['method'], 'one-error': ['origin'] }[state] || [];
     errs.forEach(function (f) { var el = document.querySelector('[data-field="' + f + '"]'); if (el) el.classList.add('has-error'); });
+    if (state === 'add-method-saving') {
+      var nm = document.getElementById('new-method'); nm.disabled = true; nm.classList.remove('is-focus');
+      var qa = document.getElementById('new-method-add'); qa.setAttribute('aria-busy', 'true'); qa.setAttribute('aria-disabled', 'true');
+      document.querySelectorAll('.drawer-foot button[type=submit]').forEach(function (el) { el.setAttribute('aria-disabled', 'true'); });
+    }
     if (state === 'saving') document.querySelectorAll('.drawer-body input, .drawer-body textarea, .drawer-body button').forEach(function (el) { el.disabled = true; });
   })();
 </script>

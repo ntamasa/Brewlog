@@ -34,12 +34,15 @@
 | default | Dialog opened | List as above |
 | renaming | Pencil on a row | Row turns ivory, shows a focused input with the current name, ghost "Cancel" + primary "Save". Phone: input full width, buttons below |
 | rename-confirm | Save on a rename of a method with ≥1 brew | Step view as above (example: Pour Over → Pour Over (V60), 14 brews, list scrolls) |
-| rename-saving | Rename request in flight | Primary shows spinner + "Renaming…" (`aria-busy`) |
+| rename-saving | Rename request in flight | Primary busy: spinner + "Renaming…" at 75% (`aria-busy`), disabled; "Cancel", back and × stay enabled |
 | rename-error | Rename failed on the server/network | `banner-error` "Couldn’t save the method — Nothing was changed. Try again." above the actions; primary retries |
 | delete-confirm | Trash on a method with 0 brews | Inline error-soft panel under that row: "**Delete “Kalita Wave”?** No brews use it. This can’t be undone." + "Keep" / `button-danger` "Delete method" |
 | delete-reassign | Trash on a method with ≥1 brew | Step view as above, every brew on "Other" (example: Moka Pot, 3 brews), summary "3 to Other" |
 | delete-mixed | Some brews moved elsewhere | Example: Pour Over, 14 brews, 4 rows changed (dot), summary "10 to Other · 3 to Kalita Wave · 1 to AeroPress"; list scrolls |
-| deleting | Delete request in flight | Danger button spinner + "Deleting…" (`aria-busy`); selects disabled |
+| deleting | Delete request in flight | Danger button busy: spinner + "Deleting…" at 75% (`aria-busy`), disabled; selects disabled; "Keep method", back and × stay enabled |
+| adding | "+ Add" request in flight | Add input disabled with "Chemex"; "+ Add" busy (own label, no spinner, 75%, `aria-busy`, disabled); every pencil and trash in the list blocked (75%, disabled). "Done" and × stay enabled. On failure the input is enabled again with its value kept and refocused |
+| rename-row-saving | Row "Save" in flight on a method with 0 brews | Kalita Wave row in rename with "Kalita Wave 185": input disabled, "Save" busy (own label, no spinner, 75%, `aria-busy`, disabled), row "Cancel" enabled; "+ Add" and every other pencil and trash blocked. On failure the input is enabled again with its value kept and refocused |
+| delete-inline-deleting | Inline "Delete method" in flight on a method with 0 brews | delete-confirm panel under Kalita Wave: "Delete method" busy (own label, no spinner, 75%, `aria-busy`, disabled), "Keep" enabled; "+ Add" and every pencil and trash blocked |
 | duplicate | Add or rename to an existing name | Field error under the input: "“Pour Over” already exists. Method names must be unique." (input "pour over") |
 | added | Add succeeded | New row ("Chemex · 0 brews · added by you") briefly highlighted terracotta-soft; toast "“Chemex” added" |
 | error | Method list failed to load | Add row, list and hint are replaced by `banner-error` "We couldn’t load your methods" + "The Brewlog server didn’t respond. Check that the backend is running, then try again." with `button-primary` "Try again" (refresh icon); "Done" stays |
@@ -70,4 +73,5 @@
 - Method names unique case-insensitively, same rule as brew names (confirmed in spec); max 50 characters.
 - Predefined methods: Espresso, Pour Over, French Press, AeroPress, Moka Pot, Cold Brew, plus Other (confirmed in spec).
 - This dialog keeps its own order (predefined fixed, custom A–Z, Other last); the form dropdown and journal filter use A–Z with Other last.
+- One request at a time per dialog (spec decision): while a request is in flight its button is busy, and "+ Add", every pencil and trash, the row "Save" and the inline "Delete method" are blocked (disabled, own label, 75%); Cancel, Keep, back, ×, Done and Esc stay enabled. The input a request came from is disabled until it answers.
 - Server failures appear inline in the existing slots (add/rename input, delete panel) and a load failure replaces the list with a retry banner.

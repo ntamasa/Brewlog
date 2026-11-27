@@ -296,7 +296,7 @@ Tailored, near-sharp corners: `sm` 2px for buttons, inputs, chips' inner element
 
 ## Components
 
-- **Buttons:** primary (espresso, ivory text), accent (terracotta, landing CTAs only), secondary (surface with 1px outline), ghost (text only), danger (error red, only inside delete confirmations). Height 44px. Labels in `label-md`, sentence case.
+- **Buttons:** primary (espresso, ivory text), accent (terracotta, landing CTAs only), secondary (surface with 1px outline), ghost (text only), danger (error red, only inside delete confirmations). Height 44px. Labels in `label-md`, sentence case. **Busy** (its own request in flight): the button keeps its own fill and label colour at 75% opacity, progress cursor, `aria-busy="true"`, and is disabled (a click or Enter does nothing); buttons with a designed busy label show the spinner plus that label ("Saving…", "Renaming…", "Deleting…"), the others keep their own label with no spinner. **Blocked** (another request in the same overlay is in flight): disabled, own label and colours at 75% opacity, default cursor. Never Material grey. Cancel, Keep, back, ×, Done and Esc stay enabled.
 - **Icon button:** 44×44 hit area, 20px fine-line icon, always with `aria-label`. The card ⋮ menu uses this.
 - **Input field:** surface fill, 1px outline (hover: `outline-strong`), 2px radius, 44px tall; textarea min 120px. Label always above (`label-md`), helper/error below (`body-sm`). Focus: 1px terracotta border + 3px terracotta-soft ring. Error: error border, error-soft fill, message below with an icon.
 - **Select:** same as input with a chevron. The method select ends with a divider and "+ Add new method" which turns into an inline text field with Add/Cancel.
