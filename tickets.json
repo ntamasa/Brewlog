@@ -695,7 +695,8 @@
         "design/screenshots/brews.empty.mobile.png",
         "design/screenshots/brew-form.saving.desktop_deprecated.png",
         "design/screenshots/brew-form.saving.mobile_deprecated.png"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S4.1",
@@ -987,7 +988,8 @@
       ],
       "blockedBy": [
         "S4.17"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S5",
@@ -1087,7 +1089,8 @@
           "heading": "Backend"
         }
       ],
-      "blockedBy": []
+      "blockedBy": [],
+      "done": true
     },
     {
       "id": "S5.2",
