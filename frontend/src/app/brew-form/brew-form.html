@@ -157,9 +157,9 @@
         >
       }
     </mat-form-field>
-    @if (notesLength() > 1800) {
+    @if (notesState() !== 'none') {
       <div class="notes-meta">
-        <span class="counter" [class.counter-error]="notesLength() > 2000">{{
+        <span class="counter" [class.counter-error]="notesState() === 'over'">{{
           counterText()
         }}</span>
       </div>

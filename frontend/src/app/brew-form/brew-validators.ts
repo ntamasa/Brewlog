@@ -1,5 +1,6 @@
 import { ValidatorFn } from '@angular/forms';
 import { isAfter, startOfDay } from 'date-fns';
+import { BREW_TEXT_LIMITS } from '../core/brew-limits';
 import type { BrewFormControls } from './brew-form';
 
 export const requiredTrimmed: ValidatorFn = (control) => {
@@ -25,10 +26,10 @@ export const notAfterToday: ValidatorFn = (control) => {
 };
 
 export const BREW_VALIDATORS: Record<keyof BrewFormControls, ValidatorFn[]> = {
-  name: [requiredTrimmed, maxTrimmedLength(100)],
-  beanName: [requiredTrimmed, maxTrimmedLength(100)],
-  origin: [requiredTrimmed, maxTrimmedLength(100)],
-  notes: [maxTrimmedLength(2000)],
+  name: [requiredTrimmed, maxTrimmedLength(BREW_TEXT_LIMITS.name)],
+  beanName: [requiredTrimmed, maxTrimmedLength(BREW_TEXT_LIMITS.beanName)],
+  origin: [requiredTrimmed, maxTrimmedLength(BREW_TEXT_LIMITS.origin)],
+  notes: [maxTrimmedLength(BREW_TEXT_LIMITS.notes)],
   methodId: [requiredTrimmed],
   roast: [requiredTrimmed],
   rating: [requiredTrimmed],

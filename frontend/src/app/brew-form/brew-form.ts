@@ -31,6 +31,7 @@ import { MatInputModule } from '@angular/material/input';
 import { format, startOfDay } from 'date-fns';
 import { map } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
+import { BREW_TEXT_LIMITS } from '../core/brew-limits';
 import { parseApiError } from '../core/api-error';
 import { brewFieldMessage, fieldErrorMessage } from '../core/error-messages';
 import { ApiFieldError, Brew, BrewBody, BrewMethod, Roast } from '../core/models';
@@ -120,10 +121,15 @@ export class BrewForm implements ErrorStateMatcher {
     { initialValue: 0 },
   );
   protected readonly counterText = computed(
-    () => `${this.notesLength().toLocaleString('en-US')} / 2,000`,
+    () =>
+      `${this.notesLength().toLocaleString('en-US')} / ${BREW_TEXT_LIMITS.notes.toLocaleString('en-US')}`,
   );
-  private readonly notesState = computed(() =>
-    this.notesLength() > 2000 ? 'over' : this.notesLength() > 1800 ? 'near' : 'none',
+  protected readonly notesState = computed(() =>
+    this.notesLength() > BREW_TEXT_LIMITS.notes
+      ? 'over'
+      : this.notesLength() > 1800
+        ? 'near'
+        : 'none',
   );
   // recomputed only when notesState changes; the counter text is read untracked
   protected readonly notesAnnouncement = linkedSignal({
@@ -132,11 +138,12 @@ export class BrewForm implements ErrorStateMatcher {
   });
 
   fieldMessage(field: keyof BrewFormControls): string | null {
-    return fieldErrorMessage(
-      field,
-      this.form.controls[field].errors,
-      field === 'name' ? this.form.controls.name.value.trim() : undefined,
-    );
+    return fieldErrorMessage(field, this.form.controls[field].errors, this.messageValue(field));
+  }
+
+  // the value a message quotes: only the brew name's DUPLICATE message does
+  private messageValue(field: keyof BrewFormControls): string | undefined {
+    return field === 'name' ? this.form.controls.name.value.trim() : undefined;
   }
 
   shownMessage(field: keyof BrewFormControls): string | null {
@@ -203,13 +210,12 @@ export class BrewForm implements ErrorStateMatcher {
   }
 
   private setServerFieldErrors(fields: ApiFieldError[]): void {
-    const name = this.form.controls.name.value.trim();
     const byField = new Map<keyof BrewFormControls, ValidationErrors>();
     for (const { field, code } of fields) {
       // a pair with no text to show is dropped: it must not block sending
       if (!Object.hasOwn(this.form.controls, field)) continue;
-      if (brewFieldMessage(field, code, field === 'name' ? name : undefined) === null) continue;
       const key = field as keyof BrewFormControls;
+      if (brewFieldMessage(key, code, this.messageValue(key)) === null) continue;
       byField.set(key, { ...byField.get(key), [code]: true });
     }
     for (const [key, errors] of byField) {

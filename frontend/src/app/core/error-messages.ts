@@ -1,17 +1,18 @@
 import { ValidationErrors } from '@angular/forms';
+import { BREW_TEXT_LIMITS } from './brew-limits';
 
 const FIELD_MESSAGES: Record<string, Record<string, string>> = {
   name: {
     REQUIRED: 'Enter a brew name',
-    TOO_LONG: 'Brew name can be at most 100 characters',
+    TOO_LONG: `Brew name can be at most ${BREW_TEXT_LIMITS.name} characters`,
   },
   beanName: {
     REQUIRED: 'Enter a bean name',
-    TOO_LONG: 'Bean name can be at most 100 characters',
+    TOO_LONG: `Bean name can be at most ${BREW_TEXT_LIMITS.beanName} characters`,
   },
   origin: {
     REQUIRED: 'Enter where the beans are from',
-    TOO_LONG: 'Origin can be at most 100 characters',
+    TOO_LONG: `Origin can be at most ${BREW_TEXT_LIMITS.origin} characters`,
   },
   methodId: {
     REQUIRED: 'Choose a brew method',
@@ -30,7 +31,7 @@ const FIELD_MESSAGES: Record<string, Record<string, string>> = {
     FUTURE_DATE: 'The date can’t be in the future',
   },
   notes: {
-    TOO_LONG: 'Tasting notes can be at most 2000 characters',
+    TOO_LONG: `Tasting notes can be at most ${BREW_TEXT_LIMITS.notes} characters`,
   },
 };
 
