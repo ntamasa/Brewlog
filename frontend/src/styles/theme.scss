@@ -72,6 +72,11 @@ html {
       outlined-outline-color: var(--color-outline),
       outlined-label-text-color: var(--color-on-surface),
       text-label-text-color: var(--color-on-surface),
+      filled-disabled-container-color: var(--color-primary),
+      filled-disabled-label-text-color: var(--color-on-primary),
+      outlined-disabled-outline-color: var(--color-outline),
+      outlined-disabled-label-text-color: var(--color-on-surface),
+      text-disabled-label-text-color: var(--color-on-surface),
     )
   );
 
@@ -82,6 +87,7 @@ html {
       icon-size: 20px,
       icon-color: var(--color-on-surface),
       state-layer-color: var(--color-on-surface),
+      disabled-icon-color: var(--color-on-surface),
     )
   );
 
@@ -112,6 +118,11 @@ html {
       outlined-error-focus-outline-color: var(--color-error),
       outlined-input-text-color: var(--color-on-surface),
       outlined-input-text-placeholder-color: var(--color-on-surface-muted),
+      outlined-disabled-input-text-color: var(--color-on-surface),
+      outlined-disabled-outline-color: var(--color-outline),
+      disabled-input-text-placeholder-color: var(--color-on-surface-muted),
+      disabled-leading-icon-color: var(--color-on-surface-muted),
+      disabled-trailing-icon-color: var(--color-on-surface-muted),
       error-text-color: var(--color-error),
       outlined-outline-width: 1px,
       outlined-focus-outline-width: 1px,
@@ -126,7 +137,7 @@ html {
   @include mat.select-overrides(
     (
       enabled-trigger-text-color: var(--color-on-surface),
-      disabled-trigger-text-color: var(--color-on-surface-muted),
+      disabled-trigger-text-color: var(--color-on-surface),
       enabled-arrow-color: var(--color-on-surface-muted),
       focused-arrow-color: var(--color-tertiary),
       panel-background-color: var(--color-surface),
@@ -220,6 +231,8 @@ html {
     (
       filled-container-color: var(--color-tertiary),
       filled-label-text-color: var(--color-on-primary),
+      filled-disabled-container-color: var(--color-tertiary),
+      filled-disabled-label-text-color: var(--color-on-primary),
     )
   );
 }
@@ -229,6 +242,8 @@ html {
     (
       filled-container-color: var(--color-error),
       filled-label-text-color: var(--color-on-primary),
+      filled-disabled-container-color: var(--color-error),
+      filled-disabled-label-text-color: var(--color-on-primary),
     )
   );
 }
@@ -243,8 +258,40 @@ html {
       outlined-label-text-color: var(--color-on-scrim),
       outlined-outline-color: color-mix(in srgb, var(--color-on-scrim) 55%, transparent),
       outlined-state-layer-color: var(--color-on-scrim),
+      outlined-disabled-label-text-color: var(--color-on-scrim),
+      outlined-disabled-outline-color: color-mix(in srgb, var(--color-on-scrim) 55%, transparent),
     )
   );
+}
+
+/* Busy and blocked buttons keep their own colours at 75%; the progress cursor is only while busy. */
+.mat-mdc-button-base.mat-mdc-button-disabled {
+  opacity: 0.75;
+}
+.mat-mdc-button-base.mat-mdc-button-disabled[aria-busy='true'] {
+  cursor: progress;
+}
+
+/* The date picker's calendar toggle keeps its normal look; its disabled arrows keep Material's grey. */
+.mat-datepicker-toggle {
+  @include mat.icon-button-overrides(
+    (
+      disabled-icon-color: var(--color-on-surface-muted),
+    )
+  );
+}
+.mat-datepicker-toggle .mat-mdc-button-disabled {
+  opacity: 1;
+}
+.mat-datepicker-content {
+  @include mat.icon-button-overrides(
+    (
+      disabled-icon-color: color-mix(in srgb, var(--color-on-surface) 38%, transparent),
+    )
+  );
+}
+.mat-datepicker-content .mat-mdc-button-disabled {
+  opacity: 1;
 }
 
 /* Form fields: the box, error fill, focus ring, subscript spacing and select arrow have no Material token. */
