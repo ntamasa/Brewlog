@@ -16,6 +16,7 @@ import { BrewMethod } from '../../core/models';
 })
 export class MethodSelect implements ControlValueAccessor {
   methods = input.required<BrewMethod[]>();
+  error = input<string | null>(null);
 
   private readonly matSelect = viewChild.required(MatSelect);
 
