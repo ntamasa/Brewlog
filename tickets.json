@@ -907,7 +907,8 @@
       ],
       "blockedBy": [
         "S4.12"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S4.14",
@@ -922,6 +923,52 @@
       ],
       "blockedBy": [
         "S4.13"
+      ],
+      "done": true
+    },
+    {
+      "id": "S4.15",
+      "type": "subtask",
+      "key": "BREW-108",
+      "parent": "S4",
+      "summary": "Fix: a later card highlight is not cleared early by an earlier highlight timer",
+      "description": [
+        {
+          "file": "tickets/S4.15.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.14"
+      ]
+    },
+    {
+      "id": "S4.16",
+      "type": "subtask",
+      "key": "BREW-109",
+      "parent": "S4",
+      "summary": "Fix: Esc with the method listbox open closes only the listbox, the drawer stays open",
+      "description": [
+        {
+          "file": "tickets/S4.16.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.15"
+      ]
+    },
+    {
+      "id": "S4.17",
+      "type": "subtask",
+      "key": "BREW-110",
+      "parent": "S4",
+      "summary": "Fix: roast segments keep espresso selection and theme colours while saving",
+      "description": [
+        {
+          "file": "tickets/S4.17.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.16"
       ]
     },
     {
