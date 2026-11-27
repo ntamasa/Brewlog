@@ -56,6 +56,10 @@ export const JournalStore = signalStore(
     );
 
     return {
+      highlight(id: number): void {
+        patchState(store, { highlightId: id });
+        setTimeout(() => patchState(store, { highlightId: null }), 1200);
+      },
       setQuery(query: BrewQuery): void {
         load(query);
       },

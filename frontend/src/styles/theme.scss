@@ -187,6 +187,11 @@ html {
   @include mat.sidenav-overrides(
     (
       container-background-color: var(--color-surface),
+      container-width: var(--spacing-drawer-width),
+      container-shape: 0,
+      container-elevation-shadow: 0 24px 64px -24px
+        color-mix(in srgb, var(--color-primary) 35%, transparent),
+      scrim-color: var(--color-backdrop),
     )
   );
 }
