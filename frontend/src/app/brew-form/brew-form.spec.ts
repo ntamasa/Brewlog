@@ -879,6 +879,188 @@ describe('BrewForm', () => {
     expect(fixture.nativeElement.querySelector('mat-error')).toBeNull();
   });
 
+  async function answerSaveWithFieldErrors(
+    errors: { field: string; code: string }[],
+  ): Promise<void> {
+    http.expectOne('/api/brews').flush({ errors }, { status: 400, statusText: 'Bad Request' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
+  async function originTooLong(): Promise<void> {
+    await fillValid();
+    await addToJournal();
+    await answerSaveWithFieldErrors([{ field: 'origin', code: 'TOO_LONG' }]);
+  }
+
+  const DUPLICATE_MESSAGE =
+    'You already have a brew called “kenyan morning”. Brew names must be unique, ignoring capitals.';
+
+  async function duplicateName(): Promise<void> {
+    await fillValid();
+    await (await field('#name')).setValue('  kenyan morning ');
+    await addToJournal();
+    await answerSaveWithFieldErrors([{ field: 'name', code: 'DUPLICATE' }]);
+  }
+
+  it('after a 400 with an origin TOO_LONG error, Origin shows its message in error state, the banner lists it and every value is kept', async () => {
+    await originTooLong();
+
+    expect(await (await fieldOf('origin')).getTextErrors()).toEqual([
+      'Origin can be at most 100 characters',
+    ]);
+    expect(await (await (await fieldOf('origin')).host()).hasClass('mat-form-field-invalid')).toBe(
+      true,
+    );
+    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerLinkTexts()).toEqual(['Origin can be at most 100 characters']);
+    expect(await (await field('#name')).getValue()).toBe('Kenyan Morning');
+    expect(await (await field('#origin')).getValue()).toBe('Kenya');
+  });
+
+  it('after a 400 with a DUPLICATE name error, Brew name shows the message with the trimmed name and keeps every value', async () => {
+    await duplicateName();
+
+    expect(await (await fieldOf('name')).getTextErrors()).toEqual([DUPLICATE_MESSAGE]);
+    expect(await (await (await fieldOf('name')).host()).hasClass('mat-form-field-invalid')).toBe(
+      true,
+    );
+    expect(await (await field('#name')).getValue()).toBe('  kenyan morning ');
+    expect(await (await field('#bean')).getValue()).toBe('AA Kiambu');
+  });
+
+  it('a changed Brew name clears its server error, and the banner keeps it until the next submit, which sends the new name', async () => {
+    await duplicateName();
+    expect(await (await fieldOf('name')).getTextErrors()).toEqual([DUPLICATE_MESSAGE]);
+    expect(bannerTitle()).toBe('1 field needs your attention');
+
+    await (await field('#name')).setValue('Kenyan Evening');
+    await (await field('#name')).blur();
+    fixture.detectChanges();
+    expect(await (await fieldOf('name')).getTextErrors()).toEqual([]);
+    expect(await (await (await fieldOf('name')).host()).hasClass('mat-form-field-invalid')).toBe(
+      false,
+    );
+    expect(bannerTitle()).toBe('1 field needs your attention');
+
+    await addToJournal();
+    expect(bannerEl()).toBeNull();
+    const request = http.expectOne('/api/brews');
+    expect(request.request.body.name).toBe('Kenyan Evening');
+    request.flush(SAVED, { status: 201, statusText: 'Created' });
+    expect(saved).toHaveBeenCalledWith(SAVED);
+  });
+
+  it('a changed Origin keeps its server error only until its own change, and the next submit sends once the origin is changed', async () => {
+    await originTooLong();
+
+    await (await field('#origin')).setValue('Nyeri');
+    await (await field('#origin')).blur();
+    fixture.detectChanges();
+    expect(await (await fieldOf('origin')).getTextErrors()).toEqual([]);
+    expect(await (await (await fieldOf('origin')).host()).hasClass('mat-form-field-invalid')).toBe(
+      false,
+    );
+    expect(bannerTitle()).toBe('1 field needs your attention');
+
+    await addToJournal();
+    const request = http.expectOne('/api/brews');
+    expect(request.request.body.origin).toBe('Nyeri');
+    request.flush(SAVED, { status: 201, statusText: 'Created' });
+  });
+
+  it('with an origin TOO_LONG error, changing only Bean name keeps the Origin error, and the next submit sends nothing and lists it again', async () => {
+    await originTooLong();
+
+    await (await field('#bean')).setValue('AA Batch');
+    fixture.detectChanges();
+    expect(await (await fieldOf('origin')).getTextErrors()).toEqual([
+      'Origin can be at most 100 characters',
+    ]);
+    expect(await (await (await fieldOf('origin')).host()).hasClass('mat-form-field-invalid')).toBe(
+      true,
+    );
+
+    await addToJournal();
+    http.expectNone('/api/brews');
+    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerLinkTexts()).toEqual(['Origin can be at most 100 characters']);
+    expect(document.activeElement).toBe(bannerEl());
+  });
+
+  it('with a DUPLICATE name error, submitting again without a change sends nothing and lists the name error in the banner with focus on it', async () => {
+    await duplicateName();
+
+    await addToJournal();
+    http.expectNone('/api/brews');
+    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerLinkTexts()).toEqual([DUPLICATE_MESSAGE]);
+    expect(document.activeElement).toBe(bannerEl());
+  });
+
+  it('with an origin TOO_LONG error, clearing Brew name and submitting lists the empty name and the origin error in order', async () => {
+    await originTooLong();
+
+    await (await field('#name')).setValue('');
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    expect(bannerTitle()).toBe('2 fields need your attention');
+    expect(bannerLinkTexts()).toEqual([
+      'Enter a brew name',
+      'Origin can be at most 100 characters',
+    ]);
+  });
+
+  it('a 400 with an origin error and a methodId TOO_LONG error shows only the origin error, and the method field gets no error', async () => {
+    await fillValid();
+    await addToJournal();
+    await answerSaveWithFieldErrors([
+      { field: 'origin', code: 'TOO_LONG' },
+      { field: 'methodId', code: 'TOO_LONG' },
+    ]);
+
+    expect(await (await fieldOf('origin')).getTextErrors()).toEqual([
+      'Origin can be at most 100 characters',
+    ]);
+    expect(await (await fieldOf('method')).getTextErrors()).toEqual([]);
+    expect(await (await (await fieldOf('method')).host()).hasClass('mat-form-field-invalid')).toBe(
+      false,
+    );
+    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerLinkTexts()).toEqual(['Origin can be at most 100 characters']);
+  });
+
+  it('after the dropped methodId TOO_LONG pair, changing Origin and submitting sends the POST', async () => {
+    await fillValid();
+    await addToJournal();
+    await answerSaveWithFieldErrors([
+      { field: 'origin', code: 'TOO_LONG' },
+      { field: 'methodId', code: 'TOO_LONG' },
+    ]);
+    expect(bannerTitle()).toBe('1 field needs your attention');
+
+    await (await field('#origin')).setValue('Nyeri');
+    await addToJournal();
+
+    const request = http.expectOne('/api/brews');
+    expect(request.request.body.origin).toBe('Nyeri');
+    request.flush(SAVED, { status: 201, statusText: 'Created' });
+  });
+
+  it('a POST that fails with status 0 sets no field error and no banner, and keeps the fields enabled with their values', async () => {
+    await fillValid();
+    await addToJournal();
+    http.expectOne('/api/brews').error(new ProgressEvent('error'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('mat-error')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.mat-form-field-invalid').length).toBe(0);
+    expect(bannerEl()).toBeNull();
+    await expectKeptAfterFailure();
+  });
+
   it('a second click on the busy Saving button sends no second POST and emits saved once', async () => {
     await fillValid();
     await addToJournal();
