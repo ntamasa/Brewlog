@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { uniqueName } from "./support";
 
 test.describe("journal search", () => {
@@ -62,5 +62,96 @@ test.describe("journal search", () => {
     );
     await expect(page.locator(".chip")).toContainText(`“${p} kenya”`);
     await expect(page).toHaveURL(/q=/);
+  });
+});
+
+test.describe("journal toolbar layout", () => {
+  async function openJournalWithBrew(page: Page, projectName: string) {
+    const p = uniqueName(`T ${projectName}`);
+    const methods: { id: number; name: string }[] = await (
+      await page.request.get("/api/methods")
+    ).json();
+    const otherId = methods.find((method) => method.name === "Other")?.id;
+    expect(otherId).toBeDefined();
+
+    const response = await page.request.post("/api/brews", {
+      data: {
+        name: `${p} Toolbar brew`,
+        beanName: "Santos",
+        origin: "Brazil",
+        methodId: otherId,
+        roast: "MEDIUM",
+        rating: 3,
+        brewDate: "2026-10-25",
+        notes: null,
+      },
+    });
+    expect(response.status()).toBe(201);
+
+    await page.goto("/journal");
+    await expect(page.getByPlaceholder("Search brew names")).toBeVisible();
+  }
+
+  test("spans the phone toolbar and hides its caption visually", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "phone");
+    await openJournalWithBrew(page, testInfo.project.name);
+
+    const toolbar = page.locator("app-journal-toolbar .toolbar");
+    const field = toolbar.locator("mat-form-field");
+    const caption = toolbar.locator('label.field-label[for="q"]');
+    const search = page.getByPlaceholder("Search brew names");
+
+    await expect
+      .poll(async () => {
+        const fieldBox = await field.boundingBox();
+        const toolbarBox = await toolbar.boundingBox();
+        return Math.round(fieldBox!.width) - Math.round(toolbarBox!.width);
+      })
+      .toBe(0);
+    await expect
+      .poll(async () => {
+        const fieldBox = await field.boundingBox();
+        const toolbarBox = await toolbar.boundingBox();
+        return Math.round(fieldBox!.x) - Math.round(toolbarBox!.x);
+      })
+      .toBe(0);
+
+    await expect(caption).toHaveCSS("position", "absolute");
+    await expect(caption).toHaveCSS("width", "1px");
+    await expect(caption).toHaveCSS("height", "1px");
+    await expect(caption).toHaveCSS("overflow", "hidden");
+    await expect(page.locator("#q")).toHaveAccessibleName("Search");
+
+    await search.fill("panama natural");
+    await expect
+      .poll(() =>
+        search.evaluate(
+          (el: HTMLInputElement) => el.scrollWidth <= el.clientWidth,
+        ),
+      )
+      .toBe(true);
+  });
+
+  test("keeps the desktop toolbar with its visible caption", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop");
+    await openJournalWithBrew(page, testInfo.project.name);
+
+    const toolbar = page.locator("app-journal-toolbar .toolbar");
+    const field = toolbar.locator("mat-form-field");
+    const caption = toolbar.locator('label.field-label[for="q"]');
+
+    await expect(caption).toHaveCSS("position", "static");
+    await expect(caption).toHaveText("Search");
+    await expect
+      .poll(async () => {
+        const fieldBox = await field.boundingBox();
+        const toolbarBox = await toolbar.boundingBox();
+        return fieldBox!.width < toolbarBox!.width / 2;
+      })
+      .toBe(true);
   });
 });
