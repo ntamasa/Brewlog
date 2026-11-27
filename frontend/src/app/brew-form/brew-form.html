@@ -8,6 +8,26 @@
 <div class="body" [formGroup]="form">
   <p class="intro">Everything is required except tasting notes.</p>
 
+  @if (banner(); as b) {
+    <div #banner class="banner-error" role="alert" tabindex="-1">
+      <mat-icon svgIcon="alert" class="icon" aria-hidden="true" />
+      <div>
+        <strong>{{
+          b.links.length === 1
+            ? '1 field needs your attention'
+            : b.links.length + ' fields need your attention'
+        }}</strong>
+        <ul>
+          @for (link of b.links; track link.id) {
+            <li>
+              <a href="#{{ link.id }}" (click)="focusField($event, link.id)">{{ link.message }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  }
+
   <div class="field" data-field="name">
     <label class="field-label" for="name">Brew name</label>
     <mat-form-field>
@@ -15,6 +35,11 @@
       <mat-hint class="field-help"
         >A name only you would recognise, like “Sunday Moka”. Must be unique.</mat-hint
       >
+      @if (shownMessage('name'); as message) {
+        <mat-error class="field-error"
+          ><mat-icon svgIcon="alert" aria-hidden="true" />{{ message }}</mat-error
+        >
+      }
     </mat-form-field>
   </div>
 
@@ -23,6 +48,11 @@
       <label class="field-label" for="bean">Bean name</label>
       <mat-form-field>
         <input matInput id="bean" formControlName="beanName" autocomplete="off" />
+        @if (shownMessage('beanName'); as message) {
+          <mat-error class="field-error"
+            ><mat-icon svgIcon="alert" aria-hidden="true" />{{ message }}</mat-error
+          >
+        }
       </mat-form-field>
     </div>
     <div class="field" data-field="origin">
@@ -35,13 +65,27 @@
           autocomplete="off"
           placeholder="Country or region"
         />
+        @if (shownMessage('origin'); as message) {
+          <mat-error class="field-error"
+            ><mat-icon svgIcon="alert" aria-hidden="true" />{{ message }}</mat-error
+          >
+        }
       </mat-form-field>
     </div>
   </div>
 
-  <app-method-select formControlName="methodId" [methods]="methods()" />
+  <app-method-select
+    formControlName="methodId"
+    [methods]="methods()"
+    [error]="shownMessage('methodId')"
+  />
 
-  <fieldset class="field" data-field="roast">
+  <fieldset
+    class="field"
+    data-field="roast"
+    id="roast"
+    [class.has-error]="shownMessage('roast') !== null"
+  >
     <legend class="field-label">Roast level</legend>
     <mat-button-toggle-group
       class="segmented"
@@ -59,11 +103,22 @@
         ><span class="swatch swatch-dark" aria-hidden="true"></span>Dark</mat-button-toggle
       >
     </mat-button-toggle-group>
+    @if (shownMessage('roast'); as message) {
+      <p class="field-error"><mat-icon svgIcon="alert" aria-hidden="true" />{{ message }}</p>
+    }
   </fieldset>
 
-  <fieldset class="field" data-field="rating" id="rating">
+  <fieldset
+    class="field"
+    data-field="rating"
+    id="rating"
+    [class.has-error]="shownMessage('rating') !== null"
+  >
     <legend class="field-label">Rating</legend>
     <app-bean-rating mode="input" formControlName="rating" />
+    @if (shownMessage('rating'); as message) {
+      <p class="field-error"><mat-icon svgIcon="alert" aria-hidden="true" />{{ message }}</p>
+    }
   </fieldset>
 
   <div class="field" data-field="date">
@@ -77,6 +132,11 @@
       <mat-hint class="field-help"
         >Defaults to today. Change it if you’re logging an earlier brew.</mat-hint
       >
+      @if (shownMessage('brewDate'); as message) {
+        <mat-error class="field-error"
+          ><mat-icon svgIcon="alert" aria-hidden="true" />{{ message }}</mat-error
+        >
+      }
     </mat-form-field>
   </div>
 
@@ -91,7 +151,20 @@
         rows="5"
         placeholder="Aroma, acidity, body, finish… and anything you’d change next time."
       ></textarea>
+      @if (shownMessage('notes'); as message) {
+        <mat-error class="field-error"
+          ><mat-icon svgIcon="alert" aria-hidden="true" />{{ message }}</mat-error
+        >
+      }
     </mat-form-field>
+    @if (notesLength() > 1800) {
+      <div class="notes-meta">
+        <span class="counter" [class.counter-error]="notesLength() > 2000">{{
+          counterText()
+        }}</span>
+      </div>
+    }
+    <span class="sr-only" aria-live="polite">{{ notesAnnouncement() }}</span>
   </div>
 </div>
 

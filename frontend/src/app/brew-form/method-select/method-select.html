@@ -8,6 +8,7 @@
       hideSingleSelectionIndicator
       [value]="value()"
       [disabled]="isDisabled()"
+      [errorStateMatcher]="errorMatcher"
       (selectionChange)="select($event.value)"
       (closed)="touch()"
       (keydown.escape)="closeOnEscape($event)"
@@ -28,5 +29,10 @@
       }
     </mat-select>
     <mat-icon matIconSuffix svgIcon="chevron-down" class="icon-sm" aria-hidden="true" />
+    @if (error(); as message) {
+      <mat-error class="field-error"
+        ><mat-icon svgIcon="alert" aria-hidden="true" />{{ message }}</mat-error
+      >
+    }
   </mat-form-field>
 </div>

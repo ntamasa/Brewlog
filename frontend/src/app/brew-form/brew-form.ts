@@ -1,5 +1,20 @@
-import { Component, inject, input, output, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  computed,
+  forwardRef,
+  inject,
+  input,
+  linkedSignal,
+  output,
+  signal,
+  untracked,
+  viewChild,
+  afterNextRender,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -8,9 +23,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { format, startOfDay } from 'date-fns';
+import { map } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
+import { fieldErrorMessage } from '../core/error-messages';
 import { Brew, BrewBody, BrewMethod, Roast } from '../core/models';
 import { BeanRating } from '../shared/bean-rating/bean-rating';
+import { BREW_VALIDATORS } from './brew-validators';
 import { MethodSelect } from './method-select/method-select';
 
 export interface BrewFormControls {
@@ -24,8 +42,26 @@ export interface BrewFormControls {
   brewDate: FormControl<Date | null>;
 }
 
-// interim: no field shows the error state until BREW-27 adds the real matcher and the messages
-const NO_ERROR_STATE: ErrorStateMatcher = { isErrorState: () => false };
+export interface BannerLink {
+  id: string;
+  message: string;
+}
+
+export interface FormBanner {
+  kind: 'fields';
+  links: BannerLink[];
+}
+
+const BANNER_FIELDS: { field: keyof BrewFormControls; id: string }[] = [
+  { field: 'name', id: 'name' },
+  { field: 'beanName', id: 'bean' },
+  { field: 'origin', id: 'origin' },
+  { field: 'methodId', id: 'method-btn' },
+  { field: 'roast', id: 'roast' },
+  { field: 'rating', id: 'rating' },
+  { field: 'brewDate', id: 'date' },
+  { field: 'notes', id: 'notes' },
+];
 
 @Component({
   selector: 'app-brew-form',
@@ -42,9 +78,9 @@ const NO_ERROR_STATE: ErrorStateMatcher = { isErrorState: () => false };
   ],
   templateUrl: './brew-form.html',
   styleUrl: './brew-form.scss',
-  providers: [{ provide: ErrorStateMatcher, useValue: NO_ERROR_STATE }],
+  providers: [{ provide: ErrorStateMatcher, useExisting: forwardRef(() => BrewForm) }],
 })
-export class BrewForm {
+export class BrewForm implements ErrorStateMatcher {
   readonly mode = input<'create' | 'edit'>('create');
   readonly brew = input<Brew | null>(null);
   readonly methods = input.required<BrewMethod[]>();
@@ -52,37 +88,94 @@ export class BrewForm {
   readonly closed = output<void>();
 
   private readonly brewApi = inject(BrewApi);
+  private readonly injector = inject(Injector);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly bannerEl = viewChild<ElementRef<HTMLElement>>('banner');
 
   protected readonly today = startOfDay(new Date());
   readonly saving = signal(false);
+  readonly submitted = signal(false);
+  readonly banner = signal<FormBanner | null>(null);
 
   readonly form = new FormGroup<BrewFormControls>({
-    name: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.pattern(/\S/)],
-    }),
-    beanName: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.pattern(/\S/)],
-    }),
-    origin: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.pattern(/\S/)],
-    }),
-    notes: new FormControl('', { nonNullable: true }),
-    methodId: new FormControl<number | null>(null, Validators.required),
-    roast: new FormControl<Roast | null>(null, Validators.required),
-    rating: new FormControl<number | null>(null, Validators.required),
-    brewDate: new FormControl<Date | null>(this.today, Validators.required),
+    name: new FormControl('', { nonNullable: true, validators: BREW_VALIDATORS.name }),
+    beanName: new FormControl('', { nonNullable: true, validators: BREW_VALIDATORS.beanName }),
+    origin: new FormControl('', { nonNullable: true, validators: BREW_VALIDATORS.origin }),
+    notes: new FormControl('', { nonNullable: true, validators: BREW_VALIDATORS.notes }),
+    methodId: new FormControl<number | null>(null, BREW_VALIDATORS.methodId),
+    roast: new FormControl<Roast | null>(null, BREW_VALIDATORS.roast),
+    rating: new FormControl<number | null>(null, BREW_VALIDATORS.rating),
+    brewDate: new FormControl<Date | null>(this.today, BREW_VALIDATORS.brewDate),
   });
+
+  protected readonly notesLength = toSignal(
+    this.form.controls.notes.valueChanges.pipe(map((value) => value.trim().length)),
+    { initialValue: 0 },
+  );
+  protected readonly counterText = computed(
+    () => `${this.notesLength().toLocaleString('en-US')} / 2,000`,
+  );
+  private readonly notesState = computed(() =>
+    this.notesLength() > 2000 ? 'over' : this.notesLength() > 1800 ? 'near' : 'none',
+  );
+  // recomputed only when notesState changes; the counter text is read untracked
+  protected readonly notesAnnouncement = linkedSignal({
+    source: this.notesState,
+    computation: (state) => (state === 'none' ? '' : untracked(this.counterText)),
+  });
+
+  fieldMessage(field: keyof BrewFormControls): string | null {
+    return fieldErrorMessage(
+      field,
+      this.form.controls[field].errors,
+      field === 'name' ? this.form.controls.name.value.trim() : undefined,
+    );
+  }
+
+  shownMessage(field: keyof BrewFormControls): string | null {
+    const control = this.form.controls[field];
+    if (!this.submitted() || !(control.touched || control.dirty)) return null;
+    return this.fieldMessage(field);
+  }
+
+  isErrorState(control: AbstractControl | null): boolean {
+    const field = (Object.keys(this.form.controls) as (keyof BrewFormControls)[]).find(
+      (key) => this.form.controls[key] === control,
+    );
+    return field !== undefined && this.shownMessage(field) !== null;
+  }
+
+  private setFieldsBanner(): void {
+    const links: BannerLink[] = [];
+    for (const { field, id } of BANNER_FIELDS) {
+      const message = this.fieldMessage(field);
+      if (message !== null) links.push({ id, message });
+    }
+    this.banner.set(links.length === 0 ? null : { kind: 'fields', links });
+    if (links.length > 0) {
+      afterNextRender(() => this.bannerEl()?.nativeElement.focus(), { injector: this.injector });
+    }
+  }
+
+  protected focusField(event: Event, id: string): void {
+    event.preventDefault();
+    const target = this.host.nativeElement.querySelector<HTMLElement>('#' + id);
+    const focusable =
+      target?.tagName === 'FIELDSET'
+        ? target.querySelector<HTMLElement>('input[tabindex="0"], button')
+        : target;
+    focusable?.focus();
+  }
 
   submit(): void {
     if (this.saving()) return;
+    this.submitted.set(true);
+    this.form.markAllAsTouched();
     if (this.form.invalid) {
-      // interim: BREW-27 adds the messages and the banner here
-      this.form.markAllAsTouched();
-      return; // nothing is sent
+      this.setFieldsBanner(); // nothing is sent
+      return;
     }
+    this.banner.set(null); // the old banner hides while the request is in flight
     // read before disable(): a disabled group's .value is {}
     const body = this.toBody(this.form.getRawValue());
     this.saving.set(true);
