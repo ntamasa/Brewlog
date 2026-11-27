@@ -14,7 +14,13 @@ import {
   afterNextRender,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -25,8 +31,9 @@ import { MatInputModule } from '@angular/material/input';
 import { format, startOfDay } from 'date-fns';
 import { map } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
-import { fieldErrorMessage } from '../core/error-messages';
-import { Brew, BrewBody, BrewMethod, Roast } from '../core/models';
+import { parseApiError } from '../core/api-error';
+import { brewFieldMessage, fieldErrorMessage } from '../core/error-messages';
+import { ApiFieldError, Brew, BrewBody, BrewMethod, Roast } from '../core/models';
 import { BeanRating } from '../shared/bean-rating/bean-rating';
 import { BREW_VALIDATORS } from './brew-validators';
 import { MethodSelect } from './method-select/method-select';
@@ -182,12 +189,32 @@ export class BrewForm implements ErrorStateMatcher {
     this.form.disable();
     this.brewApi.create(body).subscribe({
       next: (brew) => this.saved.emit(brew),
-      error: () => {
+      error: (err: unknown) => {
         // any status: values kept, form stays open
         this.saving.set(false);
+        // enable() re-runs every validator, so it must come before the server errors are set
         this.form.enable();
+        const error = parseApiError(err);
+        if (error.kind !== 'fields') return;
+        this.setServerFieldErrors(error.fields);
+        this.setFieldsBanner();
       },
     });
+  }
+
+  private setServerFieldErrors(fields: ApiFieldError[]): void {
+    const name = this.form.controls.name.value.trim();
+    const byField = new Map<keyof BrewFormControls, ValidationErrors>();
+    for (const { field, code } of fields) {
+      // a pair with no text to show is dropped: it must not block sending
+      if (!Object.hasOwn(this.form.controls, field)) continue;
+      if (brewFieldMessage(field, code, field === 'name' ? name : undefined) === null) continue;
+      const key = field as keyof BrewFormControls;
+      byField.set(key, { ...byField.get(key), [code]: true });
+    }
+    for (const [key, errors] of byField) {
+      this.form.controls[key].setErrors(errors);
+    }
   }
 
   toBody(value: {
