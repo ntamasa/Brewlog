@@ -233,4 +233,49 @@ test.describe("brew form", () => {
 
     expect(await panel.locator(".mat-pseudo-checkbox").count()).toBe(0);
   });
+
+  test("draws the roast as three equal segments and marks Light with no checkmark", async ({
+    page,
+  }, testInfo) => {
+    await page.goto("/journal");
+    await expect(
+      page.getByRole("heading", { name: "Your brews" }),
+    ).toBeVisible();
+    const { header, fab } = addBrewTriggers(page);
+    await (isPhone(testInfo.project.name) ? fab : header).click();
+
+    const drawer = page.locator("mat-sidenav");
+    await expect(drawer).toHaveClass(/mat-drawer-opened/);
+    await expect(drawer).not.toHaveClass(/mat-drawer-animating/);
+
+    const group = drawer.getByRole("radiogroup", { name: "Roast level" });
+    const light = drawer.locator("mat-button-toggle", { hasText: "Light" });
+    const toggles = [
+      light,
+      drawer.locator("mat-button-toggle", { hasText: "Medium" }),
+      drawer.locator("mat-button-toggle", { hasText: "Dark" }),
+    ];
+    const groupBox = (await group.boundingBox())!;
+    const boxes = [];
+    for (const toggle of toggles) {
+      boxes.push((await toggle.boundingBox())!);
+    }
+
+    for (const box of boxes) {
+      expect(Math.abs(box.width - boxes[0].width)).toBeLessThanOrEqual(0.5);
+    }
+    const leftGap = boxes[0].x - groupBox.x;
+    const rightGap =
+      groupBox.x + groupBox.width - (boxes[2].x + boxes[2].width);
+    expect(leftGap).toBeGreaterThanOrEqual(2.5);
+    expect(leftGap).toBeLessThanOrEqual(3.5);
+    expect(rightGap).toBeGreaterThanOrEqual(2.5);
+    expect(rightGap).toBeLessThanOrEqual(3.5);
+    expect(groupBox.height).toBe(44);
+
+    await light.click();
+    await expect(light).toHaveCSS("background-color", "rgb(43, 29, 22)");
+    await expect(light).toHaveCSS("color", "rgb(250, 246, 238)");
+    await expect(group.locator(".mat-pseudo-checkbox")).toHaveCount(0);
+  });
 });

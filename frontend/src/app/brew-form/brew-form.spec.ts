@@ -249,6 +249,61 @@ describe('BrewForm', () => {
     expect(rating?.querySelector('legend.field-label')?.textContent?.trim()).toBe('Rating');
   });
 
+  it('checks Light as the only roast with no checkmark in the roast group', async () => {
+    await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Light' }))).check();
+    fixture.detectChanges();
+
+    expect(form.form.controls.roast.value).toBe('LIGHT');
+    const toggles = await loader.getAllHarnesses(MatButtonToggleHarness);
+    expect(await toggles[0].isChecked()).toBe(true);
+    expect(await toggles[1].isChecked()).toBe(false);
+    expect(await toggles[2].isChecked()).toBe(false);
+    const group: HTMLElement = fixture.nativeElement.querySelector('mat-button-toggle-group');
+    expect(group.querySelectorAll('.mat-pseudo-checkbox').length).toBe(0);
+    expect(group.querySelectorAll('.mat-button-toggle-checkbox-wrapper').length).toBe(0);
+  });
+
+  it('gives the roast group the segmented class, radiogroup role and Roast level label, with a swatch per toggle', () => {
+    const group: HTMLElement = fixture.nativeElement.querySelector('mat-button-toggle-group');
+    expect(group.classList.contains('segmented')).toBe(true);
+    expect(group.getAttribute('role')).toBe('radiogroup');
+    expect(group.getAttribute('aria-label')).toBe('Roast level');
+
+    const toggles = Array.from<HTMLElement>(group.querySelectorAll('mat-button-toggle'));
+    expect(toggles.map((toggle) => toggle.textContent?.trim())).toEqual([
+      'Light',
+      'Medium',
+      'Dark',
+    ]);
+    expect(toggles[0].querySelector('.swatch-light')).not.toBeNull();
+    expect(toggles[1].querySelector('.swatch-medium')).not.toBeNull();
+    expect(toggles[2].querySelector('.swatch-dark')).not.toBeNull();
+  });
+
+  it('shows no roast checked and no checkmark in the roast group before a choice is made', async () => {
+    for (const toggle of await loader.getAllHarnesses(MatButtonToggleHarness)) {
+      expect(await toggle.isChecked()).toBe(false);
+    }
+    const group: HTMLElement = fixture.nativeElement.querySelector('mat-button-toggle-group');
+    expect(group.querySelectorAll('.mat-pseudo-checkbox').length).toBe(0);
+  });
+
+  it('moves the roast from Light to Dark, unchecking Light and keeping the group without a checkmark', async () => {
+    await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Light' }))).check();
+    await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Dark' }))).check();
+    fixture.detectChanges();
+
+    expect(form.form.controls.roast.value).toBe('DARK');
+    expect(
+      await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Light' }))).isChecked(),
+    ).toBe(false);
+    expect(
+      await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Dark' }))).isChecked(),
+    ).toBe(true);
+    const group: HTMLElement = fixture.nativeElement.querySelector('mat-button-toggle-group');
+    expect(group.querySelectorAll('.mat-pseudo-checkbox').length).toBe(0);
+  });
+
   it('in create mode shows an empty form with the date defaulting to today', async () => {
     expect(fixture.nativeElement.querySelector('h2').textContent).toContain('Log a brew');
     expect(await (await field('#name')).getValue()).toBe('');
