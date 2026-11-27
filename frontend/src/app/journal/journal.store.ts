@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, debounceTime, distinctUntilChanged, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, catchError, debounceTime, filter, pipe, switchMap, tap } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
 import { Brew, BrewQuery, DEFAULT_QUERY } from '../core/models';
 
@@ -62,7 +62,7 @@ export const JournalStore = signalStore(
     const search = rxMethod<string>(
       pipe(
         debounceTime(250),
-        distinctUntilChanged(),
+        filter((text) => text !== store.query().q),
         tap((text) => load({ ...store.query(), q: text, page: 1 })),
       ),
     );
