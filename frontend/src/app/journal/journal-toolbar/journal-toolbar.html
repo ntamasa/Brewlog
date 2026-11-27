@@ -1,0 +1,18 @@
+<div class="toolbar" role="search">
+  <div class="field">
+    <label class="field-label" for="q">Search</label>
+    <mat-form-field>
+      <mat-icon matIconPrefix svgIcon="search" aria-hidden="true" />
+      <input
+        matInput
+        #searchInput
+        id="q"
+        type="search"
+        placeholder="Search brew names"
+        autocomplete="off"
+        [value]="query().q"
+        (input)="searchChange.emit(searchInput.value)"
+      />
+    </mat-form-field>
+  </div>
+</div>

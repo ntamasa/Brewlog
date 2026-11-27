@@ -45,6 +45,15 @@
         </p>
       </div>
 
+      @if (!isEmpty()) {
+        <app-journal-toolbar [query]="store.query()" (searchChange)="store.setSearch($event)" />
+        <app-filter-chips
+          [query]="store.query()"
+          (remove)="store.removeFilter($event)"
+          (clearAll)="store.clearFilters()"
+        />
+      }
+
       @switch (store.status()) {
         @case ('loading') {
           <section class="brew-grid" aria-label="Loading brews" aria-busy="true">

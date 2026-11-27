@@ -78,10 +78,10 @@ export const JournalStore = signalStore(
         load(query);
       },
       clearFilters(): void {
-        throw new Error('BREW-45: not implemented: clearFilters()');
+        load({ ...DEFAULT_QUERY, sort: store.query().sort });
       },
       removeFilter(key: 'q' | 'methodId' | 'roast' | 'minRating'): void {
-        throw new Error(`BREW-45: not implemented: removeFilter(${key})`);
+        load({ ...store.query(), [key]: DEFAULT_QUERY[key], page: 1 });
       },
       setPage(page: number): void {
         load({ ...store.query(), page });

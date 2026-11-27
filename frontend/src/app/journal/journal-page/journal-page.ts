@@ -9,6 +9,8 @@ import { Brew } from '../../core/models';
 import { Toaster } from '../../core/toast';
 import { MethodStore } from '../../methods/method.store';
 import { BrewCard } from '../brew-card/brew-card';
+import { FilterChips } from '../filter-chips/filter-chips';
+import { JournalToolbar } from '../journal-toolbar/journal-toolbar';
 import { queryFromParams, queryToParams } from '../journal-query';
 import { JournalStore } from '../journal.store';
 import { Pagination } from '../pagination/pagination';
@@ -25,6 +27,8 @@ const PAGE_SIZE = 12;
     BrewForm,
     BrewCard,
     Pagination,
+    JournalToolbar,
+    FilterChips,
   ],
   templateUrl: './journal-page.html',
   styleUrl: './journal-page.scss',
@@ -39,7 +43,11 @@ export class JournalPage implements OnInit {
   protected readonly formOpen = signal(false);
   protected readonly skeletonCards: readonly number[] = [1, 2, 3, 4, 5, 6];
 
-  protected readonly countText = computed(() => brewCount(this.store.totalCount()));
+  protected readonly countText = computed(() =>
+    this.store.isFiltered()
+      ? this.store.matchingCount() + ' of ' + brewCount(this.store.totalCount())
+      : brewCount(this.store.totalCount()),
+  );
   protected readonly isEmpty = computed(
     () => this.store.status() === 'ready' && this.store.totalCount() === 0,
   );
