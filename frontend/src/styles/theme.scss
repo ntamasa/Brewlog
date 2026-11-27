@@ -107,13 +107,19 @@ html {
       outlined-outline-color: var(--color-outline),
       outlined-hover-outline-color: var(--color-outline-strong),
       outlined-focus-outline-color: var(--color-tertiary),
-      outlined-container-shape: var(--radius-sm),
+      outlined-error-outline-color: var(--color-error),
+      outlined-error-hover-outline-color: var(--color-error),
+      outlined-error-focus-outline-color: var(--color-error),
       outlined-input-text-color: var(--color-on-surface),
       outlined-input-text-placeholder-color: var(--color-on-surface-muted),
-      outlined-label-text-color: var(--color-on-surface-muted),
-      outlined-focus-label-text-color: var(--color-tertiary),
       error-text-color: var(--color-error),
+      outlined-outline-width: 1px,
+      outlined-focus-outline-width: 1px,
+      outlined-container-shape: var(--radius-sm),
+      container-height: var(--spacing-control-height),
+      container-vertical-padding: 10px,
       container-text-size: var(--text-body-md),
+      subscript-text-size: var(--text-body-sm),
     )
   );
 
@@ -239,4 +245,29 @@ html {
       outlined-state-layer-color: var(--color-on-scrim),
     )
   );
+}
+
+/* Form fields: the box, error fill, focus ring, subscript spacing and select arrow have no Material token. */
+.mat-mdc-form-field .mat-mdc-text-field-wrapper {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-sm);
+  padding: 0 14px;
+  transition: box-shadow 160ms ease;
+}
+.mat-mdc-form-field.mat-focused .mat-mdc-text-field-wrapper {
+  box-shadow: 0 0 0 3px var(--color-tertiary-soft);
+}
+.mat-mdc-form-field.mat-form-field-invalid .mat-mdc-text-field-wrapper {
+  background-color: var(--color-error-soft);
+}
+.mat-mdc-form-field-hint-wrapper,
+.mat-mdc-form-field-error-wrapper {
+  padding: 0;
+}
+.mat-mdc-form-field-hint,
+.mat-mdc-form-field-error {
+  margin-top: var(--spacing-xs);
+}
+.mat-mdc-select-arrow-wrapper {
+  display: none;
 }

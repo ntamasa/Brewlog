@@ -98,6 +98,41 @@ h3 {
   height: 16px;
 }
 
+/* ---------- Form fields ---------- */
+.field {
+  display: grid;
+  gap: var(--spacing-xs);
+  align-content: start;
+}
+.field-label {
+  font-size: var(--text-label-md);
+  font-weight: var(--font-weight-label-md);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+.field-label .opt {
+  font-weight: var(--font-weight-body-sm);
+  color: var(--color-on-surface-muted);
+  font-size: var(--text-body-sm);
+}
+.field-help {
+  font-size: var(--text-body-sm);
+  color: var(--color-on-surface-muted);
+}
+.field-error {
+  font-size: var(--text-body-sm);
+  color: var(--color-error);
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: flex-start;
+}
+.field-error .mat-icon {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
 /* ---------- Roast + rating ---------- */
 .swatch {
   width: 10px;
