@@ -30,6 +30,7 @@ export const JournalStore = signalStore(
   }),
   withMethods((store) => {
     const api = inject(BrewApi);
+    let highlightTimer: ReturnType<typeof setTimeout> | undefined;
 
     const load = rxMethod<BrewQuery>(
       pipe(
@@ -57,8 +58,9 @@ export const JournalStore = signalStore(
 
     return {
       highlight(id: number): void {
+        clearTimeout(highlightTimer);
         patchState(store, { highlightId: id });
-        setTimeout(() => patchState(store, { highlightId: null }), 1200);
+        highlightTimer = setTimeout(() => patchState(store, { highlightId: null }), 1200);
       },
       setQuery(query: BrewQuery): void {
         load(query);
