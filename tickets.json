@@ -1089,7 +1089,8 @@
           "heading": "Backend"
         }
       ],
-      "blockedBy": []
+      "blockedBy": [],
+      "done": true
     },
     {
       "id": "S5.2",
