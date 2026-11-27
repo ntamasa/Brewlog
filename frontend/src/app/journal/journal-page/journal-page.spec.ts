@@ -1,13 +1,104 @@
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideAppInitializer } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { MatButtonHarness } from '@angular/material/button/testing';
+import { MatButtonToggleHarness } from '@angular/material/button-toggle/testing';
+import { MATERIAL_ANIMATIONS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatFormFieldHarness } from '@angular/material/form-field/testing';
+import { MatInputHarness } from '@angular/material/input/testing';
+import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
+import { MatSelectHarness } from '@angular/material/select/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { enGB } from 'date-fns/locale';
+import { type Mock, vi } from 'vitest';
 import { routes } from '../../app.routes';
+import { BREWLOG_DATE_FORMATS } from '../../core/date-formats';
 import { registerIcons } from '../../core/icons';
-import { Brew, BrewPage } from '../../core/models';
+import { Brew, BrewMethod, BrewPage } from '../../core/models';
 import { JournalPage } from './journal-page';
+
+const SAVED: Brew = {
+  id: 7,
+  name: 'Kenyan Morning',
+  beanName: 'AA Kiambu',
+  origin: 'Kenya',
+  method: { id: 2, name: 'Pour Over', iconKey: 'pour-over' },
+  roast: 'LIGHT',
+  rating: 5,
+  brewDate: '2026-11-01',
+  notes: null,
+};
+
+const METHODS: BrewMethod[] = [
+  {
+    id: 2,
+    name: 'Pour Over',
+    iconKey: 'pour-over',
+    predefined: true,
+    protected: false,
+    position: 2,
+    brewCount: 0,
+  },
+  {
+    id: 99,
+    name: 'Other',
+    iconKey: 'cup',
+    predefined: true,
+    protected: true,
+    position: 99,
+    brewCount: 0,
+  },
+];
+
+function empty(): BrewPage {
+  return { items: [], page: 1, totalPages: 0, matchingCount: 0, totalCount: 0 };
+}
+
+function threeBrews(): BrewPage {
+  return {
+    items: [brewAt(1), brewAt(2), brewAt(3)],
+    page: 1,
+    totalPages: 1,
+    matchingCount: 3,
+    totalCount: 3,
+  };
+}
+
+async function expectFormClosed(page: HTMLElement): Promise<void> {
+  await vi.waitFor(() => {
+    expect(page.querySelector('mat-sidenav')!.classList.contains('mat-drawer-opened')).toBe(false);
+    expect(page.querySelector('app-brew-form')).toBeNull();
+  });
+}
+
+function showFab(page: HTMLElement): HTMLButtonElement {
+  const fab = page.querySelector<HTMLButtonElement>('button[aria-label="Add brew"]');
+  if (!fab) {
+    throw new Error('no FAB "Add brew"');
+  }
+  expect(getComputedStyle(fab).display).toBe('none');
+  fab.style.setProperty('display', 'inline-flex', 'important');
+  return fab;
+}
+
+async function field(loader: HarnessLoader, label: string): Promise<MatInputHarness> {
+  const formField = await loader.getHarness(MatFormFieldHarness.with({ floatingLabelText: label }));
+  return (await formField.getControl(MatInputHarness))!;
+}
+
+async function fillValid(loader: HarnessLoader, page: HTMLElement): Promise<void> {
+  await (await field(loader, 'Brew name')).setValue('Kenyan Morning');
+  await (await field(loader, 'Bean name')).setValue('AA Kiambu');
+  await (await field(loader, 'Origin')).setValue('Kenya');
+  await (await loader.getHarness(MatSelectHarness)).clickOptions({ text: 'Pour Over' });
+  await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Light' }))).check();
+  page.querySelectorAll<HTMLInputElement>('.rating-input input[type="radio"]')[4].click();
+}
 
 function brewAt(n: number): Brew {
   return {
@@ -57,6 +148,7 @@ function buttonWithText(element: HTMLElement, text: string): HTMLButtonElement {
 
 describe('JournalPage', () => {
   let http: HttpTestingController;
+  let snackBar: { open: Mock };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -65,9 +157,14 @@ describe('JournalPage', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideAppInitializer(registerIcons),
+        provideDateFnsAdapter(BREWLOG_DATE_FORMATS),
+        { provide: MAT_DATE_LOCALE, useValue: enGB },
+        { provide: MATERIAL_ANIMATIONS, useValue: { animationsDisabled: true } },
+        { provide: MatSnackBar, useValue: { open: vi.fn() } },
       ],
     });
     http = TestBed.inject(HttpTestingController);
+    snackBar = TestBed.inject(MatSnackBar) as unknown as { open: Mock };
   });
 
   it('shows the count, twelve cards in order, the footer and the page numbers for page 1', async () => {
@@ -229,5 +326,188 @@ describe('JournalPage', () => {
     expect(element.querySelector('[role="alert"]')).not.toBeNull();
     expect(element.querySelector('.skel-card')).toBeNull();
     expect(must(element, 'p.count').textContent.trim()).toBe('');
+  });
+
+  it('shows "No brews yet", the empty panel and its button when the journal has no brews', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(empty());
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+
+    expect(must(element, 'p.count').textContent).toContain('No brews yet');
+    expect(element.textContent).toContain('Your journal is waiting');
+    expect(buttonWithText(element, 'Log your first brew')).toBeTruthy();
+    expect(element.querySelector('app-brew-card')).toBeNull();
+    expect(element.querySelector('.list-foot')).toBeNull();
+    expect(element.querySelector('app-pagination')).toBeNull();
+  });
+
+  it('opens the brew form from "Log your first brew" and loads the methods', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(empty());
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+
+    buttonWithText(element, 'Log your first brew').click();
+    await harness.fixture.whenStable();
+
+    http.expectOne('/api/methods');
+    expect(element.querySelector('app-brew-form h2')!.textContent).toContain('Log a brew');
+  });
+
+  it('saves a brew from the form: closes it, shows the toast, highlights the card and reloads the page', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal?page=2', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=2').flush({
+      items: [brewAt(13), brewAt(14)],
+      page: 2,
+      totalPages: 2,
+      matchingCount: 14,
+      totalCount: 14,
+    });
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+    const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+
+    buttonWithText(element, 'Add brew').click();
+    await harness.fixture.whenStable();
+    http.expectOne('/api/methods').flush(METHODS);
+    await harness.fixture.whenStable();
+    await fillValid(loader, element);
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Add to journal' }))).click();
+    http.expectOne('/api/brews').flush(SAVED, { status: 201, statusText: 'Created' });
+    await harness.fixture.whenStable();
+
+    await expectFormClosed(element);
+    expect(snackBar.open).toHaveBeenCalledWith(
+      '“Kenyan Morning” saved to your journal',
+      undefined,
+      expect.objectContaining({ duration: 4000 }),
+    );
+    http.expectOne('/api/brews?sort=NEWEST&page=2').flush({
+      items: [SAVED, brewAt(8)],
+      page: 2,
+      totalPages: 2,
+      matchingCount: 14,
+      totalCount: 14,
+    });
+    await harness.fixture.whenStable();
+
+    await vi.waitFor(() => {
+      const highlighted = element.querySelectorAll('.brew-card-highlight');
+      expect(highlighted).toHaveLength(1);
+      expect(highlighted[0].querySelector('h3')!.textContent.trim()).toBe('Kenyan Morning');
+    });
+  });
+
+  it('returns focus to "+ Add brew" when the form is cancelled, and focuses Brew name when it opens', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(threeBrews());
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+    const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+    const trigger = buttonWithText(element, 'Add brew');
+
+    trigger.focus();
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Add brew' }))).click();
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(element.querySelector('input[formcontrolname="name"]')),
+    );
+
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).click();
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
+    await expectFormClosed(element);
+  });
+
+  it('opens the form from the FAB and returns focus to the FAB when it is closed without saving', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(threeBrews());
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+    const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+    const fab = showFab(element);
+
+    fab.focus();
+    await (
+      await loader.getHarness(MatButtonHarness.with({ selector: '[aria-label="Add brew"]' }))
+    ).click();
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(element.querySelector('input[formcontrolname="name"]')),
+    );
+
+    await (
+      await loader.getHarness(
+        MatButtonHarness.with({ selector: '[aria-label="Close without saving"]' }),
+      )
+    ).click();
+    await vi.waitFor(() => expect(document.activeElement).toBe(fab));
+    await expectFormClosed(element);
+  });
+
+  it('returns focus to "+ Log your first brew" when the form is cancelled from the empty state', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(empty());
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+    const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+    const trigger = buttonWithText(element, 'Log your first brew');
+
+    trigger.focus();
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Log your first brew' }))).click();
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(element.querySelector('input[formcontrolname="name"]')),
+    );
+
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).click();
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
+    await expectFormClosed(element);
+  });
+
+  it('does not show the empty state when the brews request fails', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http
+      .expectOne('/api/brews?sort=NEWEST&page=1')
+      .flush(null, { status: 500, statusText: 'Server Error' });
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+
+    expect(element.querySelector('[role="alert"]')).not.toBeNull();
+    expect(element.textContent).not.toContain('Your journal is waiting');
+    expect(element.textContent).not.toContain('No brews yet');
+  });
+
+  it('keeps focus on the FAB when the form opened from it is cancelled, and opens exactly one focus target', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(threeBrews());
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+    const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+    const fab = showFab(element);
+
+    fab.focus();
+    await (
+      await loader.getHarness(MatButtonHarness.with({ selector: '[aria-label="Add brew"]' }))
+    ).click();
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(element.querySelector('input[formcontrolname="name"]')),
+    );
+    const sidenav = element.querySelector('mat-sidenav')!;
+    expect(sidenav.querySelectorAll('[cdkFocusInitial]')).toHaveLength(1);
+    expect(sidenav.querySelector('[cdkFocusInitial]')).toBe(
+      element.querySelector('input[formcontrolname="name"]'),
+    );
+
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).click();
+    await expectFormClosed(element);
+    await vi.waitFor(() => expect(document.activeElement).toBe(fab));
+    expect(document.activeElement).not.toBe(buttonWithText(element, 'Add brew'));
+    expect(document.activeElement).not.toBe(document.body);
   });
 });
