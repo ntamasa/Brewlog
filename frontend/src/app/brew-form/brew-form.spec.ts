@@ -12,6 +12,7 @@ import {
 } from '@angular/material/datepicker/testing';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatFormFieldHarness } from '@angular/material/form-field/testing';
+import { MatIconHarness } from '@angular/material/icon/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
 import { MatSelectHarness } from '@angular/material/select/testing';
@@ -95,6 +96,28 @@ describe('BrewForm', () => {
 
   function radios(): HTMLInputElement[] {
     return Array.from(fixture.nativeElement.querySelectorAll('.rating-input input[type="radio"]'));
+  }
+
+  async function fieldOf(name: string): Promise<MatFormFieldHarness> {
+    return loader.getHarness(MatFormFieldHarness.with({ ancestor: `[data-field="${name}"]` }));
+  }
+
+  function bannerEl(): HTMLElement | null {
+    return fixture.nativeElement.querySelector('.banner-error');
+  }
+
+  function bannerTitle(): string {
+    return bannerEl()?.querySelector('strong')?.textContent?.trim() ?? '';
+  }
+
+  function bannerLinkTexts(): string[] {
+    return Array.from(bannerEl()?.querySelectorAll('a') ?? []).map((link) =>
+      (link.textContent ?? '').trim(),
+    );
+  }
+
+  function dateInput(): Promise<MatDatepickerInputHarness> {
+    return loader.getHarness(MatDatepickerInputHarness.with({ selector: '#date' }));
   }
 
   async function addToJournal(): Promise<void> {
@@ -565,11 +588,285 @@ describe('BrewForm', () => {
     expect(saved).not.toHaveBeenCalled();
   });
 
-  it('with only the default date shows no field in the error state', async () => {
+  it('with an empty create form sends no POST, lists the six invalid fields in the banner in order and moves focus to the banner', async () => {
     await addToJournal();
 
     http.expectNone('/api/brews');
-    expect(fixture.nativeElement.querySelectorAll('.mat-form-field-invalid').length).toBe(0);
+    expect(bannerTitle()).toBe('6 fields need your attention');
+    expect(bannerLinkTexts()).toEqual([
+      'Enter a brew name',
+      'Enter a bean name',
+      'Enter where the beans are from',
+      'Choose a brew method',
+      'Choose a roast level',
+      'Choose a rating from 1 to 5 beans',
+    ]);
+    expect(document.activeElement).toBe(bannerEl());
+    expect(await (await fieldOf('name')).getTextErrors()).toEqual(['Enter a brew name']);
+    expect(await (await fieldOf('bean')).getTextErrors()).toEqual(['Enter a bean name']);
+    expect(await (await fieldOf('origin')).getTextErrors()).toEqual([
+      'Enter where the beans are from',
+    ]);
+    expect(await (await fieldOf('method')).getTextErrors()).toEqual(['Choose a brew method']);
+    expect(
+      fixture.nativeElement.querySelector('[data-field="roast"]').classList.contains('has-error'),
+    ).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('[data-field="roast"] p.field-error').textContent,
+    ).toContain('Choose a roast level');
+    expect(
+      fixture.nativeElement.querySelector('[data-field="rating"]').classList.contains('has-error'),
+    ).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('[data-field="rating"] p.field-error').textContent,
+    ).toContain('Choose a rating from 1 to 5 beans');
+  });
+
+  it('after the banner, a Brew name typed and blurred clears its error and the banner still counts six', async () => {
+    await addToJournal();
+    await (await field('#name')).setValue('Kenyan Morning');
+    await (await field('#name')).blur();
+    fixture.detectChanges();
+
+    expect(await (await fieldOf('name')).getTextErrors()).toEqual([]);
+    expect(bannerTitle()).toBe('6 fields need your attention');
+  });
+
+  it('shows the notes counter from 1801 characters, not at 1800, and turns error-coloured above 2000', async () => {
+    const notes = await field('#notes');
+
+    await notes.setValue('a'.repeat(1801));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.counter').textContent.trim()).toBe(
+      '1,801 / 2,000',
+    );
+
+    await notes.setValue('a'.repeat(1800));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.counter')).toBeNull();
+
+    await notes.setValue('a'.repeat(2001));
+    fixture.detectChanges();
+    const counter: HTMLElement = fixture.nativeElement.querySelector('.counter');
+    expect(counter.textContent.trim()).toBe('2,001 / 2,000');
+    expect(counter.classList.contains('counter-error')).toBe(true);
+    expect(await notes.getValue()).toHaveLength(2001);
+  });
+
+  it('with the date input cleared, submitting shows Choose a date', async () => {
+    await fillValid();
+    await (await dateInput()).setValue('');
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    expect(await (await fieldOf('date')).getTextErrors()).toEqual(['Choose a date']);
+  });
+
+  it('with the date typed as 2 Nov 2026, shows only the future date error and sends nothing', async () => {
+    await fillValid();
+    await (await dateInput()).setValue('2 Nov 2026');
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    const errors = form.form.controls.brewDate.errors ?? {};
+    expect(Object.keys(errors)).toEqual(
+      expect.arrayContaining(['FUTURE_DATE', 'matDatepickerMax']),
+    );
+    expect(await (await fieldOf('date')).getTextErrors()).toEqual([
+      'The date can’t be in the future',
+    ]);
+    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerLinkTexts()).toEqual(['The date can’t be in the future']);
+  });
+
+  it('keeps pasted names of 101 characters in full and shows the length error for Brew name, Bean name and Origin', async () => {
+    await fillValid();
+    await (await field('#name')).setValue('a'.repeat(101));
+    await (await field('#bean')).setValue('b'.repeat(101));
+    await (await field('#origin')).setValue('c'.repeat(101));
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    expect(await (await field('#name')).getValue()).toHaveLength(101);
+    expect(await (await fieldOf('name')).getTextErrors()).toEqual([
+      'Brew name can be at most 100 characters',
+    ]);
+    expect(await (await fieldOf('bean')).getTextErrors()).toEqual([
+      'Bean name can be at most 100 characters',
+    ]);
+    expect(await (await fieldOf('origin')).getTextErrors()).toEqual([
+      'Origin can be at most 100 characters',
+    ]);
+  });
+
+  it('with a bean name of only spaces shows Enter a bean name and a banner of exactly one field', async () => {
+    await fillValid();
+    await (await field('#bean')).setValue('   ');
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    expect(await (await fieldOf('bean')).getTextErrors()).toEqual(['Enter a bean name']);
+    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerLinkTexts()).toEqual(['Enter a bean name']);
+  });
+
+  it('with Brew name, Bean name and Origin empty, the banner reads 3 fields need your attention with three links', async () => {
+    await fillValid();
+    await (await field('#name')).setValue('');
+    await (await field('#bean')).setValue('');
+    await (await field('#origin')).setValue('');
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    expect(bannerTitle()).toBe('3 fields need your attention');
+    expect(bannerLinkTexts()).toEqual([
+      'Enter a brew name',
+      'Enter a bean name',
+      'Enter where the beans are from',
+    ]);
+  });
+
+  it('with no rating, shows Choose a rating from 1 to 5 beans and the rating group reads Not rated', async () => {
+    await fillValidExcept('rating');
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    const rating: HTMLElement = fixture.nativeElement.querySelector('[data-field="rating"]');
+    expect(rating.querySelector('p.field-error')?.textContent).toContain(
+      'Choose a rating from 1 to 5 beans',
+    );
+    expect(rating.textContent).toContain('Not rated');
+  });
+
+  it('with an empty create form, Brew name, Bean name, Origin and method have the error state, icon and no hint', async () => {
+    await addToJournal();
+
+    for (const name of ['name', 'bean', 'origin', 'method']) {
+      const formField = await fieldOf(name);
+      expect(await (await formField.host()).hasClass('mat-form-field-invalid')).toBe(true);
+      expect(await formField.getTextHints()).toEqual([]);
+      const errorEl: HTMLElement = fixture.nativeElement.querySelector(
+        `[data-field="${name}"] mat-error`,
+      );
+      expect(errorEl.classList.contains('field-error')).toBe(true);
+      const icon = await loader.getHarness(
+        MatIconHarness.with({ ancestor: `[data-field="${name}"] mat-error` }),
+      );
+      expect(await icon.getName()).toBe('alert');
+    }
+  });
+
+  it('after Brew name shows its error, typing a valid name removes the error and shows the hint again', async () => {
+    await addToJournal();
+    const name = await fieldOf('name');
+    expect(await (await name.host()).hasClass('mat-form-field-invalid')).toBe(true);
+    expect(await name.getTextHints()).toEqual([]);
+
+    await (await field('#name')).setValue('Kenyan Morning');
+    fixture.detectChanges();
+
+    expect(await (await name.host()).hasClass('mat-form-field-invalid')).toBe(false);
+    expect(await name.getTextHints()).toEqual([
+      'A name only you would recognise, like “Sunday Moka”. Must be unique.',
+    ]);
+  });
+
+  it('clicking the banner links moves focus to Origin, to the roast group and to the rating group', async () => {
+    await addToJournal();
+
+    const link = (href: string): HTMLAnchorElement =>
+      bannerEl()?.querySelector(`a[href="${href}"]`) as HTMLAnchorElement;
+
+    link('#origin').click();
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(fixture.nativeElement.querySelector('#origin'));
+
+    link('#roast').click();
+    fixture.detectChanges();
+    const roast: HTMLElement = fixture.nativeElement.querySelector('#roast');
+    expect(roast.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement?.tagName).toBe('BUTTON');
+
+    link('#rating').click();
+    fixture.detectChanges();
+    const rating: HTMLElement = fixture.nativeElement.querySelector('#rating');
+    expect(rating.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement?.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('with the typed date "not a date" and everything else valid, shows Choose a date and sends nothing', async () => {
+    await fillValid();
+    await (await dateInput()).setValue('not a date');
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    expect(await (await fieldOf('date')).getTextErrors()).toEqual(['Choose a date']);
+  });
+
+  it('before any submit no roast or rating message and no method error shows, and after submit all three do', async () => {
+    await (await field('#bean')).setValue('AA');
+    await (await field('#bean')).setValue('');
+    await (await field('#origin')).focus();
+    await (await field('#origin')).blur();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-field="roast"] p.field-error')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-field="rating"] p.field-error')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-field="roast"]').classList).not.toContain(
+      'has-error',
+    );
+    expect(fixture.nativeElement.querySelector('[data-field="rating"]').classList).not.toContain(
+      'has-error',
+    );
+    expect(await (await (await fieldOf('method')).host()).hasClass('mat-form-field-invalid')).toBe(
+      false,
+    );
+    expect(fixture.nativeElement.querySelector('mat-error')).toBeNull();
+
+    await addToJournal();
+
+    expect(
+      fixture.nativeElement.querySelector('[data-field="roast"]').classList.contains('has-error'),
+    ).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('[data-field="roast"] p.field-error').textContent,
+    ).toContain('Choose a roast level');
+    expect(
+      fixture.nativeElement.querySelector('[data-field="rating"]').classList.contains('has-error'),
+    ).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('[data-field="rating"] p.field-error').textContent,
+    ).toContain('Choose a rating from 1 to 5 beans');
+    expect(await (await (await fieldOf('method')).host()).hasClass('mat-form-field-invalid')).toBe(
+      true,
+    );
+  });
+
+  it('the notes live region reads the counter only when it appears, changes or crosses 2000', async () => {
+    const notes = await field('#notes');
+    const live = (): string =>
+      fixture.nativeElement
+        .querySelector('[data-field="notes"] span.sr-only[aria-live="polite"]')
+        .textContent.trim();
+
+    await notes.setValue('a'.repeat(1801));
+    fixture.detectChanges();
+    expect(live()).toBe('1,801 / 2,000');
+
+    await (await notes.host()).sendKeys('a');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.counter').textContent.trim()).toBe(
+      '1,802 / 2,000',
+    );
+    expect(live()).toBe('1,801 / 2,000');
+
+    await notes.setValue('a'.repeat(2001));
+    fixture.detectChanges();
+    expect(live()).toBe('2,001 / 2,000');
+
+    await notes.setValue('a'.repeat(1800));
+    fixture.detectChanges();
+    expect(live()).toBe('');
   });
 
   it('a Brew name cleared after typing and blurred shows no error state and no mat-error', async () => {
