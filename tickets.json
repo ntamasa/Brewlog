@@ -1157,7 +1157,8 @@
       ],
       "blockedBy": [
         "S5.4"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S5.6",
@@ -1172,7 +1173,8 @@
       ],
       "blockedBy": [
         "S5.5"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S5.7",
@@ -1750,6 +1752,36 @@
         "S10.5"
       ],
       "done": true
+    },
+    {
+      "id": "S10.6",
+      "type": "subtask",
+      "key": "BREW-118",
+      "parent": "S10",
+      "summary": "Fix: one filter rule and one filter-key type, shared by the store and the chips",
+      "description": [
+        {
+          "file": "tickets/S10.6.md"
+        }
+      ],
+      "blockedBy": [
+        "S10.4"
+      ]
+    },
+    {
+      "id": "S10.7",
+      "type": "subtask",
+      "key": "BREW-119",
+      "parent": "S10",
+      "summary": "Fix: Search spans the phone toolbar, its caption visually hidden",
+      "description": [
+        {
+          "file": "tickets/S10.7.md"
+        }
+      ],
+      "blockedBy": [
+        "S10.6"
+      ]
     },
     {
       "id": "S11",
