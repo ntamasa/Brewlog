@@ -1,8 +1,8 @@
-import { Component, computed, forwardRef, input, signal } from '@angular/core';
+import { Component, computed, forwardRef, input, signal, viewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { methodsAz } from '../../core/format';
 import { BrewMethod } from '../../core/models';
 @Component({
@@ -16,6 +16,8 @@ import { BrewMethod } from '../../core/models';
 })
 export class MethodSelect implements ControlValueAccessor {
   methods = input.required<BrewMethod[]>();
+
+  private readonly matSelect = viewChild.required(MatSelect);
 
   protected readonly sorted = computed(() => methodsAz(this.methods()));
   protected readonly selected = computed(
@@ -50,5 +52,13 @@ export class MethodSelect implements ControlValueAccessor {
 
   protected touch(): void {
     this.onTouched();
+  }
+
+  protected closeOnEscape(event: Event): void {
+    const matSelect = this.matSelect();
+    if (!matSelect.panelOpen) return; // listbox closed: the drawer handles Esc as before
+    event.stopPropagation(); // never reaches mat-sidenav
+    event.preventDefault();
+    matSelect.close(); // the overlay never sees this Esc, so close it here
   }
 }

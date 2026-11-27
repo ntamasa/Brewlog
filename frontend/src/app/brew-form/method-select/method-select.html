@@ -10,6 +10,7 @@
       [disabled]="isDisabled()"
       (selectionChange)="select($event.value)"
       (closed)="touch()"
+      (keydown.escape)="closeOnEscape($event)"
     >
       <mat-select-trigger>
         @if (selected(); as method) {
