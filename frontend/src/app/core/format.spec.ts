@@ -1,4 +1,30 @@
-import { brewCount, formatDate } from './format';
+import { brewCount, formatDate, methodsAz } from './format';
+import { BrewMethod } from './models';
+
+function method(name: string, protectedMethod = false): BrewMethod {
+  return {
+    id: 1,
+    name,
+    iconKey: 'cup',
+    predefined: false,
+    protected: protectedMethod,
+    position: null,
+    brewCount: 0,
+  };
+}
+
+describe('methodsAz', () => {
+  it('sorts A-Z ignoring case with the protected Other last', () => {
+    const sorted = methodsAz([
+      method('Pour Over'),
+      method('Other', true),
+      method('chemex'),
+      method('AeroPress'),
+    ]).map((m) => m.name);
+
+    expect(sorted).toEqual(['AeroPress', 'chemex', 'Pour Over', 'Other']);
+  });
+});
 
 describe('formatDate', () => {
   it('formats a brew date as day, short month and year', () => {

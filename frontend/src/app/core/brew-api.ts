@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { BrewPage, BrewQuery } from './models';
+import { Brew, BrewBody, BrewPage, BrewQuery } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class BrewApi {
@@ -24,5 +24,9 @@ export class BrewApi {
     }
     params = params.set('sort', query.sort).set('page', query.page);
     return this.http.get<BrewPage>('/api/brews', { params });
+  }
+
+  create(body: BrewBody): Observable<Brew> {
+    return this.http.post<Brew>('/api/brews', body);
   }
 }

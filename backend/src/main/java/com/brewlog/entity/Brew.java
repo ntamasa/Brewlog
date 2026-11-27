@@ -55,6 +55,25 @@ public class Brew {
 
     protected Brew() {}
 
+    public Brew(
+            String name,
+            String beanName,
+            String origin,
+            BrewMethod method,
+            Roast roast,
+            int rating,
+            LocalDate brewDate,
+            String notes) {
+        this.name = name;
+        this.beanName = beanName;
+        this.origin = origin;
+        this.method = method;
+        this.roast = roast;
+        this.rating = (short) rating;
+        this.brewDate = brewDate;
+        this.notes = notes;
+    }
+
     public Long getId() {
         return id;
     }

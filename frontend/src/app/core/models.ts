@@ -60,3 +60,14 @@ export interface ApiFieldError {
   field: string;
   code: string;
 }
+
+export interface BrewBody {
+  name: string;
+  beanName: string;
+  origin: string;
+  methodId: number | null;
+  roast: Roast | null;
+  rating: number | null;
+  brewDate: string | null;
+  notes: string | null;
+}

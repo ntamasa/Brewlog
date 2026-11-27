@@ -84,4 +84,65 @@ describe('JournalStore', () => {
     expect(store.status()).toBe('ready');
     expect(store.items()).toHaveLength(12);
   });
+
+  describe('highlight', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      setUp(() => of(FIRST_PAGE));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('highlights the saved brew for 1.2 s, then clears it', () => {
+      store.highlight(7);
+      expect(store.highlightId()).toBe(7);
+
+      vi.advanceTimersByTime(1199);
+      expect(store.highlightId()).toBe(7);
+
+      vi.advanceTimersByTime(1);
+      expect(store.highlightId()).toBeNull();
+    });
+
+    it('keeps a later highlight for its full 1.2 s when an earlier highlight started 600 ms before', () => {
+      store.highlight(7);
+      vi.advanceTimersByTime(600);
+      store.highlight(8);
+      expect(store.highlightId()).toBe(8);
+
+      vi.advanceTimersByTime(600);
+      expect(store.highlightId()).toBe(8);
+
+      vi.advanceTimersByTime(599);
+      expect(store.highlightId()).toBe(8);
+
+      vi.advanceTimersByTime(1);
+      expect(store.highlightId()).toBeNull();
+    });
+
+    it('cancels the earlier highlight timer when a later highlight starts', () => {
+      store.highlight(7);
+      vi.advanceTimersByTime(600);
+      store.highlight(8);
+      expect(vi.getTimerCount()).toBe(1);
+
+      vi.advanceTimersByTime(1200);
+      expect(store.highlightId()).toBeNull();
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('keeps the same brew highlighted when it is highlighted again 600 ms later', () => {
+      store.highlight(7);
+      vi.advanceTimersByTime(600);
+      store.highlight(7);
+
+      vi.advanceTimersByTime(600);
+      expect(store.highlightId()).toBe(7);
+
+      vi.advanceTimersByTime(600);
+      expect(store.highlightId()).toBeNull();
+    });
+  });
 });

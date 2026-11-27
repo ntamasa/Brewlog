@@ -1,3 +1,50 @@
 :host {
   display: inline-flex;
 }
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.rating-input {
+  display: flex;
+  gap: var(--spacing-xs);
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.rating-input label {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--color-outline-strong);
+  border-radius: var(--radius-sm);
+}
+
+.rating-input label.on {
+  color: var(--color-tertiary);
+}
+
+.rating-input label:hover {
+  background: var(--color-surface-sunken);
+}
+
+.rating-input .bean {
+  width: 30px;
+  height: 30px;
+}
+
+.rating-input input {
+  position: absolute;
+  opacity: 0;
+}
+
+.rating-input label:has(input:focus-visible) {
+  outline: 2px solid var(--color-tertiary);
+  outline-offset: 2px;
+}
