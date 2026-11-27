@@ -333,6 +333,10 @@ html {
     (
       height: 38px,
       background-color: transparent,
+      disabled-state-text-color: var(--color-on-surface),
+      disabled-state-background-color: transparent,
+      disabled-selected-state-text-color: var(--color-on-primary),
+      disabled-selected-state-background-color: var(--color-primary),
     )
   );
 }
