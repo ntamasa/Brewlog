@@ -764,7 +764,7 @@
       "type": "subtask",
       "key": "BREW-23",
       "parent": "S4",
-      "summary": "Open the form from the journal, empty state, toast and highlight, e2e",
+      "summary": "Open the form from the journal, empty state, toast and highlight",
       "description": [
         {
           "file": "tickets/S4.6.md"
@@ -772,6 +772,21 @@
       ],
       "blockedBy": [
         "S4.5"
+      ]
+    },
+    {
+      "id": "S4.7",
+      "type": "subtask",
+      "key": "BREW-99",
+      "parent": "S4",
+      "summary": "E2E: log a brew on desktop and phone, drawer placement",
+      "description": [
+        {
+          "file": "tickets/S4.7.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.6"
       ]
     },
     {
