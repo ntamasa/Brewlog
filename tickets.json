@@ -1109,7 +1109,8 @@
       ],
       "blockedBy": [
         "S5.1"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S5.3",
@@ -1124,7 +1125,8 @@
       ],
       "blockedBy": [
         "S5.2"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S5.4",
@@ -1139,6 +1141,52 @@
       ],
       "blockedBy": [
         "S5.3"
+      ],
+      "done": true
+    },
+    {
+      "id": "S5.5",
+      "type": "subtask",
+      "key": "BREW-115",
+      "parent": "S5",
+      "summary": "Fix: one shared constant per brew text limit and one message-value helper in the brew form",
+      "description": [
+        {
+          "file": "tickets/S5.5.md"
+        }
+      ],
+      "blockedBy": [
+        "S5.4"
+      ]
+    },
+    {
+      "id": "S5.6",
+      "type": "subtask",
+      "key": "BREW-116",
+      "parent": "S5",
+      "summary": "Fix: a 400 with any malformed field error is read as a network error",
+      "description": [
+        {
+          "file": "tickets/S5.6.md"
+        }
+      ],
+      "blockedBy": [
+        "S5.5"
+      ]
+    },
+    {
+      "id": "S5.7",
+      "type": "subtask",
+      "key": "BREW-117",
+      "parent": "S5",
+      "summary": "Fix: alert icon at 16 px with a 4 px gap in every form-field error",
+      "description": [
+        {
+          "file": "tickets/S5.7.md"
+        }
+      ],
+      "blockedBy": [
+        "S5.6"
       ]
     },
     {
@@ -1667,7 +1715,8 @@
       ],
       "blockedBy": [
         "S10.2"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S10.5",
@@ -1682,7 +1731,8 @@
       ],
       "blockedBy": [
         "S10.3"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S10.4",
@@ -1698,6 +1748,37 @@
       "blockedBy": [
         "S10.3",
         "S10.5"
+      ],
+      "done": true
+    },
+    {
+      "id": "S10.6",
+      "type": "subtask",
+      "key": "BREW-118",
+      "parent": "S10",
+      "summary": "Fix: one filter rule and one filter-key type, shared by the store and the chips",
+      "description": [
+        {
+          "file": "tickets/S10.6.md"
+        }
+      ],
+      "blockedBy": [
+        "S10.4"
+      ]
+    },
+    {
+      "id": "S10.7",
+      "type": "subtask",
+      "key": "BREW-119",
+      "parent": "S10",
+      "summary": "Fix: Search spans the phone toolbar, its caption visually hidden",
+      "description": [
+        {
+          "file": "tickets/S10.7.md"
+        }
+      ],
+      "blockedBy": [
+        "S10.6"
       ]
     },
     {
