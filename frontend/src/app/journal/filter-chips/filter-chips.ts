@@ -2,6 +2,7 @@ import { Component, computed, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { BrewQuery } from '../../core/models';
+import { FilterKey, isFiltered } from '../journal-query';
 
 @Component({
   selector: 'app-filter-chips',
@@ -11,8 +12,8 @@ import { BrewQuery } from '../../core/models';
 })
 export class FilterChips {
   query = input.required<BrewQuery>();
-  remove = output<'q' | 'methodId' | 'roast' | 'minRating'>();
+  remove = output<FilterKey>();
   clearAll = output<void>();
 
-  protected readonly isFiltered = computed(() => this.query().q.trim() !== '');
+  protected readonly isFiltered = computed(() => isFiltered(this.query()));
 }

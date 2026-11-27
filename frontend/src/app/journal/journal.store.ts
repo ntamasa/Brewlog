@@ -4,6 +4,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, debounceTime, filter, pipe, switchMap, tap } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
 import { Brew, BrewQuery, DEFAULT_QUERY } from '../core/models';
+import { FilterKey, isFiltered } from './journal-query';
 
 interface JournalState {
   query: BrewQuery;
@@ -29,7 +30,7 @@ export const JournalStore = signalStore(
     highlightId: null,
   }),
   withComputed(({ query }) => ({
-    isFiltered: computed(() => query().q.trim() !== ''),
+    isFiltered: computed(() => isFiltered(query())),
   })),
   withMethods((store) => {
     const api = inject(BrewApi);
@@ -80,7 +81,7 @@ export const JournalStore = signalStore(
       clearFilters(): void {
         load({ ...DEFAULT_QUERY, sort: store.query().sort });
       },
-      removeFilter(key: 'q' | 'methodId' | 'roast' | 'minRating'): void {
+      removeFilter(key: FilterKey): void {
         load({ ...store.query(), [key]: DEFAULT_QUERY[key], page: 1 });
       },
       setPage(page: number): void {

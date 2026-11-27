@@ -1,6 +1,12 @@
 import { ParamMap, Params } from '@angular/router';
 import { BrewQuery, DEFAULT_QUERY } from '../core/models';
 
+export type FilterKey = 'q' | 'methodId' | 'roast' | 'minRating';
+
+export function isFiltered(query: BrewQuery): boolean {
+  return query.q.trim() !== '';
+}
+
 export function queryFromParams(params: ParamMap): BrewQuery {
   const raw = params.get('page');
   const page = raw !== null && /^-?\d+$/.test(raw) ? Number(raw) : 1;
