@@ -749,5 +749,57 @@ describe('JournalPage', () => {
         vi.useRealTimers();
       }
     });
+
+    it('sends a search typed again after its chip cleared it, and shows its matches', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, 'kenya');
+        http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(answer(listOf(2), 1, 2));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        must(element, 'button[aria-label="Clear search"]').click();
+        http.expectOne('/api/brews?sort=NEWEST&page=1').flush(answer(listOf(12), 4, 41));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        await typeSearch(harness, 'kenya');
+        http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(answer(listOf(2), 1, 2));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(element.querySelectorAll('app-brew-card')).toHaveLength(2);
+        expect(must(element, '.count').textContent).toContain('2 of 41 brews');
+        expect(must(element, '.chip').textContent).toContain('“kenya”');
+        expect(TestBed.inject(Router).url).toBe('/journal?q=kenya');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('sends nothing when the same search is typed again while it is the current search', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, 'kenya');
+        http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(answer(listOf(2), 1, 2));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        await typeSearch(harness, 'kenya');
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(http.match((req) => req.url === '/api/brews')).toEqual([]);
+        expect(must(element, '.count').textContent).toContain('2 of 41 brews');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });

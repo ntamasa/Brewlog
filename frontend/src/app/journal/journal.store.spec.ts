@@ -197,6 +197,81 @@ describe('JournalStore', () => {
       vi.advanceTimersByTime(250);
       expect(store.isFiltered()).toBe(true);
     });
+
+    it('sends the same search again after clearFilters', () => {
+      store.setQuery(DEFAULT_QUERY);
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+      expect(list).toHaveBeenCalledTimes(2);
+
+      store.clearFilters();
+      expect(list).toHaveBeenCalledTimes(3);
+
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+
+      expect(list).toHaveBeenCalledTimes(4);
+      expect(list).toHaveBeenLastCalledWith({ ...DEFAULT_QUERY, q: 'kenya', page: 1 });
+      expect(store.isFiltered()).toBe(true);
+    });
+
+    it('sends the same search again after removeFilter("q")', () => {
+      store.setQuery(DEFAULT_QUERY);
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+      expect(list).toHaveBeenCalledTimes(2);
+
+      store.removeFilter('q');
+      expect(list).toHaveBeenCalledTimes(3);
+
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+
+      expect(list).toHaveBeenCalledTimes(4);
+      expect(list).toHaveBeenLastCalledWith({ ...DEFAULT_QUERY, q: 'kenya', page: 1 });
+    });
+
+    it('sends the same search again after the query is set back to the journal', () => {
+      store.setQuery(DEFAULT_QUERY);
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+      expect(list).toHaveBeenCalledTimes(2);
+
+      store.setQuery(DEFAULT_QUERY);
+      expect(list).toHaveBeenCalledTimes(3);
+
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+
+      expect(list).toHaveBeenCalledTimes(4);
+      expect(list).toHaveBeenLastCalledWith({ ...DEFAULT_QUERY, q: 'kenya', page: 1 });
+      expect(store.isFiltered()).toBe(true);
+    });
+
+    it('does not send the same search again while it is still the current query', () => {
+      store.setQuery(DEFAULT_QUERY);
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+      expect(list).toHaveBeenCalledTimes(2);
+
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+
+      expect(list).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not send a search equal to the current query, even after a typed change was debounced away', () => {
+      store.setQuery({ ...DEFAULT_QUERY, q: 'kenya', page: 2 });
+      expect(list).toHaveBeenCalledTimes(1);
+
+      store.setSearch('kenyan');
+      vi.advanceTimersByTime(100);
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+
+      expect(list).toHaveBeenCalledTimes(1);
+      expect(store.query()).toEqual({ ...DEFAULT_QUERY, q: 'kenya', page: 2 });
+    });
   });
 
   describe('clearFilters and removeFilter', () => {
