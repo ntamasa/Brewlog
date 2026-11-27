@@ -22,6 +22,7 @@
 - **Roast level:** Light, Medium or Dark.
 - **Creation date:** defaults to today (browser's local date) when creating, editable later, never after today; the server accepts up to its own today + 1 day to tolerate time zones.
 - **Insertion order:** the time a brew was added is stored only to break sort ties; there is no "last edited" date.
+- **Clearing save errors:** an error the server gave for a brew form field stays on that field until the user changes it, and until then the form can't be sent; a brew form banner shows what the last save attempt found until the next submit.
 - **Deleting a brew:** needs a confirmation and is permanent, with no undo.
 
 ## Brew methods
