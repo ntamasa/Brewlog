@@ -51,8 +51,9 @@ public class BrewService {
 
     @Transactional(readOnly = true)
     public BrewPage list(BrewQuery query) {
-        Page<Brew> page =
-                brewRepository.findAll(PageRequest.of(query.page() - 1, PAGE_SIZE, BrewSort.toSort(query.sort())));
+        Page<Brew> page = brewRepository.findAll(
+                BrewSpecifications.nameContains(query.q()),
+                PageRequest.of(query.page() - 1, PAGE_SIZE, BrewSort.toSort(query.sort())));
         List<BrewResponse> items =
                 page.getContent().stream().map(BrewService::toResponse).toList();
         return new BrewPage(items, query.page(), page.getTotalPages(), page.getTotalElements(), brewRepository.count());
