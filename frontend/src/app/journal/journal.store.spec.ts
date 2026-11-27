@@ -145,4 +145,57 @@ describe('JournalStore', () => {
       expect(store.highlightId()).toBeNull();
     });
   });
+
+  describe('setSearch', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      setUp(() => of(FIRST_PAGE));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('sends the search to the API after 250 ms, on page 1', () => {
+      store.setQuery({ ...DEFAULT_QUERY, page: 3 });
+      expect(list).toHaveBeenCalledTimes(1);
+
+      store.setSearch('  kenya ');
+      vi.advanceTimersByTime(250);
+
+      expect(list).toHaveBeenCalledTimes(2);
+      expect(list).toHaveBeenLastCalledWith({ ...DEFAULT_QUERY, q: '  kenya ', page: 1 });
+    });
+
+    it('sends one request for the last of several searches typed within 250 ms', () => {
+      store.setQuery(DEFAULT_QUERY);
+      store.setSearch('k');
+      vi.advanceTimersByTime(100);
+      store.setSearch('ke');
+      vi.advanceTimersByTime(100);
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+
+      expect(list).toHaveBeenCalledTimes(2);
+      expect(list).toHaveBeenLastCalledWith({ ...DEFAULT_QUERY, q: 'kenya', page: 1 });
+    });
+
+    it('sends nothing before 250 ms have passed', () => {
+      store.setQuery(DEFAULT_QUERY);
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(249);
+
+      expect(list).toHaveBeenCalledTimes(1);
+    });
+
+    it('is filtered only when the search is not blank after trimming', () => {
+      store.setSearch('   ');
+      vi.advanceTimersByTime(250);
+      expect(store.isFiltered()).toBe(false);
+
+      store.setSearch('kenya');
+      vi.advanceTimersByTime(250);
+      expect(store.isFiltered()).toBe(true);
+    });
+  });
 });

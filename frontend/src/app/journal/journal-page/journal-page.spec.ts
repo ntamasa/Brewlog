@@ -21,6 +21,7 @@ import { BREWLOG_FORM_FIELD_OPTIONS } from '../../core/form-field-options';
 import { registerIcons } from '../../core/icons';
 import { Brew, BrewMethod, BrewPage } from '../../core/models';
 import { Toaster } from '../../core/toast';
+import { JournalStore } from '../journal.store';
 import { JournalPage } from './journal-page';
 
 const SAVED: Brew = {
@@ -205,6 +206,27 @@ describe('JournalPage', () => {
     await harness.navigateByUrl('/journal?page=2', JournalPage);
 
     http.expectOne('/api/brews?sort=NEWEST&page=2');
+  });
+
+  it('sends the search 250 ms after it is set, from page 1, and writes it to the URL', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(page(1, 12, 1));
+    await harness.fixture.whenStable();
+
+    vi.useFakeTimers();
+    try {
+      TestBed.inject(JournalStore).setSearch('  kenya ');
+      vi.advanceTimersByTime(250);
+
+      http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(page(1, 12, 1));
+      TestBed.flushEffects();
+      await harness.fixture.whenStable();
+
+      expect(TestBed.inject(Router).url).toBe('/journal?q=kenya');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows six skeleton cards in a busy grid, with a skeleton count and no footer, while the first page loads', async () => {

@@ -14,6 +14,10 @@ describe('queryFromParams', () => {
   it('gives page 1 when there are no params', () => {
     expect(queryFromParams(convertToParamMap({})).page).toBe(1);
   });
+
+  it('reads the search from ?q=kenya', () => {
+    expect(queryFromParams(convertToParamMap({ q: 'kenya' })).q).toBe('kenya');
+  });
 });
 
 describe('queryToParams', () => {
@@ -23,5 +27,13 @@ describe('queryToParams', () => {
 
   it('omits the page param for the default query', () => {
     expect(queryToParams(DEFAULT_QUERY)).toEqual({});
+  });
+
+  it('writes the search trimmed as the q param', () => {
+    expect(queryToParams({ ...DEFAULT_QUERY, q: '  kenya ' })).toEqual({ q: 'kenya' });
+  });
+
+  it('omits the q param when the search is blank after trimming', () => {
+    expect(queryToParams({ ...DEFAULT_QUERY, q: '   ' })).toEqual({});
   });
 });
