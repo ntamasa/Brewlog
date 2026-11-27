@@ -196,11 +196,13 @@ test.describe("brew form", () => {
       drawer.getByRole("heading", { name: "Log a brew" }),
     ).toBeVisible();
 
+    const panel = page.locator(".mat-mdc-select-panel");
     await drawer.getByRole("combobox").click();
     await page.getByRole("option", { name: "Pour Over", exact: true }).click();
+    await expect(panel).toBeHidden();
 
     const fieldIcon = drawer.locator(
-      '#method-btn mat-icon[data-mat-icon-name="pour-over"]',
+      '#method-btn .method-value mat-icon[data-mat-icon-name="pour-over"]',
     );
     await expect(fieldIcon).toBeVisible();
     expect(await fieldIcon.evaluate((el) => getComputedStyle(el).color)).toBe(
@@ -208,7 +210,6 @@ test.describe("brew form", () => {
     );
 
     await drawer.getByRole("combobox").click();
-    const panel = page.locator(".mat-mdc-select-panel");
     await expect(panel).toBeVisible();
 
     const pourOver = page.getByRole("option", {
