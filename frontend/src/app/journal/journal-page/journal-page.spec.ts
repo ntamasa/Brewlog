@@ -780,6 +780,75 @@ describe('JournalPage', () => {
       }
     });
 
+    it('shows the no-results panel for a search that matches nothing, with the total count', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, '  panama natural ');
+        http.expectOne('/api/brews?q=panama%20natural&sort=NEWEST&page=1').flush(answer([], 0, 0));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(must(element, '.count').textContent).toContain('0 of 41 brews');
+        expect(element.textContent).toContain('No brews match');
+        expect(element.textContent).toContain(
+          'Nothing in your journal matches “panama natural” with these filters. Try a different name or loosen a filter.',
+        );
+        expect(buttonWithText(element, 'Clear search and filters')).toBeTruthy();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('clears the search and the filters from the no-results panel', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, 'panama natural');
+        http.expectOne('/api/brews?q=panama%20natural&sort=NEWEST&page=1').flush(answer([], 0, 0));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        buttonWithText(element, 'Clear search and filters').click();
+        http.expectOne('/api/brews?sort=NEWEST&page=1').flush(answer(listOf(12), 4, 41));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(element.textContent).not.toContain('No brews match');
+        expect(element.querySelectorAll('app-brew-card')).toHaveLength(12);
+        expect(must(element, '.count').textContent).toContain('41 brews');
+        expect(element.querySelector<HTMLInputElement>('#q')!.value).toBe('');
+        expect(element.querySelector('.chip')).toBeNull();
+        expect(TestBed.inject(Router).url).toBe('/journal');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('shows no list, footer or pagination in the no-results panel', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, 'panama natural');
+        http.expectOne('/api/brews?q=panama%20natural&sort=NEWEST&page=1').flush(answer([], 0, 0));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(element.querySelector('.list-foot')).toBeNull();
+        expect(element.querySelector('app-pagination')).toBeNull();
+        expect(element.querySelector('.brew-grid')).toBeNull();
+        expect(element.textContent).not.toContain('Showing');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('sends nothing when the same search is typed again while it is the current search', async () => {
       const harness = await openJournal();
       const element: HTMLElement = harness.fixture.nativeElement;
