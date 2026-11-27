@@ -383,6 +383,24 @@ test.describe("brew form", () => {
       "rgb(43, 29, 22)",
     );
     await expect(drawer.locator("#date")).toHaveCSS("color", "rgb(43, 29, 22)");
+
+    const light = drawer.locator("mat-button-toggle", { hasText: "Light" });
+    const medium = drawer.locator("mat-button-toggle", { hasText: "Medium" });
+    const dark = drawer.locator("mat-button-toggle", { hasText: "Dark" });
+    await expect(light).toHaveCSS("background-color", "rgb(43, 29, 22)");
+    await expect(light).toHaveCSS("color", "rgb(250, 246, 238)");
+    for (const other of [medium, dark]) {
+      await expect(other).toHaveCSS("color", "rgb(43, 29, 22)");
+      await expect(other).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    }
+    for (const segment of [light, medium, dark]) {
+      await expect(segment).toHaveClass(/mat-button-toggle-disabled/);
+      await expect(segment.locator("button")).toBeDisabled();
+    }
+    await expect(light).toHaveClass(/mat-button-toggle-checked/);
+    await expect(medium).not.toHaveClass(/mat-button-toggle-checked/);
+    await expect(dark).not.toHaveClass(/mat-button-toggle-checked/);
+
     await expect(toggle).toHaveCSS("opacity", "1");
     await expect(toggle).toHaveCSS("color", toggleColor);
 
