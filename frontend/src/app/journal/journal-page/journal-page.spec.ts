@@ -1,4 +1,4 @@
-import { HarnessLoader } from '@angular/cdk/testing';
+import { HarnessLoader, TestKey } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -400,6 +400,76 @@ describe('JournalPage', () => {
       expect(highlighted).toHaveLength(1);
       expect(highlighted[0].querySelector('h3')!.textContent.trim()).toBe('Kenyan Morning');
     });
+  });
+
+  it('closes only the method listbox on Esc: the drawer stays open and the typed values are kept', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(threeBrews());
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+    const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+
+    buttonWithText(element, 'Add brew').click();
+    await harness.fixture.whenStable();
+    http.expectOne('/api/methods').flush(METHODS);
+    await harness.fixture.whenStable();
+    await (await field(loader, '#name')).setValue('Kenyan Morning');
+    const select = await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }));
+    await select.open();
+
+    await (await select.host()).sendKeys(TestKey.ESCAPE);
+
+    expect(await select.isOpen()).toBe(false);
+    expect(element.querySelector('mat-sidenav')!.classList.contains('mat-drawer-opened')).toBe(true);
+    expect(element.querySelector('app-brew-form')).not.toBeNull();
+    expect(await (await field(loader, '#name')).getValue()).toBe('Kenyan Morning');
+    expect(await select.isEmpty()).toBe(true);
+    http.expectNone((req) => req.url.startsWith('/api/'));
+  });
+
+  it('keeps the chosen method when Esc closes the listbox after an arrow key moved the active option', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(threeBrews());
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+    const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+
+    buttonWithText(element, 'Add brew').click();
+    await harness.fixture.whenStable();
+    http.expectOne('/api/methods').flush(METHODS);
+    await harness.fixture.whenStable();
+    const select = await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }));
+    await select.clickOptions({ text: 'Pour Over' });
+    await select.open();
+    await (await select.host()).sendKeys(TestKey.DOWN_ARROW);
+
+    await (await select.host()).sendKeys(TestKey.ESCAPE);
+
+    expect(await select.isOpen()).toBe(false);
+    expect(element.querySelector('mat-sidenav')!.classList.contains('mat-drawer-opened')).toBe(true);
+    expect(await select.getValueText()).toBe('Pour Over');
+  });
+
+  it('closes the form on Esc when the method select is focused and its listbox is closed', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(threeBrews());
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+    const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+
+    buttonWithText(element, 'Add brew').click();
+    await harness.fixture.whenStable();
+    http.expectOne('/api/methods').flush(METHODS);
+    await harness.fixture.whenStable();
+    const select = await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }));
+    await select.focus();
+
+    await (await select.host()).sendKeys(TestKey.ESCAPE);
+
+    await expectFormClosed(element);
   });
 
   it('returns focus to "+ Add brew" when the form is cancelled, and focuses Brew name when it opens', async () => {

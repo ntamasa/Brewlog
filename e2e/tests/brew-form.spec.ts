@@ -284,6 +284,38 @@ test.describe("brew form", () => {
     await expect(group.locator(".mat-pseudo-checkbox")).toHaveCount(0);
   });
 
+  test("closes only the method listbox on Esc and keeps the drawer open with the typed name", async ({
+    page,
+  }, testInfo) => {
+    const name = uniqueName("Esc");
+    await page.goto("/journal");
+    await expect(
+      page.getByRole("heading", { name: "Your brews" }),
+    ).toBeVisible();
+    const { header, fab } = addBrewTriggers(page);
+    await (isPhone(testInfo.project.name) ? fab : header).click();
+
+    const drawer = page.locator("mat-sidenav");
+    await expect(
+      drawer.getByRole("heading", { name: "Log a brew" }),
+    ).toBeVisible();
+    await drawer.getByLabel("Brew name", { exact: true }).fill(name);
+    await drawer.getByRole("combobox").click();
+    const panel = page.locator(".mat-mdc-select-panel");
+    await expect(panel).toBeVisible();
+
+    await page.keyboard.press("Escape");
+
+    await expect(panel).toBeHidden();
+    await expect(
+      drawer.getByRole("heading", { name: "Log a brew" }),
+    ).toBeVisible();
+    await expect(drawer).toHaveClass(/mat-drawer-opened/);
+    await expect(drawer.getByLabel("Brew name", { exact: true })).toHaveValue(
+      name,
+    );
+  });
+
   test("shows the busy Saving button with its spinner, keeps the disabled fields in their normal look and leaves Cancel enabled", async ({
     page,
   }, testInfo) => {
