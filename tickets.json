@@ -1052,6 +1052,10 @@
           "heading": "B8"
         },
         {
+          "from": "spec.md",
+          "heading": "B27"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -1123,6 +1127,21 @@
       ]
     },
     {
+      "id": "S5.4",
+      "type": "subtask",
+      "key": "BREW-112",
+      "parent": "S5",
+      "summary": "Brew form: server field errors stay until their field changes",
+      "description": [
+        {
+          "file": "tickets/S5.4.md"
+        }
+      ],
+      "blockedBy": [
+        "S5.3"
+      ]
+    },
+    {
       "id": "S6",
       "type": "story",
       "key": "BREW-28",
@@ -1149,6 +1168,10 @@
         },
         {
           "from": "spec.md",
+          "heading": "R50"
+        },
+        {
+          "from": "spec.md",
           "heading": "R21"
         },
         {
@@ -1161,6 +1184,10 @@
         {
           "from": "spec.md",
           "heading": "B25"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B27"
         },
         {
           "text": "## Technical design (from the spec)"
@@ -1283,6 +1310,10 @@
         {
           "from": "spec.md",
           "heading": "B26"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B27"
         },
         {
           "text": "## Technical design (from the spec)"
