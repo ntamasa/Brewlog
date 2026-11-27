@@ -1,0 +1,9 @@
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.toast .mat-icon {
+  color: var(--color-tertiary-soft);
+}
