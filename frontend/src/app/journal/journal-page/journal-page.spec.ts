@@ -421,7 +421,9 @@ describe('JournalPage', () => {
     await (await select.host()).sendKeys(TestKey.ESCAPE);
 
     expect(await select.isOpen()).toBe(false);
-    expect(element.querySelector('mat-sidenav')!.classList.contains('mat-drawer-opened')).toBe(true);
+    expect(element.querySelector('mat-sidenav')!.classList.contains('mat-drawer-opened')).toBe(
+      true,
+    );
     expect(element.querySelector('app-brew-form')).not.toBeNull();
     expect(await (await field(loader, '#name')).getValue()).toBe('Kenyan Morning');
     expect(await select.isEmpty()).toBe(true);
@@ -448,7 +450,9 @@ describe('JournalPage', () => {
     await (await select.host()).sendKeys(TestKey.ESCAPE);
 
     expect(await select.isOpen()).toBe(false);
-    expect(element.querySelector('mat-sidenav')!.classList.contains('mat-drawer-opened')).toBe(true);
+    expect(element.querySelector('mat-sidenav')!.classList.contains('mat-drawer-opened')).toBe(
+      true,
+    );
     expect(await select.getValueText()).toBe('Pour Over');
   });
 
