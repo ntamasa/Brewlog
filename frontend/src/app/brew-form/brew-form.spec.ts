@@ -131,11 +131,40 @@ describe('BrewForm', () => {
     fixture.detectChanges();
   }
 
+  async function expectFormDisabled(disabled: boolean): Promise<void> {
+    expect(await (await field('#name')).isDisabled()).toBe(disabled);
+    expect(await (await field('#bean')).isDisabled()).toBe(disabled);
+    expect(await (await field('#origin')).isDisabled()).toBe(disabled);
+    expect(await (await field('#notes')).isDisabled()).toBe(disabled);
+    expect(
+      await (
+        await loader.getHarness(MatDatepickerInputHarness.with({ selector: '#date' }))
+      ).isDisabled(),
+    ).toBe(disabled);
+    expect(
+      await (
+        await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }))
+      ).isDisabled(),
+    ).toBe(disabled);
+    for (const toggle of await loader.getAllHarnesses(MatButtonToggleHarness)) {
+      expect(await toggle.isDisabled()).toBe(disabled);
+    }
+    expect(radios().length).toBe(5);
+    for (const radio of radios()) {
+      expect(radio.disabled).toBe(disabled);
+    }
+  }
+
   async function expectKeptAfterFailure(): Promise<void> {
     fixture.detectChanges();
     const button = await loader.getHarness(MatButtonHarness.with({ text: 'Add to journal' }));
     expect(await button.isDisabled()).toBe(false);
     expect(fixture.nativeElement.querySelector('button[aria-busy]')).toBeNull();
+    const primary: HTMLButtonElement = fixture.nativeElement.querySelector(
+      'button[matbutton="filled"]',
+    );
+    expect(primary.getAttribute('aria-disabled')).not.toBe('true');
+    await expectFormDisabled(false);
 
     expect(await (await field('#name')).isDisabled()).toBe(false);
     expect(await (await field('#name')).getValue()).toBe('Kenyan Morning');
@@ -372,6 +401,57 @@ describe('BrewForm', () => {
     expect(saved).toHaveBeenCalledWith(SAVED);
   });
 
+  it('while the POST is in flight the primary is busy: aria-busy and aria-disabled, no native disabled, Saving… with one spinner', async () => {
+    await fillValid();
+    await addToJournal();
+    const request = http.expectOne('/api/brews');
+
+    const busy: HTMLButtonElement = fixture.nativeElement.querySelector('button[aria-busy="true"]');
+    expect(busy.getAttribute('aria-disabled')).toBe('true');
+    expect(busy.hasAttribute('disabled')).toBe(false);
+    expect(busy.classList.contains('mat-mdc-button-disabled')).toBe(true);
+    expect(busy.textContent).toContain('Saving…');
+    expect(busy.querySelectorAll('span.spinner[aria-hidden="true"]').length).toBe(1);
+    expect(busy.querySelectorAll('span.spinner').length).toBe(1);
+
+    request.flush(SAVED, { status: 201, statusText: 'Created' });
+    fixture.detectChanges();
+  });
+
+  it('while the POST is in flight every brew form field, the date and the roast and rating controls are disabled', async () => {
+    await fillValid();
+    await addToJournal();
+
+    const request = http.expectOne('/api/brews');
+
+    await expectFormDisabled(true);
+    request.flush(SAVED, { status: 201, statusText: 'Created' });
+    fixture.detectChanges();
+  });
+
+  it('while the POST is in flight Cancel and the close button stay enabled, and Cancel emits closed once', async () => {
+    await fillValid();
+    await addToJournal();
+    const request = http.expectOne('/api/brews');
+
+    const cancel: HTMLButtonElement = fixture.nativeElement.querySelector(
+      'footer.foot button.btn-secondary',
+    );
+    const close: HTMLButtonElement = fixture.nativeElement.querySelector(
+      'button[aria-label="Close without saving"]',
+    );
+    for (const button of [cancel, close]) {
+      expect(button.hasAttribute('disabled')).toBe(false);
+      expect(button.hasAttribute('aria-disabled')).toBe(false);
+    }
+
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).click();
+    expect(closed).toHaveBeenCalledTimes(1);
+
+    request.flush(SAVED, { status: 201, statusText: 'Created' });
+    fixture.detectChanges();
+  });
+
   // Negative
 
   it('opens the calendar with 2 Nov 2026 disabled and 1 Nov 2026 enabled', async () => {
@@ -500,5 +580,19 @@ describe('BrewForm', () => {
 
     expect(fixture.nativeElement.querySelectorAll('.mat-form-field-invalid').length).toBe(0);
     expect(fixture.nativeElement.querySelector('mat-error')).toBeNull();
+  });
+
+  it('a second click on the busy Saving button sends no second POST and emits saved once', async () => {
+    await fillValid();
+    await addToJournal();
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Saving…' }))).click();
+    fixture.detectChanges();
+
+    const request = http.expectOne('/api/brews');
+    request.flush(SAVED, { status: 201, statusText: 'Created' });
+    fixture.detectChanges();
+
+    expect(saved).toHaveBeenCalledTimes(1);
+    expect(saved).toHaveBeenCalledWith(SAVED);
   });
 });
