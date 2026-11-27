@@ -260,14 +260,15 @@ html {
 .mat-mdc-form-field.mat-form-field-invalid .mat-mdc-text-field-wrapper {
   background-color: var(--color-error-soft);
 }
-.mat-mdc-form-field-hint-wrapper,
-.mat-mdc-form-field-error-wrapper {
+/* Prefixed with .mat-mdc-form-field: Material's own same-specificity rules load later and would win. */
+.mat-mdc-form-field .mat-mdc-form-field-hint-wrapper,
+.mat-mdc-form-field .mat-mdc-form-field-error-wrapper {
   padding: 0;
 }
-.mat-mdc-form-field-hint,
-.mat-mdc-form-field-error {
+.mat-mdc-form-field .mat-mdc-form-field-hint,
+.mat-mdc-form-field .mat-mdc-form-field-error {
   margin-top: var(--spacing-xs);
 }
-.mat-mdc-select-arrow-wrapper {
+.mat-mdc-form-field .mat-mdc-select-arrow-wrapper {
   display: none;
 }

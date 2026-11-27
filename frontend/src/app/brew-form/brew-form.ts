@@ -3,6 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { ErrorStateMatcher } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -23,6 +24,9 @@ export interface BrewFormControls {
   brewDate: FormControl<Date | null>;
 }
 
+// interim: no field shows the error state until BREW-27 adds the real matcher and the messages
+const NO_ERROR_STATE: ErrorStateMatcher = { isErrorState: () => false };
+
 @Component({
   selector: 'app-brew-form',
   imports: [
@@ -38,6 +42,7 @@ export interface BrewFormControls {
   ],
   templateUrl: './brew-form.html',
   styleUrl: './brew-form.scss',
+  providers: [{ provide: ErrorStateMatcher, useValue: NO_ERROR_STATE }],
 })
 export class BrewForm {
   readonly mode = input<'create' | 'edit'>('create');

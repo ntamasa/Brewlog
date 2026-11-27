@@ -8,63 +8,65 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
-  border-bottom: 1px solid var(--color-outline-variant);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--color-outline);
 }
 
 .body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--spacing-lg);
   overflow-y: auto;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-xl);
 }
 
 .intro {
-  margin: 0;
+  margin-top: calc(-1 * var(--spacing-sm));
+  color: var(--color-on-surface-muted);
+  font-size: var(--text-body-sm);
 }
 
-.pair {
+.row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-md);
+  align-items: start;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
+fieldset.field {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
 }
 
-.label {
-  color: var(--color-on-surface-variant);
+fieldset.field legend {
+  padding: 0;
+  margin-bottom: var(--spacing-xs);
 }
 
 mat-form-field {
   width: 100%;
 }
 
-textarea {
+.textarea {
   min-height: 120px;
-}
-
-.optional {
-  margin-left: var(--spacing-xs);
-  color: var(--color-on-surface-variant);
+  resize: vertical;
 }
 
 .foot {
   display: flex;
   justify-content: flex-end;
   gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-top: 1px solid var(--color-outline-variant);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-top: 1px solid var(--color-outline);
 }
 
 @media (max-width: 767px) {
-  .pair {
+  .row-2 {
     grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
   }
 
   .foot button {

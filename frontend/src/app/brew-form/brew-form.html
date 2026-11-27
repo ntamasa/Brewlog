@@ -6,29 +6,43 @@
 </header>
 
 <div class="body" [formGroup]="form">
-  <p class="t-body-sm muted intro">Everything is required except tasting notes.</p>
+  <p class="intro">Everything is required except tasting notes.</p>
 
-  <mat-form-field>
-    <mat-label>Brew name</mat-label>
-    <input matInput formControlName="name" cdkFocusInitial />
-    <mat-hint>A name only you would recognise, like “Sunday Moka”. Must be unique.</mat-hint>
-  </mat-form-field>
+  <div class="field" data-field="name">
+    <label class="field-label" for="name">Brew name</label>
+    <mat-form-field>
+      <input matInput id="name" formControlName="name" autocomplete="off" cdkFocusInitial />
+      <mat-hint class="field-help"
+        >A name only you would recognise, like “Sunday Moka”. Must be unique.</mat-hint
+      >
+    </mat-form-field>
+  </div>
 
-  <div class="pair">
-    <mat-form-field>
-      <mat-label>Bean name</mat-label>
-      <input matInput formControlName="beanName" />
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>Origin</mat-label>
-      <input matInput formControlName="origin" placeholder="Country or region" />
-    </mat-form-field>
+  <div class="row-2">
+    <div class="field" data-field="bean">
+      <label class="field-label" for="bean">Bean name</label>
+      <mat-form-field>
+        <input matInput id="bean" formControlName="beanName" autocomplete="off" />
+      </mat-form-field>
+    </div>
+    <div class="field" data-field="origin">
+      <label class="field-label" for="origin">Origin</label>
+      <mat-form-field>
+        <input
+          matInput
+          id="origin"
+          formControlName="origin"
+          autocomplete="off"
+          placeholder="Country or region"
+        />
+      </mat-form-field>
+    </div>
   </div>
 
   <app-method-select formControlName="methodId" [methods]="methods()" />
 
-  <div class="field">
-    <span class="t-caps label">Roast level</span>
+  <fieldset class="field" data-field="roast">
+    <legend class="field-label">Roast level</legend>
     <mat-button-toggle-group formControlName="roast" aria-label="Roast level">
       <mat-button-toggle value="LIGHT"
         ><span class="swatch swatch-light" aria-hidden="true"></span>Light</mat-button-toggle
@@ -40,32 +54,40 @@
         ><span class="swatch swatch-dark" aria-hidden="true"></span>Dark</mat-button-toggle
       >
     </mat-button-toggle-group>
-  </div>
+  </fieldset>
 
-  <div class="field">
-    <span class="t-caps label">Rating</span>
+  <fieldset class="field" data-field="rating" id="rating">
+    <legend class="field-label">Rating</legend>
     <app-bean-rating mode="input" formControlName="rating" />
+  </fieldset>
+
+  <div class="field" data-field="date">
+    <label class="field-label" for="date">Date</label>
+    <mat-form-field>
+      <input matInput id="date" [matDatepicker]="picker" [max]="today" formControlName="brewDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker">
+        <mat-icon matDatepickerToggleIcon svgIcon="calendar" aria-hidden="true"></mat-icon>
+      </mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-hint class="field-help"
+        >Defaults to today. Change it if you’re logging an earlier brew.</mat-hint
+      >
+    </mat-form-field>
   </div>
 
-  <mat-form-field>
-    <mat-label>Date</mat-label>
-    <input matInput [matDatepicker]="picker" [max]="today" formControlName="brewDate" />
-    <mat-datepicker-toggle matIconSuffix [for]="picker">
-      <mat-icon matDatepickerToggleIcon svgIcon="calendar" aria-hidden="true"></mat-icon>
-    </mat-datepicker-toggle>
-    <mat-datepicker #picker></mat-datepicker>
-    <mat-hint>Defaults to today. Change it if you’re logging an earlier brew.</mat-hint>
-  </mat-form-field>
-
-  <mat-form-field>
-    <mat-label>Tasting notes <span class="optional">Optional</span></mat-label>
-    <textarea
-      matInput
-      formControlName="notes"
-      rows="5"
-      placeholder="Aroma, acidity, body, finish… and anything you’d change next time."
-    ></textarea>
-  </mat-form-field>
+  <div class="field" data-field="notes">
+    <label class="field-label" for="notes">Tasting notes <span class="opt">Optional</span></label>
+    <mat-form-field>
+      <textarea
+        matInput
+        id="notes"
+        class="textarea"
+        formControlName="notes"
+        rows="5"
+        placeholder="Aroma, acidity, body, finish… and anything you’d change next time."
+      ></textarea>
+    </mat-form-field>
+  </div>
 </div>
 
 <footer class="foot">
