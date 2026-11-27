@@ -198,4 +198,36 @@ describe('JournalStore', () => {
       expect(store.isFiltered()).toBe(true);
     });
   });
+
+  describe('clearFilters and removeFilter', () => {
+    beforeEach(() => {
+      setUp(() => of(FIRST_PAGE));
+    });
+
+    it('clearFilters keeps the sort, resets the search and filters, and goes to page 1', () => {
+      store.setQuery({ ...DEFAULT_QUERY, q: 'kenya', sort: 'OLDEST', page: 3 });
+
+      store.clearFilters();
+
+      expect(list).toHaveBeenLastCalledWith({ ...DEFAULT_QUERY, sort: 'OLDEST' });
+      expect(store.query()).toEqual({ ...DEFAULT_QUERY, sort: 'OLDEST' });
+    });
+
+    it('removeFilter("q") clears the search and goes to page 1', () => {
+      store.setQuery({ ...DEFAULT_QUERY, q: 'kenya', page: 3 });
+
+      store.removeFilter('q');
+
+      expect(list).toHaveBeenLastCalledWith(DEFAULT_QUERY);
+      expect(store.isFiltered()).toBe(false);
+    });
+
+    it('removeFilter("q") keeps the sort and the other filters', () => {
+      store.setQuery({ ...DEFAULT_QUERY, q: 'kenya', sort: 'HIGHEST', page: 2 });
+
+      store.removeFilter('q');
+
+      expect(list).toHaveBeenLastCalledWith({ ...DEFAULT_QUERY, sort: 'HIGHEST' });
+    });
+  });
 });
