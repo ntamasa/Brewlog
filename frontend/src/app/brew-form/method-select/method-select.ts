@@ -5,11 +5,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { methodsAz } from '../../core/format';
 import { BrewMethod } from '../../core/models';
-import { MethodIcon } from '../../shared/method-icon/method-icon';
-
 @Component({
   selector: 'app-method-select',
-  imports: [MatFormFieldModule, MatIconModule, MatSelectModule, MethodIcon],
+  imports: [MatFormFieldModule, MatIconModule, MatSelectModule],
   templateUrl: './method-select.html',
   styleUrl: './method-select.scss',
   providers: [
@@ -20,6 +18,9 @@ export class MethodSelect implements ControlValueAccessor {
   methods = input.required<BrewMethod[]>();
 
   protected readonly sorted = computed(() => methodsAz(this.methods()));
+  protected readonly selected = computed(
+    () => this.methods().find((method) => method.id === this.value()) ?? null,
+  );
   protected readonly value = signal<number | null>(null);
   protected readonly isDisabled = signal(false);
 

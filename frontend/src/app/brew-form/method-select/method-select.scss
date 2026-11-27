@@ -6,8 +6,27 @@ mat-form-field {
   width: 100%;
 }
 
-.method-option {
+.method-value {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
+}
+
+.method-value .mat-icon,
+.mat-mdc-option .mat-icon {
+  color: var(--color-tertiary);
+}
+
+.mat-mdc-option.mdc-list-item--selected {
+  font-weight: var(--font-weight-title-md);
+}
+
+.mat-mdc-option.mdc-list-item--selected::after {
+  content: '';
+  flex: none;
+  margin-left: var(--spacing-md);
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-tertiary);
 }

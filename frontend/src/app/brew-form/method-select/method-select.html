@@ -5,17 +5,24 @@
       id="method-btn"
       aria-labelledby="method-label"
       placeholder="Choose a method"
+      hideSingleSelectionIndicator
       [value]="value()"
       [disabled]="isDisabled()"
       (selectionChange)="select($event.value)"
       (closed)="touch()"
     >
+      <mat-select-trigger>
+        @if (selected(); as method) {
+          <span class="method-value">
+            <mat-icon class="icon" [svgIcon]="method.iconKey" aria-hidden="true" />
+            <span>{{ method.name }}</span>
+          </span>
+        }
+      </mat-select-trigger>
       @for (method of sorted(); track method.id) {
         <mat-option [value]="method.id">
-          <span class="method-option">
-            <app-method-icon [iconKey]="method.iconKey" />
-            {{ method.name }}
-          </span>
+          <mat-icon class="icon" [svgIcon]="method.iconKey" aria-hidden="true" />
+          {{ method.name }}
         </mat-option>
       }
     </mat-select>
