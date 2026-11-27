@@ -1,3 +1,4 @@
+import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -105,4 +106,101 @@ describe('MethodSelect', () => {
     await (await chevron.host()).click();
     expect(await (await loader.getHarness(MatSelectHarness)).isOpen()).toBe(true);
   });
+
+  it('shows the chosen method icon before its name in the field', async () => {
+    host.control.setValue(2);
+    fixture.detectChanges();
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+
+    const select = await loader.getHarness(MatSelectHarness);
+    expect(await select.getValueText()).toBe('Pour Over');
+    expect(await iconNames(loader, '#method-btn')).toEqual(['pour-over']);
+  });
+
+  it('shows the icon and name of a method chosen from the list', async () => {
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const select = await loader.getHarness(MatSelectHarness);
+
+    await select.clickOptions({ text: 'AeroPress' });
+
+    expect(await select.getValueText()).toBe('AeroPress');
+    expect(await iconNames(loader, '#method-btn')).toEqual(['aeropress']);
+  });
+
+  it('gives each option its icon, in A-Z order with Other last', async () => {
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    await (await loader.getHarness(MatSelectHarness)).open();
+
+    const documentLoader = TestbedHarnessEnvironment.documentRootLoader(fixture);
+    expect(await iconNames(documentLoader, '.mat-mdc-select-panel')).toEqual([
+      'aeropress',
+      'cup',
+      'cold-brew',
+      'espresso',
+      'french-press',
+      'moka-pot',
+      'pour-over',
+      'cup',
+    ]);
+  });
+
+  it('marks only the chosen option as selected, with no pseudo checkbox in the panel', async () => {
+    host.control.setValue(2);
+    fixture.detectChanges();
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+
+    await select.open();
+
+    const selected: string[] = [];
+    for (const option of await select.getOptions()) {
+      if (await option.isSelected()) {
+        selected.push(await option.getText());
+      }
+    }
+    expect(selected).toEqual(['Pour Over']);
+    expect(panelPseudoCheckboxCount()).toBe(0);
+  });
+
+  it('with no method chosen, shows Choose a method and no icon, the chevron being the only icon in the field', async () => {
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+
+    const select = await loader.getHarness(MatSelectHarness);
+    expect(await select.getValueText()).toBe('Choose a method');
+    expect(await iconNames(loader, '#method-btn')).toEqual([]);
+    expect(await iconNames(loader, '[data-field="method"]')).toEqual(['chevron-down']);
+  });
+
+  it('with an id that is not in the list, shows Choose a method and no icon', async () => {
+    host.control.setValue(42);
+    fixture.detectChanges();
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+
+    expect(await (await loader.getHarness(MatSelectHarness)).getValueText()).toBe(
+      'Choose a method',
+    );
+    expect(await iconNames(loader, '#method-btn')).toEqual([]);
+  });
+
+  it('with no method chosen, no option is selected and the panel has no pseudo checkbox', async () => {
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const select = await loader.getHarness(MatSelectHarness);
+
+    await select.open();
+
+    for (const option of await select.getOptions()) {
+      expect(await option.isSelected()).toBe(false);
+    }
+    expect(panelPseudoCheckboxCount()).toBe(0);
+  });
 });
+
+async function iconNames(loader: HarnessLoader, ancestor: string): Promise<(string | null)[]> {
+  const icons = await loader.getAllHarnesses(MatIconHarness.with({ ancestor }));
+  return Promise.all(icons.map((icon) => icon.getName()));
+}
+
+function panelPseudoCheckboxCount(): number {
+  return document.querySelectorAll(
+    '.mat-mdc-select-panel .mat-pseudo-checkbox, .mat-mdc-select-panel mat-pseudo-checkbox',
+  ).length;
+}

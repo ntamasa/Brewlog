@@ -175,4 +175,62 @@ test.describe("brew form", () => {
       ),
     ).toBeVisible();
   });
+
+  test("shows the method icon in the field, terracotta icons in the list and a bold selected option with a dot", async ({
+    page,
+  }, testInfo) => {
+    await page.goto("/journal");
+    await expect(
+      page.getByRole("heading", { name: "Your brews" }),
+    ).toBeVisible();
+    const { header, fab } = addBrewTriggers(page);
+    await (isPhone(testInfo.project.name) ? fab : header).click();
+
+    const drawer = page.locator("mat-sidenav");
+    await expect(
+      drawer.getByRole("heading", { name: "Log a brew" }),
+    ).toBeVisible();
+
+    await drawer.getByRole("combobox").click();
+    await page.getByRole("option", { name: "Pour Over", exact: true }).click();
+
+    const fieldIcon = drawer.locator(
+      '#method-btn mat-icon[data-mat-icon-name="pour-over"]',
+    );
+    await expect(fieldIcon).toBeVisible();
+    expect(await fieldIcon.evaluate((el) => getComputedStyle(el).color)).toBe(
+      "rgb(180, 83, 42)",
+    );
+
+    await drawer.getByRole("combobox").click();
+    const panel = page.locator(".mat-mdc-select-panel");
+    await expect(panel).toBeVisible();
+
+    const pourOver = page.getByRole("option", {
+      name: "Pour Over",
+      exact: true,
+    });
+    expect(
+      await pourOver.evaluate((el) => getComputedStyle(el).fontWeight),
+    ).toBe("600");
+    const dot = await pourOver.evaluate((el) => {
+      const style = getComputedStyle(el, "::after");
+      return { background: style.backgroundColor, width: style.width };
+    });
+    expect(dot).toEqual({ background: "rgb(180, 83, 42)", width: "6px" });
+
+    const aeroPress = page.getByRole("option", {
+      name: "AeroPress",
+      exact: true,
+    });
+    expect(
+      await aeroPress.evaluate((el) => getComputedStyle(el).fontWeight),
+    ).toBe("400");
+    const aeroIcon = aeroPress.locator("mat-icon");
+    expect(await aeroIcon.evaluate((el) => getComputedStyle(el).color)).toBe(
+      "rgb(180, 83, 42)",
+    );
+
+    expect(await panel.locator(".mat-pseudo-checkbox").count()).toBe(0);
+  });
 });
