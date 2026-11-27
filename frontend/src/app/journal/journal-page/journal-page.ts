@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -49,6 +49,12 @@ export class JournalPage implements OnInit {
     return `Showing ${first}–${last} of ${this.store.matchingCount()}`;
   });
 
+  constructor() {
+    effect(() => {
+      void this.router.navigate([], { queryParams: queryToParams(this.store.query()) });
+    });
+  }
+
   ngOnInit(): void {
     this.store.setQuery(queryFromParams(this.route.snapshot.queryParamMap));
   }
@@ -72,6 +78,5 @@ export class JournalPage implements OnInit {
 
   protected onPageChange(page: number): void {
     this.store.setPage(page);
-    this.router.navigate([], { queryParams: queryToParams(this.store.query()) });
   }
 }
