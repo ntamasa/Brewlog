@@ -6,6 +6,7 @@
 - **Singular counts:** counts say "brew" for exactly 1 and "brews" otherwise.
 - **Toasts:** every toast shows for 4 seconds.
 - **Changes made elsewhere:** if a brew was deleted elsewhere, saving its edit offers "Save as new brew" and deleting it reports it's gone; if a brew's chosen method was deleted, the brew can't be saved until another method is chosen; a method deleted elsewhere is removed from the methods dialog with a toast. The list refreshes in every case.
+- **One change at a time:** while a change is being sent (saving or deleting a brew, or adding, renaming or deleting a method), its button can't send it again. The other buttons in the same window that send or start a change are disabled until the server answers. Closing, cancelling and going back stay possible.
 
 ## Journal
 - **Search:** finds brews whose name contains the trimmed search text, ignoring case; % and _ match literally; an empty search means no search.

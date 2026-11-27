@@ -79,7 +79,7 @@
 <div class="backdrop"></div>
 
 <div class="dialog methods float-shadow" role="dialog" aria-modal="true" aria-labelledby="m-title">
-  <div class="dialog-head" style="margin-bottom:0" data-states="default renaming delete-confirm duplicate added save-error gone error">
+  <div class="dialog-head" style="margin-bottom:0" data-states="default renaming delete-confirm duplicate added save-error gone error adding rename-row-saving delete-inline-deleting">
     <div>
       <h2 id="m-title" class="t-headline-md">Brew methods</h2>
       <p class="lede t-body-sm">Renaming updates every brew that uses the method. Deleting moves those brews to “Other”.</p>
@@ -87,11 +87,11 @@
     <a class="icon-btn" href="brews.html" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></a>
   </div>
 
-  <form class="field" onsubmit="return false" data-field="add" data-states="default renaming delete-confirm duplicate added save-error gone">
+  <form class="field" onsubmit="return false" data-field="add" data-states="default renaming delete-confirm duplicate added save-error gone adding rename-row-saving delete-inline-deleting">
     <div class="add-row">
       <label class="sr-only" for="new-m">New method name</label>
       <input class="input" id="new-m" placeholder="Add a method, e.g. Chemex" aria-describedby="new-m-err">
-      <button class="btn btn-primary"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
+      <button class="btn btn-primary" id="new-m-add"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
     </div>
     <p class="field-error" id="new-m-err" data-states="duplicate"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>“Pour Over” already exists. Method names must be unique.</p>
     <p class="field-error" data-states="save-error"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Couldn’t save the method. Try again.</p>
@@ -104,10 +104,10 @@
     </div>
   </div>
 
-  <ul class="m-list" aria-label="Methods" data-states="default renaming delete-confirm duplicate added save-error gone">
+  <ul class="m-list" aria-label="Methods" data-states="default renaming delete-confirm duplicate added save-error gone adding rename-row-saving delete-inline-deleting">
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-espresso"/></svg><div class="name"><strong>Espresso</strong><span>9 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Espresso"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Espresso"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
-    <li class="m-row" data-states="default delete-confirm duplicate added save-error gone"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg><div class="name"><strong>Pour Over</strong><span>14 brews</span></div>
+    <li class="m-row" data-states="default delete-confirm duplicate added save-error gone adding rename-row-saving delete-inline-deleting"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg><div class="name"><strong>Pour Over</strong><span>14 brews</span></div>
       <div class="actions"><a class="icon-btn" href="?state=renaming" aria-label="Rename Pour Over"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></a><button class="icon-btn del" aria-label="Delete Pour Over"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row editing" data-states="renaming"><svg class="icon" aria-hidden="true"><use href="#i-pour-over"/></svg>
       <label class="sr-only" for="rename">Rename Pour Over</label>
@@ -117,26 +117,30 @@
       <div class="actions"><button class="icon-btn" aria-label="Rename French Press"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete French Press"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-aeropress"/></svg><div class="name"><strong>AeroPress</strong><span>6 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename AeroPress"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete AeroPress"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
-    <li class="m-row" data-states="default renaming delete-confirm duplicate added save-error"><svg class="icon" aria-hidden="true"><use href="#i-moka-pot"/></svg><div class="name"><strong>Moka Pot</strong><span>3 brews</span></div>
+    <li class="m-row" data-states="default renaming delete-confirm duplicate added save-error adding rename-row-saving delete-inline-deleting"><svg class="icon" aria-hidden="true"><use href="#i-moka-pot"/></svg><div class="name"><strong>Moka Pot</strong><span>3 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><a class="icon-btn del" href="?state=delete-reassign" aria-label="Delete Moka Pot"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></a></div></li>
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cold-brew"/></svg><div class="name"><strong>Cold Brew</strong><span>2 brews</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Cold Brew"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Cold Brew"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row" data-states="added" style="background:var(--color-tertiary-soft);margin:0 calc(-1 * var(--spacing-md));padding-left:var(--spacing-md);padding-right:var(--spacing-md)"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Chemex</strong><span>0 brews · added by you</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Chemex"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Chemex"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
-    <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Kalita Wave</strong><span>0 brews · added by you</span></div>
+    <li class="m-row editing" data-states="rename-row-saving"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg>
+      <label class="sr-only" for="rename-kw">Rename Kalita Wave</label>
+      <input class="input" id="rename-kw" value="Kalita Wave 185" disabled>
+      <button class="btn btn-ghost">Cancel</button><button class="btn btn-primary" aria-busy="true" aria-disabled="true">Save</button></li>
+    <li class="m-row" data-states="default renaming delete-confirm duplicate added save-error gone adding delete-inline-deleting"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Kalita Wave</strong><span>0 brews · added by you</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Kalita Wave"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><a class="icon-btn del" href="?state=delete-confirm" aria-label="Delete Kalita Wave"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></a></div></li>
-    <li class="confirm-row" role="alert" data-states="delete-confirm">
+    <li class="confirm-row" role="alert" data-states="delete-confirm delete-inline-deleting">
       <p><strong>Delete “Kalita Wave”?</strong> No brews use it. This can’t be undone.</p>
-      <div class="btns"><a class="btn btn-secondary" href="?state=default">Keep</a><button class="btn btn-danger">Delete method</button></div>
+      <div class="btns"><a class="btn btn-secondary" href="?state=default">Keep</a><button class="btn btn-danger" id="inline-del">Delete method</button></div>
     </li>
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Siphon</strong><span>1 brew · added by you</span></div>
       <div class="actions"><button class="icon-btn" aria-label="Rename Siphon"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg></button><button class="icon-btn del" aria-label="Delete Siphon"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button></div></li>
     <li class="m-row"><svg class="icon" aria-hidden="true"><use href="#i-cup"/></svg><div class="name"><strong>Other</strong><span>2 brews</span></div>
       <span class="locked t-caps" title="“Other” can’t be renamed or deleted"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-lock"/></svg>Protected</span></li>
   </ul>
-  <p class="hint" style="margin-top:var(--spacing-md)" data-states="default renaming delete-confirm duplicate added save-error gone">“Other” is always available and catches brews from deleted methods.</p>
+  <p class="hint" style="margin-top:var(--spacing-md)" data-states="default renaming delete-confirm duplicate added save-error gone adding rename-row-saving delete-inline-deleting">“Other” is always available and catches brews from deleted methods.</p>
 
-  <div class="dialog-actions" data-states="default renaming delete-confirm duplicate added save-error gone error">
+  <div class="dialog-actions" data-states="default renaming delete-confirm duplicate added save-error gone error adding rename-row-saving delete-inline-deleting">
     <a class="btn btn-secondary" href="brews.html">Done</a>
   </div>
 
@@ -156,7 +160,7 @@
     <div class="dialog-actions">
       <a class="btn btn-secondary" href="?state=renaming">Cancel</a>
       <button class="btn btn-primary" data-states="rename-confirm rename-error">Rename for all 14 brews</button>
-      <button class="btn btn-primary" aria-busy="true" data-states="rename-saving"><span class="spinner" aria-hidden="true"></span>Renaming…</button>
+      <button class="btn btn-primary" aria-busy="true" aria-disabled="true" data-states="rename-saving"><span class="spinner" aria-hidden="true"></span>Renaming…</button>
     </div>
   </section>
 
@@ -181,7 +185,7 @@
     <div class="dialog-actions">
       <a class="btn btn-secondary" href="?state=default">Keep method</a>
       <button class="btn btn-danger" data-states="delete-reassign delete-mixed delete-error">Delete method</button>
-      <button class="btn btn-danger" aria-busy="true" data-states="deleting"><span class="spinner" aria-hidden="true"></span>Deleting…</button>
+      <button class="btn btn-danger" aria-busy="true" aria-disabled="true" data-states="deleting"><span class="spinner" aria-hidden="true"></span>Deleting…</button>
     </div>
   </section>
 </div>
@@ -225,6 +229,19 @@
       var counts = {}; list.forEach(function (b, i) { var t = dest[i] || 'Other'; counts[t] = (counts[t] || 0) + 1; });
       document.getElementById('dl-summary').textContent = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).map(function (k) { return counts[k] + ' to ' + k; }).join(' · ');
       if (state === 'deleting') document.querySelectorAll('.step select').forEach(function (el) { el.disabled = true; });
+    }
+    if (["adding","rename-row-saving","delete-inline-deleting"].indexOf(state) > -1) {
+      // A request is in flight: every other sender and row action in the dialog is blocked (own label, 75%, not clickable).
+      var block = function (el) { el.setAttribute('aria-disabled', 'true'); el.setAttribute('tabindex', '-1'); };
+      document.querySelectorAll('.m-list .actions .icon-btn').forEach(block);
+      var add = document.getElementById('new-m-add');
+      if (state === 'adding') {
+        var a = document.getElementById('new-m'); a.value = 'Chemex'; a.disabled = true;
+        add.setAttribute('aria-busy', 'true'); add.setAttribute('aria-disabled', 'true');
+      } else {
+        block(add);
+      }
+      if (state === 'delete-inline-deleting') { var d = document.getElementById('inline-del'); d.setAttribute('aria-busy', 'true'); d.setAttribute('aria-disabled', 'true'); }
     }
     if (state === 'save-error') { var j = document.getElementById('new-m'); j.value = 'Chemex'; document.querySelector('[data-field="add"]').classList.add('has-error'); }
     if (state === 'duplicate') { var i = document.getElementById('new-m'); i.value = 'pour over'; document.querySelector('[data-field="add"]').classList.add('has-error'); }

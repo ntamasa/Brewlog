@@ -13,7 +13,7 @@
         "heading": "Summary"
       },
       {
-        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91; Form fields in subtask BREW-100 (`jira.mjs read BREW-100`), which also adds the field classes that UI implementation → Shared helpers now lists; Backend in each backend subtask that isn't Done (BREW-25, BREW-29, BREW-33, BREW-37, BREW-43, BREW-47, BREW-50, BREW-54, BREW-58, BREW-64, BREW-67, BREW-70, BREW-79); Data model in stories BREW-17 and BREW-57 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
+        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done, and BREW-17, whose open subtasks don't need it; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91, and its busy and blocked bullets quoted in BREW-105 (\"Busy and blocked look\", \"Spinner\") and BREW-106 (\"Busy and blocked buttons\", \"Who is busy or blocked\"); Form fields in subtask BREW-100 (`jira.mjs read BREW-100`), which also adds the field classes that UI implementation → Shared helpers now lists; its later disabled-field bullets are written out in BREW-105; Backend in each backend subtask that isn't Done (BREW-25, BREW-29, BREW-33, BREW-37, BREW-43, BREW-47, BREW-50, BREW-54, BREW-58, BREW-64, BREW-67, BREW-70, BREW-79); Data model in stories BREW-17 and BREW-57 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10 (its R48 and R49 rows are written out in the subtasks that build them); Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
       },
       {
         "from": "spec.md",
@@ -619,6 +619,17 @@
           "text": "This story builds R47's brew form part: focus on Brew name when the create form opens, and back on \"+ Add brew\", the FAB or \"+ Log your first brew\" when it closes without saving (BREW-23, BREW-31). Its other parts come with their overlays: the edit form in BREW-35, \"Delete this brew?\" in BREW-39, the detail in BREW-41, the \"Filter & sort\" sheet in BREW-52, the methods dialog in BREW-60, and the 390 px form, detail and methods sheets in BREW-82."
         },
         {
+          "from": "spec.md",
+          "heading": "R48"
+        },
+        {
+          "from": "spec.md",
+          "heading": "R49"
+        },
+        {
+          "text": "This story builds R48 and R49 for the brew form in create mode: the busy \"Saving…\" primary (\"Add to journal\"), every brew form field disabled with its normal look while saving, and the theme rules behind every busy and blocked look (BREW-105, BREW-106). Their other parts come with their buttons: \"Save changes\" and \"Save as new brew\" in BREW-35; \"Deleting…\" in \"Delete this brew?\" in BREW-38, its look check in BREW-39; `MethodStore.pending` in BREW-59; \"+ Add\" in BREW-60; quick-add \"Add\" and the primary it blocks in BREW-107; the pencils and the row \"Save\" in BREW-65; \"Renaming…\" in BREW-68; the trash buttons and the inline \"Delete method\" in BREW-71; the delete step's \"Deleting…\" in BREW-73 and BREW-74; the end of busy and blocked after a 404 in BREW-76; the form sheet on phones in BREW-82."
+        },
+        {
           "text": "## Business rules"
         },
         {
@@ -654,6 +665,10 @@
           "heading": "B24"
         },
         {
+          "from": "spec.md",
+          "heading": "B26"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -661,8 +676,7 @@
           "heading": "Data model"
         },
         {
-          "from": "spec.md",
-          "heading": "Frontend"
+          "text": "The spec's Frontend section is in every later story with UI work, e.g. BREW-24 (`jira.mjs read BREW-24`); this story's subtasks that aren't Done don't need it."
         }
       ],
       "blockedBy": [
@@ -678,7 +692,9 @@
         "design/screenshots/brews.saved.desktop.png",
         "design/screenshots/brews.saved.mobile.png",
         "design/screenshots/brews.empty.desktop.png",
-        "design/screenshots/brews.empty.mobile.png"
+        "design/screenshots/brews.empty.mobile.png",
+        "design/screenshots/brew-form.saving.desktop_deprecated.png",
+        "design/screenshots/brew-form.saving.mobile_deprecated.png"
       ]
     },
     {
@@ -859,7 +875,8 @@
       ],
       "blockedBy": [
         "S4.10"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S4.12",
@@ -874,6 +891,37 @@
       ],
       "blockedBy": [
         "S4.11"
+      ],
+      "done": true
+    },
+    {
+      "id": "S4.13",
+      "type": "subtask",
+      "key": "BREW-105",
+      "parent": "S4",
+      "summary": "Fix: busy and blocked button look, disabled-field look and inline spinner in the theme; \"Saving…\" e2e look check",
+      "description": [
+        {
+          "file": "tickets/S4.13.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.12"
+      ]
+    },
+    {
+      "id": "S4.14",
+      "type": "subtask",
+      "key": "BREW-106",
+      "parent": "S4",
+      "summary": "Fix: busy \"Saving…\" primary with disabledInteractive: aria-disabled, one request per save, fields disabled",
+      "description": [
+        {
+          "file": "tickets/S4.14.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.13"
       ]
     },
     {
@@ -1165,6 +1213,10 @@
           "heading": "B25"
         },
         {
+          "from": "spec.md",
+          "heading": "B26"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -1279,6 +1331,10 @@
           "heading": "B25"
         },
         {
+          "from": "spec.md",
+          "heading": "B26"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -1297,7 +1353,9 @@
         "design/screenshots/brew-delete.error.desktop.png",
         "design/screenshots/brew-delete.error.mobile.png",
         "design/screenshots/brew-delete.gone.desktop.png",
-        "design/screenshots/brew-delete.gone.mobile.png"
+        "design/screenshots/brew-delete.gone.mobile.png",
+        "design/screenshots/brew-delete.deleting.desktop_deprecated.png",
+        "design/screenshots/brew-delete.deleting.mobile_deprecated.png"
       ]
     },
     {
@@ -1872,6 +1930,10 @@
           "heading": "B24"
         },
         {
+          "from": "spec.md",
+          "heading": "B26"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -1899,7 +1961,9 @@
         "design/screenshots/methods.error.desktop.png",
         "design/screenshots/methods.error.mobile.png",
         "design/screenshots/brew-form.method-open.desktop.png",
-        "design/screenshots/brew-form.method-open.mobile.png"
+        "design/screenshots/brew-form.method-open.mobile.png",
+        "design/screenshots/methods.adding.desktop.png",
+        "design/screenshots/methods.adding.mobile.png"
       ]
     },
     {
@@ -1957,7 +2021,7 @@
       "type": "story",
       "key": "BREW-61",
       "summary": "Add a method from the brew form",
-      "storyPoints": 1,
+      "storyPoints": 2,
       "description": [
         {
           "file": "tickets/S15.md"
@@ -1977,6 +2041,10 @@
           "heading": "B12"
         },
         {
+          "from": "spec.md",
+          "heading": "B26"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -1991,7 +2059,9 @@
         "design/screenshots/brew-form.add-method.desktop.png",
         "design/screenshots/brew-form.add-method.mobile.png",
         "design/screenshots/brew-form.method-open.desktop.png",
-        "design/screenshots/brew-form.method-open.mobile.png"
+        "design/screenshots/brew-form.method-open.mobile.png",
+        "design/screenshots/brew-form.add-method-saving.desktop.png",
+        "design/screenshots/brew-form.add-method-saving.mobile.png"
       ]
     },
     {
@@ -2006,6 +2076,21 @@
         }
       ],
       "blockedBy": []
+    },
+    {
+      "id": "S15.2",
+      "type": "subtask",
+      "key": "BREW-107",
+      "parent": "S15",
+      "summary": "Quick-add \"Add\" busy and blocked, its input disabled and refocused, the primary blocked meanwhile",
+      "description": [
+        {
+          "file": "tickets/S15.2.md"
+        }
+      ],
+      "blockedBy": [
+        "S15.1"
+      ]
     },
     {
       "id": "S16",
@@ -2052,6 +2137,10 @@
           "heading": "B22"
         },
         {
+          "from": "spec.md",
+          "heading": "B26"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -2067,7 +2156,9 @@
         "design/screenshots/methods.renaming.desktop.png",
         "design/screenshots/methods.renaming.mobile.png",
         "design/screenshots/methods.duplicate.desktop.png",
-        "design/screenshots/methods.duplicate.mobile.png"
+        "design/screenshots/methods.duplicate.mobile.png",
+        "design/screenshots/methods.rename-row-saving.desktop.png",
+        "design/screenshots/methods.rename-row-saving.mobile.png"
       ]
     },
     {
@@ -2142,6 +2233,10 @@
           "heading": "B23"
         },
         {
+          "from": "spec.md",
+          "heading": "B26"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -2158,7 +2253,9 @@
         "design/screenshots/methods.rename-saving.desktop.png",
         "design/screenshots/methods.rename-saving.mobile.png",
         "design/screenshots/methods.rename-error.desktop.png",
-        "design/screenshots/methods.rename-error.mobile.png"
+        "design/screenshots/methods.rename-error.mobile.png",
+        "design/screenshots/methods.rename-saving.desktop_deprecated.png",
+        "design/screenshots/methods.rename-saving.mobile_deprecated.png"
       ]
     },
     {
@@ -2241,6 +2338,10 @@
           "heading": "B24"
         },
         {
+          "from": "spec.md",
+          "heading": "B26"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -2261,7 +2362,9 @@
         "design/screenshots/methods.delete-error.desktop.png",
         "design/screenshots/methods.delete-error.mobile.png",
         "design/screenshots/methods.default.desktop.png",
-        "design/screenshots/methods.default.mobile.png"
+        "design/screenshots/methods.default.mobile.png",
+        "design/screenshots/methods.delete-inline-deleting.desktop.png",
+        "design/screenshots/methods.delete-inline-deleting.mobile.png"
       ]
     },
     {
@@ -2336,6 +2439,10 @@
           "heading": "B24"
         },
         {
+          "from": "spec.md",
+          "heading": "B26"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
@@ -2354,7 +2461,9 @@
         "design/screenshots/methods.deleting.desktop.png",
         "design/screenshots/methods.deleting.mobile.png",
         "design/screenshots/methods.delete-error.desktop.png",
-        "design/screenshots/methods.delete-error.mobile.png"
+        "design/screenshots/methods.delete-error.mobile.png",
+        "design/screenshots/methods.deleting.desktop_deprecated.png",
+        "design/screenshots/methods.deleting.mobile_deprecated.png"
       ]
     },
     {
@@ -2420,6 +2529,10 @@
         {
           "from": "spec.md",
           "heading": "B25"
+        },
+        {
+          "from": "spec.md",
+          "heading": "B26"
         },
         {
           "text": "## Technical design (from the spec)"

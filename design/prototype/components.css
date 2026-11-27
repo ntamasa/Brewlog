@@ -60,6 +60,7 @@ h1, h2, h3 { text-wrap: balance; }
 .btn-danger { background: var(--color-error); color: var(--color-on-primary); }
 .btn-on-scrim { background: transparent; color: var(--color-on-scrim); border-color: color-mix(in srgb, var(--color-on-scrim) 55%, transparent); }
 .btn-on-scrim:hover { background: color-mix(in srgb, var(--color-on-scrim) 12%, transparent); }
+.btn:disabled, .btn[aria-disabled="true"], .icon-btn:disabled, .icon-btn[aria-disabled="true"] { opacity: .75; cursor: default; }
 .btn[aria-busy="true"] { opacity: .75; cursor: progress; }
 .icon-btn {
   display: inline-grid; place-items: center; width: var(--spacing-control-height); height: var(--spacing-control-height);
