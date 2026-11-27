@@ -13,7 +13,7 @@
         "heading": "Summary"
       },
       {
-        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91; Backend in each backend subtask that isn't Done (BREW-25, BREW-29, BREW-33, BREW-37, BREW-43, BREW-47, BREW-50, BREW-54, BREW-58, BREW-64, BREW-67, BREW-70, BREW-79); Data model in stories BREW-17 and BREW-57 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
+        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91; Form fields in subtask BREW-100 (`jira.mjs read BREW-100`), which also adds the field classes that UI implementation → Shared helpers now lists; Backend in each backend subtask that isn't Done (BREW-25, BREW-29, BREW-33, BREW-37, BREW-43, BREW-47, BREW-50, BREW-54, BREW-58, BREW-64, BREW-67, BREW-70, BREW-79); Data model in stories BREW-17 and BREW-57 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10; Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
       },
       {
         "from": "spec.md",
@@ -772,7 +772,8 @@
       ],
       "blockedBy": [
         "S4.5"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S4.7",
@@ -787,6 +788,89 @@
       ],
       "blockedBy": [
         "S4.6"
+      ],
+      "done": true
+    },
+    {
+      "id": "S4.8",
+      "type": "subtask",
+      "key": "BREW-100",
+      "parent": "S4",
+      "summary": "Fix: outlined form-field defaults, form-field theme and field helpers",
+      "description": [
+        {
+          "file": "tickets/S4.8.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Form fields"
+        }
+      ],
+      "blockedBy": [
+        "S4.7"
+      ]
+    },
+    {
+      "id": "S4.9",
+      "type": "subtask",
+      "key": "BREW-101",
+      "parent": "S4",
+      "summary": "Fix: brew form fields with labels above, hints and hairlines",
+      "description": [
+        {
+          "file": "tickets/S4.9.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.8"
+      ]
+    },
+    {
+      "id": "S4.10",
+      "type": "subtask",
+      "key": "BREW-102",
+      "parent": "S4",
+      "summary": "Fix: method select shows the method icon; terracotta icons, selected option bold with a dot",
+      "description": [
+        {
+          "file": "tickets/S4.10.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.9"
+      ]
+    },
+    {
+      "id": "S4.11",
+      "type": "subtask",
+      "key": "BREW-103",
+      "parent": "S4",
+      "summary": "Fix: roast segmented control with equal-width segments and no checkmark",
+      "description": [
+        {
+          "file": "tickets/S4.11.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.10"
+      ]
+    },
+    {
+      "id": "S4.12",
+      "type": "subtask",
+      "key": "BREW-104",
+      "parent": "S4",
+      "summary": "Fix: toasts show their check or refresh icon",
+      "description": [
+        {
+          "file": "tickets/S4.12.md"
+        }
+      ],
+      "blockedBy": [
+        "S4.11"
       ]
     },
     {
