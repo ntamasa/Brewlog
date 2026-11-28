@@ -3,7 +3,7 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, debounceTime, filter, pipe, switchMap, tap } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
-import { Brew, BrewQuery, DEFAULT_QUERY } from '../core/models';
+import { Brew, BrewQuery, DEFAULT_QUERY, SortKey } from '../core/models';
 import { FilterKey, isFiltered } from './journal-query';
 
 interface JournalState {
@@ -77,6 +77,9 @@ export const JournalStore = signalStore(
       },
       setQuery(query: BrewQuery): void {
         load(query);
+      },
+      setSort(sort: SortKey): void {
+        load({ ...store.query(), sort, page: 1 });
       },
       clearFilters(): void {
         load({ ...DEFAULT_QUERY, sort: store.query().sort });

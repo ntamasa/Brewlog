@@ -22,6 +22,10 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .desktop-only {
+    display: none;
+  }
+
   /* Visually hidden but still the input's label: the declarations of .sr-only in base.scss. */
   .toolbar .field-label {
     position: absolute;

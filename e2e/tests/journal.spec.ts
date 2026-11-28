@@ -99,7 +99,9 @@ test.describe("journal toolbar layout", () => {
     await openJournalWithBrew(page, testInfo.project.name);
 
     const toolbar = page.locator("app-journal-toolbar .toolbar");
-    const field = toolbar.locator("mat-form-field");
+    const field = toolbar.locator("mat-form-field", {
+      has: page.locator("#q"),
+    });
     const caption = toolbar.locator('label.field-label[for="q"]');
     const search = page.getByPlaceholder("Search brew names");
 
@@ -141,7 +143,9 @@ test.describe("journal toolbar layout", () => {
     await openJournalWithBrew(page, testInfo.project.name);
 
     const toolbar = page.locator("app-journal-toolbar .toolbar");
-    const field = toolbar.locator("mat-form-field");
+    const field = toolbar.locator("mat-form-field", {
+      has: page.locator("#q"),
+    });
     const caption = toolbar.locator('label.field-label[for="q"]');
 
     await expect(caption).toHaveCSS("position", "static");
@@ -153,5 +157,101 @@ test.describe("journal toolbar layout", () => {
         return fieldBox!.width < toolbarBox!.width / 2;
       })
       .toBe(true);
+  });
+
+  test("shows the Sort select on desktop with its name and Newest first", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop");
+    await openJournalWithBrew(page, testInfo.project.name);
+
+    const sort = page.locator("#f-sort");
+    await expect(sort).toBeVisible();
+    await expect(sort).toHaveAccessibleName("Sort");
+    await expect(sort).toContainText("Newest first");
+  });
+
+  test("hides the Sort select on phone, and keeps the search", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "phone");
+    await openJournalWithBrew(page, testInfo.project.name);
+
+    await expect(page.locator("#f-sort")).toBeHidden();
+    await expect(page.locator("#f-sort-label")).toBeHidden();
+    await expect(page.locator("#q")).toBeVisible();
+  });
+
+  test("shows the Sort select from 768 px wide, and hides it below", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop");
+    await openJournalWithBrew(page, testInfo.project.name);
+
+    await page.setViewportSize({ width: 767, height: 900 });
+    await expect(page.locator("#f-sort")).toBeHidden();
+
+    await page.setViewportSize({ width: 768, height: 900 });
+    await expect(page.locator("#f-sort")).toBeVisible();
+  });
+});
+
+test.describe("journal sort", () => {
+  function isoDay(daysAgo: number): string {
+    const day = new Date();
+    day.setDate(day.getDate() - daysAgo);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`;
+  }
+
+  test("sorts the cards by the URL sort, newest first by default", async ({
+    page,
+  }, testInfo) => {
+    const p = uniqueName(`Sort ${testInfo.project.name}`);
+    const methods: { id: number; name: string }[] = await (
+      await page.request.get("/api/methods")
+    ).json();
+    const otherId = methods.find((method) => method.name === "Other")?.id;
+    expect(otherId).toBeDefined();
+
+    const brews = [
+      { name: `${p} A`, rating: 4, brewDate: isoDay(0) },
+      { name: `${p} B`, rating: 4, brewDate: isoDay(0) },
+      { name: `${p} C`, rating: 5, brewDate: isoDay(1) },
+    ];
+    for (const brew of brews) {
+      const response = await page.request.post("/api/brews", {
+        data: {
+          name: brew.name,
+          beanName: "AA Kiambu",
+          origin: "Kenya",
+          methodId: otherId,
+          roast: "MEDIUM",
+          rating: brew.rating,
+          brewDate: brew.brewDate,
+          notes: null,
+        },
+      });
+      expect(response.status()).toBe(201);
+    }
+
+    const cards = page.locator("app-brew-card h3");
+    const search = (sort?: string) => {
+      const params = new URLSearchParams({ q: p });
+      if (sort) params.set("sort", sort);
+      return `/journal?${params.toString()}`;
+    };
+
+    await page.goto(search());
+    await expect(cards).toHaveText([`${p} B`, `${p} A`, `${p} C`]);
+
+    await page.goto(search("OLDEST"));
+    await expect(cards).toHaveText([`${p} C`, `${p} A`, `${p} B`]);
+
+    await page.goto(search("HIGHEST"));
+    await expect(cards).toHaveText([`${p} C`, `${p} B`, `${p} A`]);
+
+    await page.goto(search("LOWEST"));
+    await expect(cards).toHaveText([`${p} B`, `${p} A`, `${p} C`]);
   });
 });

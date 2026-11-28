@@ -46,7 +46,11 @@
       </div>
 
       @if (!isEmpty()) {
-        <app-journal-toolbar [query]="store.query()" (searchChange)="store.setSearch($event)" />
+        <app-journal-toolbar
+          [query]="store.query()"
+          (searchChange)="store.setSearch($event)"
+          (sort)="store.setSort($event)"
+        />
         <app-filter-chips
           [query]="store.query()"
           (remove)="store.removeFilter($event)"

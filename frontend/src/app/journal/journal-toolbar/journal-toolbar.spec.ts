@@ -64,7 +64,9 @@ describe('JournalToolbar', () => {
     const element: HTMLElement = fixture.nativeElement;
 
     expect(element.querySelector('span.field-label#f-sort-label')!.textContent.trim()).toBe('Sort');
-    expect(element.querySelector('#f-sort')!.getAttribute('aria-labelledby')).toContain('f-sort-label');
+    expect(element.querySelector('#f-sort')!.getAttribute('aria-labelledby')).toContain(
+      'f-sort-label',
+    );
 
     const loader = TestbedHarnessEnvironment.loader(fixture);
     const select = await loader.getHarness(MatSelectHarness.with({ selector: '#f-sort' }));
