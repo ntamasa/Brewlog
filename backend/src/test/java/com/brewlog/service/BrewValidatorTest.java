@@ -156,6 +156,30 @@ class BrewValidatorTest {
         assertThat(errors).containsExactly(new FieldErrorDto("brewDate", ErrorCode.FUTURE_DATE));
     }
 
+    @Test
+    @DisplayName("the roast MEDIUM is accepted with no error")
+    void roastMediumIsAccepted() {
+        List<FieldErrorDto> errors = validate("Kenyan Morning", "AA Kiambu", "Kenya", 2L, "MEDIUM", 5, TODAY, null);
+
+        assertThat(errors).isEmpty();
+    }
+
+    @Test
+    @DisplayName("the roast light in lower case is rejected with INVALID, the match is case-sensitive")
+    void lowerCaseRoastIsInvalid() {
+        List<FieldErrorDto> errors = validate("Kenyan Morning", "AA Kiambu", "Kenya", 2L, "light", 5, TODAY, null);
+
+        assertThat(errors).containsExactly(new FieldErrorDto("roast", ErrorCode.INVALID));
+    }
+
+    @Test
+    @DisplayName("an empty roast is rejected with REQUIRED, not INVALID")
+    void emptyRoastIsRequired() {
+        List<FieldErrorDto> errors = validate("Kenyan Morning", "AA Kiambu", "Kenya", 2L, "", 5, TODAY, null);
+
+        assertThat(errors).containsExactly(new FieldErrorDto("roast", ErrorCode.REQUIRED));
+    }
+
     private List<FieldErrorDto> validate(
             String name,
             String beanName,

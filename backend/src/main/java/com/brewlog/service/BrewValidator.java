@@ -1,10 +1,12 @@
 package com.brewlog.service;
 
 import com.brewlog.dto.FieldErrorDto;
+import com.brewlog.entity.Roast;
 import com.brewlog.exception.ErrorCode;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +55,7 @@ class BrewValidator {
     private static void checkRoast(List<FieldErrorDto> errors, String roast) {
         if (roast == null || roast.isEmpty()) {
             errors.add(new FieldErrorDto("roast", ErrorCode.REQUIRED));
-        } else if (!roast.equals("LIGHT") && !roast.equals("MEDIUM") && !roast.equals("DARK")) {
+        } else if (Arrays.stream(Roast.values()).noneMatch(value -> value.name().equals(roast))) {
             errors.add(new FieldErrorDto("roast", ErrorCode.INVALID));
         }
     }
