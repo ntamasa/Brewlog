@@ -48,3 +48,7 @@
   outline: 2px solid var(--color-tertiary);
   outline-offset: 2px;
 }
+
+:host-context(.field.has-error) .rating-input label {
+  color: var(--color-error);
+}

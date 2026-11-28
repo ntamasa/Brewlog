@@ -285,6 +285,53 @@ test.describe("brew form", () => {
     await expect(group.locator(".mat-pseudo-checkbox")).toHaveCount(0);
   });
 
+  test("shows every form-field error with a 16 px alert icon and a 4 px gap", async ({
+    page,
+  }, testInfo) => {
+    await page.goto("/journal");
+    await expect(
+      page.getByRole("heading", { name: "Your brews" }),
+    ).toBeVisible();
+    const { header, fab } = addBrewTriggers(page);
+    await (isPhone(testInfo.project.name) ? fab : header).click();
+
+    const drawer = page.locator("mat-sidenav");
+    await expect(drawer).toHaveClass(/mat-drawer-opened/);
+    await expect(drawer).not.toHaveClass(/mat-drawer-animating/);
+    await drawer.getByRole("button", { name: "Add to journal" }).click();
+
+    const nameError = drawer.locator('[data-field="name"] mat-error');
+    await expect(nameError).toHaveText("Enter a brew name");
+    await expect(nameError).toHaveCSS("display", "flex");
+    await expect(nameError).toHaveCSS("column-gap", "4px");
+    const nameIcon = nameError.locator("mat-icon");
+    await expect(nameIcon).toHaveCSS("width", "16px");
+    await expect(nameIcon).toHaveCSS("height", "16px");
+    await expect(nameIcon).toHaveCSS("margin-top", "2px");
+    await expect(nameIcon).toHaveCSS("flex-shrink", "0");
+
+    const formFieldErrors = drawer.locator("mat-error.field-error");
+    await expect(formFieldErrors).toHaveCount(4);
+    for (let i = 0; i < 4; i++) {
+      const error = formFieldErrors.nth(i);
+      await expect(error).toHaveCSS("display", "flex");
+      await expect(error).toHaveCSS("column-gap", "4px");
+      const icon = error.locator("mat-icon");
+      await expect(icon).toHaveCSS("width", "16px");
+      await expect(icon).toHaveCSS("height", "16px");
+      await expect(icon).toHaveCSS("flex-shrink", "0");
+    }
+
+    const roastError = drawer.locator('[data-field="roast"] p.field-error');
+    await expect(roastError).toHaveText("Choose a roast level");
+    await expect(roastError).toHaveCSS("display", "flex");
+    await expect(roastError).toHaveCSS("column-gap", "4px");
+    const roastIcon = roastError.locator("mat-icon");
+    await expect(roastIcon).toHaveCSS("width", "16px");
+    await expect(roastIcon).toHaveCSS("height", "16px");
+    await expect(roastIcon).toHaveCSS("margin-top", "2px");
+  });
+
   test("closes only the method listbox on Esc and keeps the drawer open with the typed name", async ({
     page,
   }, testInfo) => {
