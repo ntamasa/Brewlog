@@ -233,6 +233,10 @@ Example data: journal with 41 brews; today is 1 Nov 2026 in the browser and on t
 **Given** a PATCH body `{"notes": null}`, **then** the notes are cleared. **Given** `{}`, **then** nothing changes (200). **Given** `{"name": null}` or `{"name": "  "}`, **then** 400 `name` REQUIRED. The merged brew passes the same validation as a create. **Given** the edit form's notes are emptied, **then** the UI sends `"notes": null`.
 - **Rules:** B3
 
+### R52 — Unreadable brew body
+Applies to `POST /api/brews` and `PATCH /api/brews/{id}` alike. The body's keys are `name`, `beanName`, `origin`, `methodId`, `roast`, `rating`, `brewDate` and `notes`. Each takes JSON `null` (handled as in R13 and R23) or: `name`, `beanName`, `origin`, `roast` and `notes` a JSON string; `methodId` a JSON integer that fits a 64-bit long; `rating` a JSON integer of any size; `brewDate` a string in the form `yyyy-MM-dd` that is a real date. **Given** `{"brewDate":"yesterday"}`, `{"brewDate":"2026-02-30"}`, `{"methodId":"abc"}`, `{"methodId":"3"}`, `{"methodId":3.0}`, `{"methodId":99999999999999999999}`, `{"rating":"4"}`, `{"rating":4.0}`, `{"rating":4.5}`, `{"name":5}` or `{"roast":7}`, **then** the API answers 422 ProblemDetail `{"status":422,"code":"INVALID_BODY","field":"<that key>"}` with no `errors`. **Given** a key that isn't one of the eight, e.g. `{"id":3}` or `{"foo":1}` (also with the value `null`), **then** it answers 422 `{"code":"INVALID_BODY","field":"id"}` (or `"foo"`). Only one is answered: the first bad known key in the order above, else the first unknown key in body order, so `{"foo":1,"rating":"4","name":5}` gives `field` `"name"`. It is answered before any other check: `{"rating":"4","origin":"<101 characters>"}` gives only the 422 for `rating`, no `errors`. **Given** `{"rating":99999999999}`, **then** this is no body error: the format checks answer 400 `rating` OUT_OF_RANGE (R17), together with any other format errors. **Given** a body that isn't a JSON object (`[]`, `"x"`, `5`, `null`), an empty body or malformed JSON, **then** it answers 400 with no `errors` and no `code` (R41). `{"roast":"BOLD"}` stays 400 `roast` INVALID (R17). In every case nothing is saved or changed. In the UI, a 422 shows the screen's generic server-error banner, like R20.
+- **Rules:** B2, B6, B28
+
 ### R24 — Own name in different capitals
 **Given** a brew "kenyan morning", **when** it is saved as "Kenyan Morning", **then** it saves (200). Renaming the method "moka" to "Moka" works the same way.
 - **Rules:** B5, B12
@@ -315,7 +319,7 @@ Example data: journal with 41 brews; today is 1 Nov 2026 in the browser and on t
 - **Screens:** `methods` (default), `brew-form` (edit)
 
 ### R41 — Not found on the API
-**Given** a nonexistent brew id 999, **then** `PATCH /api/brews/999` and `DELETE /api/brews/999` answer 404 `BREW_NOT_FOUND`. **Given** a nonexistent method id 999, **then** `PUT /api/methods/999`, `POST /api/methods/999/delete` and `GET /api/methods/999/brews` answer 404 `METHOD_NOT_FOUND`. A malformed JSON body answers 400 with no field errors, and the UI shows the generic server-error banner of the screen.
+**Given** a nonexistent brew id 999, **then** `PATCH /api/brews/999` and `DELETE /api/brews/999` answer 404 `BREW_NOT_FOUND`. **Given** a nonexistent method id 999, **then** `PUT /api/methods/999`, `POST /api/methods/999/delete` and `GET /api/methods/999/brews` answer 404 `METHOD_NOT_FOUND`. A malformed JSON body (or, for a brew, a body that isn't a JSON object) answers 400 with no field errors, and the UI shows the generic server-error banner of the screen.
 
 ### R42 — Responsive layouts
 **Given** a 390 px viewport, **then** the landing stacks, the journal shows 1 card column, Search plus a "Filters" button (opening the "Filter & sort" sheet with "Show 3 brews"), the FAB "Add brew" and pagination "‹ PAGE 1 OF 4 ›". The form, detail and methods open as bottom sheets. **Given** 1440 px, **then** the journal shows 3 columns, the toolbar in one row, "+ Add brew" in the header and the form as a 520 px right drawer. At 768–1119 px it shows 2 columns.
@@ -398,8 +402,8 @@ JSON, base `/api`. Brew JSON: `{id, name, beanName, origin, method: {id, name, i
 | Method | Path | Body | Response |
 |---|---|---|---|
 | GET | `/api/brews?q&methodId&roast&minRating&sort&page` | – | 200 `{items: Brew[], page, totalPages, matchingCount, totalCount}`; 400 INVALID |
-| POST | `/api/brews` | `{name, beanName, origin, methodId, roast, rating, brewDate, notes}` | 201 Brew; 400 |
-| PATCH | `/api/brews/{id}` | `application/json`, merge-patch subset of the POST body | 200 Brew; 400; 404 |
+| POST | `/api/brews` | `{name, beanName, origin, methodId, roast, rating, brewDate, notes}` | 201 Brew; 400; 422 |
+| PATCH | `/api/brews/{id}` | `application/json`, merge-patch subset of the POST body | 200 Brew; 400; 404; 422 |
 | DELETE | `/api/brews/{id}` | – | 204; 404 |
 | GET | `/api/methods` | – | 200 Method[] (A–Z ignoring case, Other last) |
 | POST | `/api/methods` | `{name}` | 201 Method; 400 |
@@ -408,18 +412,18 @@ JSON, base `/api`. Brew JSON: `{id, name, beanName, origin, method: {id, name, i
 | POST | `/api/methods/{id}/delete` | `{reassignments: [{brewId, methodId}]}` | 200 `{reassignedBrewCount}`; 400; 404; 409 |
 
 List params: `q` (string), `methodId` (long), `roast` (enum), `minRating` (2–5), `sort` (`NEWEST` default, `OLDEST`, `HIGHEST`, `LOWEST`), `page` (≥ 1, default 1); size fixed at 12; `totalCount` counts all brews.
-Errors are Spring `ProblemDetail` with extra properties: 400 `errors: [{field, code}]`, codes `REQUIRED`, `TOO_LONG`, `DUPLICATE`, `OUT_OF_RANGE`, `FUTURE_DATE`, `METHOD_NOT_FOUND`, `INVALID`. 404 `code: BREW_NOT_FOUND | METHOD_NOT_FOUND`. 409 `code: PROTECTED`. Malformed JSON gives 400 with no `errors`.
+Errors are Spring `ProblemDetail` with extra properties: 400 `errors: [{field, code}]`, codes `REQUIRED`, `TOO_LONG`, `DUPLICATE`, `OUT_OF_RANGE`, `FUTURE_DATE`, `METHOD_NOT_FOUND`, `INVALID`. 404 `code: BREW_NOT_FOUND | METHOD_NOT_FOUND`. 409 `code: PROTECTED`. Malformed JSON gives 400 with no `errors`. Brew bodies (POST and PATCH, R52): a wrong-typed value or an unknown key gives 422 with `code: INVALID_BODY` and `field: <key>` (only the first, no `errors`); a body that isn't a JSON object gives 400 with no `errors`. Brew body types: text fields and `roast` JSON string, `methodId` JSON integer (long), `rating` JSON integer, `brewDate` `"yyyy-MM-dd"`; `null` allowed everywhere.
 
 ### Backend
 Package `com.brewlog`, by layer, under `backend/src/main/java/com/brewlog/`:
 - `BrewlogApplication`; `config/ClockConfig` (`@Bean Clock clock()` = system default zone, replaced in tests).
 - `entity/`: `Brew`, `BrewMethod` (field `isProtected` → column `is_protected`), `Roast` enum. Both entities keep their `protected` no-arg constructor for JPA and get (from grilling): `Brew`: `public Brew(String name, String beanName, String origin, BrewMethod method, Roast roast, int rating, LocalDate brewDate, String notes)` and the setters `setName(String)`, `setBeanName(String)`, `setOrigin(String)`, `setMethod(BrewMethod)`, `setRoast(Roast)`, `setRating(int)`, `setBrewDate(LocalDate)`, `setNotes(String)` (rating stored as `short`; no setter for `id` or `createdAt`, B9). `BrewMethod`: `public BrewMethod(String name, String iconKey, boolean predefined, boolean isProtected, Integer position)` and `setName(String)`; nothing else on a method ever changes.
 - `repository/`: `BrewRepository extends JpaRepository<Brew, Long>, JpaSpecificationExecutor<Brew>` (`existsByNameIgnoreCaseAndIdNot`, `findByMethodId`, `countByMethodId`); `BrewMethodRepository` (`existsByNameIgnoreCaseAndIdNot`, `findByIsProtectedTrue`, `findAllWithBrewCount()` JPQL projection).
-- `service/`: `BrewService` (`BrewPage list(BrewQuery)`, `BrewResponse create(BrewRequest)`, `BrewResponse patch(long id, JsonNode patch)`, `void delete(long id)`); `BrewValidator` (`List<FieldErrorDto> validate(BrewDraft, Long selfId)`: normalises (B3), runs the format checks (required fields, B4, B6–B8) and returns all their errors; only when there are none, runs the database checks in order, name DUPLICATE (`brewRepository.existsByNameIgnoreCaseAndIdNot`) then methodId METHOD_NOT_FOUND (`brewMethodRepository.existsById`), and returns only the first that fails (B28, R51)); `BrewSpecifications` (`nameContains`, `methodIs`, `roastIs`, `ratingAtLeast`); `BrewSort` (`Sort toSort(SortKey)`); `BrewMethodService` (`list`, `create`, `rename(long id, String name)`, `brewsOf(long id)`, `DeleteMethodResponse delete(long id, DeleteMethodRequest)`).
+- `service/`: `BrewService` (`BrewPage list(BrewQuery)`, `BrewResponse create(ObjectNode body)`, `BrewResponse patch(long id, ObjectNode body)`, `void delete(long id)`; `ObjectNode` is `tools.jackson.databind.node.ObjectNode`); `BrewDraft` (fields as today, a no-arg constructor for an empty draft, `static BrewDraft from(Brew)`, and `void apply(ObjectNode body)`, which reads the body per R52 and Hard logic → apply, setting each present known key on the draft and throwing `InvalidBodyException` for the first bad one; `from(BrewRequest)` is removed) (from grilling); `BrewValidator` (`List<FieldErrorDto> validate(BrewDraft, Long selfId)`: normalises (B3), runs the format checks (required fields, B4, B6–B8) and returns all their errors; only when there are none, runs the database checks in order, name DUPLICATE (`brewRepository.existsByNameIgnoreCaseAndIdNot`) then methodId METHOD_NOT_FOUND (`brewMethodRepository.existsById`), and returns only the first that fails (B28, R51)); `BrewSpecifications` (`nameContains`, `methodIs`, `roastIs`, `ratingAtLeast`); `BrewSort` (`Sort toSort(SortKey)`); `BrewMethodService` (`list`, `create`, `rename(long id, String name)`, `brewsOf(long id)`, `DeleteMethodResponse delete(long id, DeleteMethodRequest)`).
 - Entity mapping (from grilling): `BrewService.create` and `patch` are `@Transactional` and map the validated `BrewDraft` onto the entity in `BrewService` itself, with the method from `brewMethodRepository.getReferenceById(methodId)` (the transaction lets the response load the method's name and icon key, since open-in-view is off): `create` → `new Brew(…)` with the draft's values, `patch` → the 8 setters with the draft's values; then `saveAndFlush`. `BrewMethodService.create` → `new BrewMethod(name, "cup", false, false, null)` (B22); `rename` → `setName(name)`; `delete` → `brew.setMethod(target)` for each reassigned brew.
-- `controller/`: `BrewController`, `BrewMethodController`; `BrewQueryParams` binds and validates the list params (INVALID).
-- `dto/`: records `BrewRequest`, `BrewResponse`, `MethodRef`, `BrewPage`, `BrewQuery`, `SortKey`, `MethodRequest`, `MethodResponse` (`@JsonProperty("protected")`), `MethodBrewResponse`, `DeleteMethodRequest`, `Reassignment`, `DeleteMethodResponse`, `FieldErrorDto(String field, ErrorCode code)`.
-- `exception/`: `ErrorCode` enum, `ValidationException(List<FieldErrorDto>)`, `NotFoundException(ErrorCode)`, `ProtectedMethodException`, `ApiExceptionHandler extends ResponseEntityExceptionHandler` (maps these exceptions plus `DataIntegrityViolationException` on `ux_brew_name` / `ux_brew_method_name` to DUPLICATE).
+- `controller/`: `BrewController` (`create(@RequestBody ObjectNode body)`, `patch(@PathVariable long id, @RequestBody ObjectNode body)`, so Jackson itself rejects a body that isn't an object and Spring answers its plain 400 (from grilling)), `BrewMethodController`; `BrewQueryParams` binds and validates the list params (INVALID).
+- `dto/`: records `BrewResponse`, `MethodRef`, `BrewPage`, `BrewQuery`, `SortKey`, `MethodRequest`, `MethodResponse` (`@JsonProperty("protected")`), `MethodBrewResponse`, `DeleteMethodRequest`, `Reassignment`, `DeleteMethodResponse`, `FieldErrorDto(String field, ErrorCode code)`. `BrewRequest` is removed (brew bodies are read by `BrewDraft.apply`), and `BrewValidatorTest` builds `BrewDraft`s directly.
+- `exception/`: `ErrorCode` enum (with `INVALID_BODY`), `ValidationException(List<FieldErrorDto>)`, `NotFoundException(ErrorCode)`, `ProtectedMethodException`, `InvalidBodyException(String field)`, `ApiExceptionHandler extends ResponseEntityExceptionHandler` (maps these exceptions, `InvalidBodyException` to 422 `ProblemDetail` with the properties `code` `INVALID_BODY` and `field`, plus `DataIntegrityViolationException` on `ux_brew_name` / `ux_brew_method_name` to DUPLICATE).
 - `application.yml`: `spring.datasource.url: ${DB_URL:jdbc:postgresql://localhost:5432/brewlog}`, `username: ${DB_USER:brewlog}`, `password: ${DB_PASSWORD:brewlog}`, `jpa.hibernate.ddl-auto: validate`, `jpa.open-in-view: false`.
 
 ### Frontend
@@ -509,8 +513,8 @@ Each of the three app workflows has top-level `permissions:` `contents: read`, a
 ### Seams and tests
 | Seam | Covers | Setup | Mocked |
 |---|---|---|---|
-| Backend unit: `BrewValidator`, `BrewService`, `BrewMethodService`, `BrewSort` | R13–R18, R23, R24, R36, R51, B19 | JUnit 5, fixed `Clock` (2026-11-01) | repositories (Mockito) |
-| Backend integration: HTTP API via MockMvc | R2, R5–R10, R12–R19, R22–R25, R27–R30, R32–R38, R41 | `@SpringBootTest` + Testcontainers postgres:17 + Liquibase, fixed `Clock`; `IntegrationTest.resetDatabase()` (`@BeforeEach`) runs `classpath:reset.sql` (only `TRUNCATE brew, brew_method RESTART IDENTITY CASCADE;`), then `classpath:db/changelog/002-seed-methods.sql` (its Liquibase lines are SQL comments), so the seed has one source and Espresso is id 1 … Other id 7 in every test (from grilling) | nothing |
+| Backend unit: `BrewValidator`, `BrewDraft.apply`, `BrewService`, `BrewMethodService`, `BrewSort` | R13–R18, R23, R24, R36, R51, R52, B19 | JUnit 5, fixed `Clock` (2026-11-01) | repositories (Mockito) |
+| Backend integration: HTTP API via MockMvc | R2, R5–R10, R12–R19, R22–R25, R27–R30, R32–R38, R41, R52 (POST and PATCH each) | `@SpringBootTest` + Testcontainers postgres:17 + Liquibase, fixed `Clock`; `IntegrationTest.resetDatabase()` (`@BeforeEach`) runs `classpath:reset.sql` (only `TRUNCATE brew, brew_method RESTART IDENTITY CASCADE;`), then `classpath:db/changelog/002-seed-methods.sql` (its Liquibase lines are SQL comments), so the seed has one source and Espresso is id 1 … Other id 7 in every test (from grilling) | nothing |
 | Frontend unit: `BrewApi`, `MethodApi`, `parseApiError`, `error-messages`, `format`, `diff`, `brew-validators`, stores | R5–R10, R13–R23, R29–R39, R48 (`MethodStore.pending` is `from` while a request is pending and null after success or error) | Vitest + TestBed, `HttpTestingController` | HTTP; stores get fake APIs |
 | Frontend unit: generated sprite `frontend/public/icons.svg` (a `<symbol id>` per icon key; only the whitelisted elements and attributes of UI implementation → Icon build script) | B22, R29 | Vitest, `frontend/src/app/core/icons-sprite.spec.ts`, sprite imported as text (UI implementation) | nothing |
 | Frontend unit: components (card, pagination, bean-rating, toolbar, chips, dialogs, method steps) and `pageItems` | R2–R4, R6, R11, R13, R43, R44, R46, R21, R26–R28, R33–R35, R37, R39, R48 | TestBed + Material harnesses | stores faked |
@@ -522,9 +526,23 @@ There is no application code yet. Copy markup, spacing and states from `design/p
 
 ### Hard logic
 ```text
-patch(id, node):                         // node = JsonNode (Jackson 3, tools.jackson)
+create(body):                            // body = ObjectNode (Jackson 3, tools.jackson)
+  draft = new BrewDraft(); draft.apply(body)            // throws InvalidBodyException → 422
+  errors = validator.validate(draft, selfId=null); if any → 400; else new Brew(…), saveAndFlush
+
+draft.apply(body):                       // first bad key only; nothing on the draft is used after a throw
+  for key in [name, beanName, origin, methodId, roast, rating, brewDate, notes] if body.has(key):
+    v = body.get(key)
+    if v is JSON null → field = null
+    name/beanName/origin/roast/notes: v is a JSON string → field = its value, else throw InvalidBodyException(key)
+    methodId: v is an integer token that fits long → field = v as long, else throw
+    rating:   v is an integer token → field = v as int, or Integer.MAX_VALUE / Integer.MIN_VALUE when above / below the int range (so the validator says OUT_OF_RANGE), else throw   // 4.0 is not an integer token
+    brewDate: v is a JSON string and LocalDate.parse(it) succeeds → field = the date, else throw
+  for key in body's keys in body order: if key not in the eight → throw InvalidBodyException(key)
+
+patch(id, body):
   brew = find(id) or 404 BREW_NOT_FOUND
-  draft = BrewDraft.from(brew); for each field present in node: draft.set(field, node.get(field))  // null allowed
+  draft = BrewDraft.from(brew); draft.apply(body)        // throws InvalidBodyException → 422
   errors = validator.validate(draft, selfId=id); if any → 400
     // validate: errors = format checks; if errors → return them
     //           if name exists ignoring case (id ≠ selfId) → return [name DUPLICATE]
@@ -545,7 +563,7 @@ sort NEWEST: brewDate desc, createdAt desc, id desc; OLDEST: all asc; HIGHEST: r
 ```
 
 ### Risks
-- Spring Boot 4 uses Jackson 3 (`tools.jackson.*`) and renamed starters (e.g. `spring-boot-starter-webmvc`); implementers must not use Boot 3 names.
+- Spring Boot 4 uses Jackson 3 (`tools.jackson.*`) and renamed starters (e.g. `spring-boot-starter-webmvc`); implementers must not use Boot 3 names. Jackson 3 also renamed some `JsonNode` text accessors (text → string); `BrewDraft.apply` must use the Jackson 3 names and check node types itself, never Jackson's coercing `as…()` conversions, so "4" or 4.0 can't slip through as a rating (R52).
 - JDK 25 isn't installed locally: the Gradle toolchain downloads it (foojay); CI uses setup-java 25.
 - Testcontainers and E2E need a running Docker engine (Docker Desktop locally, see Prerequisites); tests fail fast with a clear message otherwise.
 - A Node older than 24.15.0 makes the Angular CLI refuse to run; `engines.node` makes npm warn on a wrong version.
@@ -574,4 +592,5 @@ sort NEWEST: brewDate desc, createdAt desc, id desc; OLDEST: all asc; HIGHEST: r
 - An endpoint to fetch a single brew (detail and edit use the list data).
 - An advisory audit of the backend's Gradle dependencies.
 - CI re-checks of the Gradle wrapper and the single `brewlog.jar` (Technical design → Risks).
+- Server-provided error messages, and showing server errors only as a snackbar instead of the form and dialog banners: a possible later change; for now the frontend maps codes to the design's messages (from grilling).
 - Any change to `.github/workflows/factory-merge-gate.yml`, including a name for its step: it is a copy of the github-setup skill's template and stays exactly as installed (from grilling).
