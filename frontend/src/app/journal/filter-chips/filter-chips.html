@@ -1,0 +1,13 @@
+@if (isFiltered()) {
+  <div class="chips chips-row" aria-label="Active filters">
+    <span class="chip"
+      >“{{ query().q.trim() }}”<button
+        type="button"
+        aria-label="Clear search"
+        (click)="remove.emit('q')"
+      >
+        <mat-icon svgIcon="close" class="icon" aria-hidden="true" /></button
+    ></span>
+    <button matButton="text" type="button" (click)="clearAll.emit()">Clear all</button>
+  </div>
+}

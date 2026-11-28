@@ -21,6 +21,7 @@ import { BREWLOG_FORM_FIELD_OPTIONS } from '../../core/form-field-options';
 import { registerIcons } from '../../core/icons';
 import { Brew, BrewMethod, BrewPage } from '../../core/models';
 import { Toaster } from '../../core/toast';
+import { JournalStore } from '../journal.store';
 import { JournalPage } from './journal-page';
 
 const SAVED: Brew = {
@@ -205,6 +206,27 @@ describe('JournalPage', () => {
     await harness.navigateByUrl('/journal?page=2', JournalPage);
 
     http.expectOne('/api/brews?sort=NEWEST&page=2');
+  });
+
+  it('sends the search 250 ms after it is set, from page 1, and writes it to the URL', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush(page(1, 12, 1));
+    await harness.fixture.whenStable();
+
+    vi.useFakeTimers();
+    try {
+      TestBed.inject(JournalStore).setSearch('  kenya ');
+      vi.advanceTimersByTime(250);
+
+      http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(page(1, 12, 1));
+      TestBed.flushEffects();
+      await harness.fixture.whenStable();
+
+      expect(TestBed.inject(Router).url).toBe('/journal?q=kenya');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows six skeleton cards in a busy grid, with a skeleton count and no footer, while the first page loads', async () => {
@@ -583,5 +605,270 @@ describe('JournalPage', () => {
     await vi.waitFor(() => expect(document.activeElement).toBe(fab));
     expect(document.activeElement).not.toBe(buttonWithText(element, 'Add brew'));
     expect(document.activeElement).not.toBe(document.body);
+  });
+
+  describe('search, chip and count', () => {
+    function listOf(count: number): Brew[] {
+      return Array.from({ length: count }, (_, i) => brewAt(i + 1));
+    }
+
+    function answer(items: Brew[], totalPages: number, matchingCount: number): BrewPage {
+      return { items, page: 1, totalPages, matchingCount, totalCount: 41 };
+    }
+
+    function hasButton(element: HTMLElement, text: string): boolean {
+      return Array.from(element.querySelectorAll('button')).some(
+        (b) => b.textContent.trim() === text,
+      );
+    }
+
+    async function openJournal(): Promise<RouterTestingHarness> {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/journal', JournalPage);
+      http.expectOne('/api/brews?sort=NEWEST&page=1').flush(page(1, 12, 1));
+      await harness.fixture.whenStable();
+      return harness;
+    }
+
+    async function typeSearch(harness: RouterTestingHarness, text: string): Promise<void> {
+      const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+      await (await loader.getHarness(MatInputHarness.with({ selector: '#q' }))).setValue(text);
+      vi.advanceTimersByTime(250);
+    }
+
+    it('sends the search 250 ms after it is typed, then shows the matches, the count, the chip, the footer and the URL', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, '  kenya ');
+        http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(answer(listOf(2), 1, 2));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(element.querySelectorAll('app-brew-card')).toHaveLength(2);
+        expect(must(element, '.count').textContent).toContain('2 of 41 brews');
+        expect(must(element, '.chip').textContent).toContain('“kenya”');
+        expect(element.textContent).toContain('Showing 1–2 of 2');
+        expect(TestBed.inject(Router).url).toBe('/journal?q=kenya');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('clears the search from its chip: the full list, an empty Search field, no chip and the plain URL', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, '  kenya ');
+        http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(answer(listOf(2), 1, 2));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        must(element, 'button[aria-label="Clear search"]').click();
+        http.expectOne('/api/brews?sort=NEWEST&page=1').flush(answer(listOf(12), 4, 41));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(must(element, '.count').textContent).toContain('41 brews');
+        expect(element.querySelectorAll('app-brew-card')).toHaveLength(12);
+        expect(element.querySelector<HTMLInputElement>('#q')!.value).toBe('');
+        expect(element.querySelector('.chip')).toBeNull();
+        expect(hasButton(element, 'Clear all')).toBe(false);
+        expect(TestBed.inject(Router).url).toBe('/journal');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('sends no search for spaces only: the list is unfiltered, with the total count and no chip', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, '   ');
+        http.expectOne('/api/brews?sort=NEWEST&page=1').flush(answer(listOf(12), 4, 41));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(must(element, '.count').textContent).toContain('41 brews');
+        expect(element.querySelector('.chip')).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('hides the toolbar and the chips in the empty journal', async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/journal', JournalPage);
+      http.expectOne('/api/brews?sort=NEWEST&page=1').flush(empty());
+      await harness.fixture.whenStable();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      expect(element.textContent).toContain('Your journal is waiting');
+      expect(element.querySelector('.toolbar')).toBeNull();
+      expect(element.querySelector('#q')).toBeNull();
+      expect(element.querySelector('.chip')).toBeNull();
+    });
+
+    it('shows the toolbar with Search above the skeleton cards while loading, and still after a failed first load', async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/journal', JournalPage);
+      await harness.fixture.whenStable();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      expect(must(element, 'section.brew-grid').getAttribute('aria-busy')).toBe('true');
+      expect(element.querySelector('.toolbar #q')).not.toBeNull();
+
+      http
+        .expectOne('/api/brews?sort=NEWEST&page=1')
+        .flush('', { status: 500, statusText: 'Server Error' });
+      await harness.fixture.whenStable();
+
+      expect(element.textContent).toContain('We couldn’t load your brews');
+      expect(element.querySelector('.toolbar #q')).not.toBeNull();
+    });
+
+    it('counts the matches of the search against all brews', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, 'kenya');
+        http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(answer(listOf(1), 1, 1));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(must(element, '.count').textContent).toContain('1 of 41 brews');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('sends a search typed again after its chip cleared it, and shows its matches', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, 'kenya');
+        http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(answer(listOf(2), 1, 2));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        must(element, 'button[aria-label="Clear search"]').click();
+        http.expectOne('/api/brews?sort=NEWEST&page=1').flush(answer(listOf(12), 4, 41));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        await typeSearch(harness, 'kenya');
+        http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(answer(listOf(2), 1, 2));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(element.querySelectorAll('app-brew-card')).toHaveLength(2);
+        expect(must(element, '.count').textContent).toContain('2 of 41 brews');
+        expect(must(element, '.chip').textContent).toContain('“kenya”');
+        expect(TestBed.inject(Router).url).toBe('/journal?q=kenya');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('shows the no-results panel for a search that matches nothing, with the total count', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, '  panama natural ');
+        http.expectOne('/api/brews?q=panama%20natural&sort=NEWEST&page=1').flush(answer([], 0, 0));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(must(element, '.count').textContent).toContain('0 of 41 brews');
+        expect(element.textContent).toContain('No brews match');
+        expect(element.textContent).toContain(
+          'Nothing in your journal matches “panama natural” with these filters. Try a different name or loosen a filter.',
+        );
+        expect(buttonWithText(element, 'Clear search and filters')).toBeTruthy();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('clears the search and the filters from the no-results panel', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, 'panama natural');
+        http.expectOne('/api/brews?q=panama%20natural&sort=NEWEST&page=1').flush(answer([], 0, 0));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        buttonWithText(element, 'Clear search and filters').click();
+        http.expectOne('/api/brews?sort=NEWEST&page=1').flush(answer(listOf(12), 4, 41));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(element.textContent).not.toContain('No brews match');
+        expect(element.querySelectorAll('app-brew-card')).toHaveLength(12);
+        expect(must(element, '.count').textContent).toContain('41 brews');
+        expect(element.querySelector<HTMLInputElement>('#q')!.value).toBe('');
+        expect(element.querySelector('.chip')).toBeNull();
+        expect(TestBed.inject(Router).url).toBe('/journal');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('shows no list, footer or pagination in the no-results panel', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, 'panama natural');
+        http.expectOne('/api/brews?q=panama%20natural&sort=NEWEST&page=1').flush(answer([], 0, 0));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(element.querySelector('.list-foot')).toBeNull();
+        expect(element.querySelector('app-pagination')).toBeNull();
+        expect(element.querySelector('.brew-grid')).toBeNull();
+        expect(element.textContent).not.toContain('Showing');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('sends nothing when the same search is typed again while it is the current search', async () => {
+      const harness = await openJournal();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      vi.useFakeTimers();
+      try {
+        await typeSearch(harness, 'kenya');
+        http.expectOne('/api/brews?q=kenya&sort=NEWEST&page=1').flush(answer(listOf(2), 1, 2));
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        await typeSearch(harness, 'kenya');
+        TestBed.flushEffects();
+        await harness.fixture.whenStable();
+
+        expect(http.match((req) => req.url === '/api/brews')).toEqual([]);
+        expect(must(element, '.count').textContent).toContain('2 of 41 brews');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });

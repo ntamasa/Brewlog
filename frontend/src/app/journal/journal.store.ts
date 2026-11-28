@@ -1,9 +1,10 @@
-import { inject } from '@angular/core';
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
+import { computed, inject } from '@angular/core';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, catchError, debounceTime, filter, pipe, switchMap, tap } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
 import { Brew, BrewQuery, DEFAULT_QUERY } from '../core/models';
+import { FilterKey, isFiltered } from './journal-query';
 
 interface JournalState {
   query: BrewQuery;
@@ -28,6 +29,9 @@ export const JournalStore = signalStore(
     status: 'ready',
     highlightId: null,
   }),
+  withComputed(({ query }) => ({
+    isFiltered: computed(() => isFiltered(query())),
+  })),
   withMethods((store) => {
     const api = inject(BrewApi);
     let highlightTimer: ReturnType<typeof setTimeout> | undefined;
@@ -56,7 +60,16 @@ export const JournalStore = signalStore(
       ),
     );
 
+    const search = rxMethod<string>(
+      pipe(
+        debounceTime(250),
+        filter((text) => text !== store.query().q),
+        tap((text) => load({ ...store.query(), q: text, page: 1 })),
+      ),
+    );
+
     return {
+      setSearch: search,
       highlight(id: number): void {
         clearTimeout(highlightTimer);
         patchState(store, { highlightId: id });
@@ -64,6 +77,12 @@ export const JournalStore = signalStore(
       },
       setQuery(query: BrewQuery): void {
         load(query);
+      },
+      clearFilters(): void {
+        load({ ...DEFAULT_QUERY, sort: store.query().sort });
+      },
+      removeFilter(key: FilterKey): void {
+        load({ ...store.query(), [key]: DEFAULT_QUERY[key], page: 1 });
       },
       setPage(page: number): void {
         load({ ...store.query(), page });

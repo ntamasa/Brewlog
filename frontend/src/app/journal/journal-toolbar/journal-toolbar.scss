@@ -1,0 +1,34 @@
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) repeat(4, minmax(0, 1fr));
+  gap: var(--spacing-md);
+  align-items: end;
+  padding: var(--spacing-lg) 0;
+  border-top: 1px solid var(--color-outline);
+  border-bottom: 1px solid var(--color-outline);
+  margin-bottom: var(--spacing-lg);
+}
+
+.toolbar .field-label {
+  font-size: var(--text-label-caps);
+  font-weight: var(--font-weight-label-caps);
+  letter-spacing: var(--tracking-label-caps);
+  text-transform: uppercase;
+  color: var(--color-on-surface-muted);
+}
+
+@media (max-width: 767px) {
+  .toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Visually hidden but still the input's label: the declarations of .sr-only in base.scss. */
+  .toolbar .field-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
