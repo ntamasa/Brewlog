@@ -1,7 +1,6 @@
 package com.brewlog.controller;
 
 import com.brewlog.dto.BrewPage;
-import com.brewlog.dto.BrewRequest;
 import com.brewlog.dto.BrewResponse;
 import com.brewlog.service.BrewService;
 import java.net.URI;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.node.ObjectNode;
 
 @RestController
 @RequestMapping("/api/brews")
@@ -28,8 +28,8 @@ public class BrewController {
     }
 
     @PostMapping
-    public ResponseEntity<BrewResponse> create(@RequestBody BrewRequest request) {
-        BrewResponse created = brewService.create(request);
+    public ResponseEntity<BrewResponse> create(@RequestBody ObjectNode body) {
+        BrewResponse created = brewService.create(body);
         return ResponseEntity.created(URI.create("/api/brews/" + created.id())).body(created);
     }
 }

@@ -2,7 +2,6 @@ package com.brewlog.service;
 
 import com.brewlog.dto.BrewPage;
 import com.brewlog.dto.BrewQuery;
-import com.brewlog.dto.BrewRequest;
 import com.brewlog.dto.BrewResponse;
 import com.brewlog.dto.FieldErrorDto;
 import com.brewlog.dto.MethodRef;
@@ -17,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.node.ObjectNode;
 
 @Service
 public class BrewService {
@@ -35,8 +35,9 @@ public class BrewService {
     }
 
     @Transactional
-    public BrewResponse create(BrewRequest request) {
-        BrewDraft draft = BrewDraft.from(request);
+    public BrewResponse create(ObjectNode body) {
+        BrewDraft draft = new BrewDraft();
+        draft.apply(body);
         List<FieldErrorDto> errors = validator.validate(draft, null);
         if (!errors.isEmpty()) {
             throw new ValidationException(errors);

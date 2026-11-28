@@ -23,6 +23,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(InvalidBodyException.class)
+    ProblemDetail handleInvalidBody(InvalidBodyException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        problem.setProperty("code", ErrorCode.INVALID_BODY);
+        problem.setProperty("field", ex.field());
+        return problem;
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     ProblemDetail handleDataIntegrity(DataIntegrityViolationException ex) {
         String message = String.valueOf(ex.getMessage());
