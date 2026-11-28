@@ -110,6 +110,38 @@ public class Brew {
         return notes;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setBeanName(String beanName) {
+        this.beanName = beanName;
+    }
+
+    public void setOrigin(String origin) {
+        this.origin = origin;
+    }
+
+    public void setMethod(BrewMethod method) {
+        this.method = method;
+    }
+
+    public void setRoast(Roast roast) {
+        this.roast = roast;
+    }
+
+    public void setRating(int rating) {
+        this.rating = (short) rating;
+    }
+
+    public void setBrewDate(LocalDate brewDate) {
+        this.brewDate = brewDate;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }

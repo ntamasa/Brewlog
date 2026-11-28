@@ -23,6 +23,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    ProblemDetail handleNotFound(NotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setProperty("code", ex.code());
+        return problem;
+    }
+
     @ExceptionHandler(InvalidBodyException.class)
     ProblemDetail handleInvalidBody(InvalidBodyException ex) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
