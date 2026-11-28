@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface BrewRepository extends JpaRepository<Brew, Long>, JpaSpecificationExecutor<Brew> {
 
+    boolean existsByNameIgnoreCase(String name);
+
     boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 
     List<Brew> findByMethodId(long methodId);
