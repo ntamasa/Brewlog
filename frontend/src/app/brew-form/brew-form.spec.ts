@@ -2,6 +2,7 @@ import { HarnessLoader, TestKey } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatButtonToggleHarness } from '@angular/material/button-toggle/testing';
@@ -1354,5 +1355,329 @@ describe('BrewForm', () => {
 
     expect(saved).toHaveBeenCalledTimes(1);
     expect(saved).toHaveBeenCalledWith(SAVED);
+  });
+});
+
+// BREW-35: edit mode, the brew-gone state, and the busy and error states of an edit
+
+const KENYAN: Brew = {
+  id: 7,
+  name: 'Kenyan Morning',
+  beanName: 'AA Kiambu',
+  origin: 'Kenya',
+  method: { id: 2, name: 'Pour Over', iconKey: 'pour-over' },
+  roast: 'LIGHT',
+  rating: 5,
+  brewDate: '2026-10-28',
+  notes: 'Bright',
+};
+
+const KENYAN_RATED_FOUR: Brew = { ...KENYAN, rating: 4 };
+
+@Component({
+  imports: [BrewForm],
+  template: `
+    <app-brew-form
+      mode="edit"
+      [brew]="brew"
+      [methods]="methods"
+      (saved)="saved($event)"
+      (closed)="closed()"
+      (stale)="stale()"
+    />
+  `,
+})
+class EditHost {
+  readonly brew = KENYAN;
+  readonly methods = METHODS;
+  readonly saved = vi.fn();
+  readonly closed = vi.fn();
+  readonly stale = vi.fn();
+}
+
+describe('BrewForm in edit mode', () => {
+  let fixture: ComponentFixture<EditHost>;
+  let host: EditHost;
+  let loader: HarnessLoader;
+  let http: HttpTestingController;
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 1, 9, 0));
+    TestBed.configureTestingModule({
+      imports: [EditHost],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideDateFnsAdapter(BREWLOG_DATE_FORMATS),
+        { provide: MAT_DATE_LOCALE, useValue: enGB },
+        { provide: Toaster, useValue: { show: vi.fn() } },
+        { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: BREWLOG_FORM_FIELD_OPTIONS },
+      ],
+    });
+    http = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(EditHost);
+    host = fixture.componentInstance;
+    fixture.detectChanges();
+    loader = TestbedHarnessEnvironment.loader(fixture);
+  });
+
+  afterEach(() => {
+    http.verify();
+    vi.useRealTimers();
+  });
+
+  function text(): string {
+    return fixture.nativeElement.textContent;
+  }
+
+  function radios(): HTMLInputElement[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('.rating-input input[type="radio"]'));
+  }
+
+  async function field(selector: string): Promise<MatInputHarness> {
+    return loader.getHarness(MatInputHarness.with({ selector }));
+  }
+
+  async function button(label: string): Promise<MatButtonHarness> {
+    return loader.getHarness(MatButtonHarness.with({ text: label }));
+  }
+
+  function primary(): HTMLButtonElement {
+    return fixture.nativeElement.querySelector('button[matbutton="filled"]');
+  }
+
+  async function saveChanges(): Promise<void> {
+    await (await button('Save changes')).click();
+    fixture.detectChanges();
+  }
+
+  function bannerEl(): HTMLElement | null {
+    return fixture.nativeElement.querySelector('.banner-error');
+  }
+
+  function bannerTitle(): string {
+    return bannerEl()?.querySelector('strong')?.textContent?.trim() ?? '';
+  }
+
+  function bannerLinkTexts(): string[] {
+    return Array.from(bannerEl()?.querySelectorAll('a') ?? []).map((link) =>
+      (link.textContent ?? '').trim(),
+    );
+  }
+
+  function changeRatingToFour(): void {
+    radios()[3].click();
+    fixture.detectChanges();
+  }
+
+  async function brewGone(): Promise<void> {
+    changeRatingToFour();
+    await saveChanges();
+    http
+      .expectOne('/api/brews/7')
+      .flush({ code: 'BREW_NOT_FOUND' }, { status: 404, statusText: 'Not Found' });
+    fixture.detectChanges();
+  }
+
+  it('edit mode titles the form Edit brew, prefills every field and offers Save changes, with no date help and no Last edited', async () => {
+    expect(fixture.nativeElement.querySelector('h2').textContent).toContain('Edit brew');
+    expect(await (await field('#name')).getValue()).toBe('Kenyan Morning');
+    expect(await (await field('#bean')).getValue()).toBe('AA Kiambu');
+    expect(await (await field('#origin')).getValue()).toBe('Kenya');
+    expect(
+      await (
+        await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }))
+      ).getValueText(),
+    ).toBe('Pour Over');
+    expect(
+      await (await loader.getHarness(MatButtonToggleHarness.with({ text: 'Light' }))).isChecked(),
+    ).toBe(true);
+    expect(text()).toContain('5 of 5');
+    expect(
+      await (
+        await loader.getHarness(MatDatepickerInputHarness.with({ selector: '#date' }))
+      ).getValue(),
+    ).toBe('28 Oct 2026');
+    expect(fixture.nativeElement.querySelector('[data-field="date"] .field-help')).toBeNull();
+    expect(text()).not.toContain('Last edited');
+    expect(primary().textContent).toContain('Save changes');
+  });
+
+  it('Save changes after a rating change sends a PATCH with only the rating and emits saved on 200', async () => {
+    changeRatingToFour();
+    await saveChanges();
+
+    const request = http.expectOne('/api/brews/7');
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ rating: 4 });
+    request.flush(KENYAN_RATED_FOUR);
+    fixture.detectChanges();
+
+    expect(host.saved).toHaveBeenCalledTimes(1);
+    expect(host.saved).toHaveBeenCalledWith(KENYAN_RATED_FOUR);
+  });
+
+  it('emptied tasting notes send a PATCH with notes null', async () => {
+    await (await field('#notes')).setValue('');
+    await saveChanges();
+
+    expect(http.expectOne('/api/brews/7').request.body).toEqual({ notes: null });
+  });
+
+  it('a PATCH answered 404 shows the brew-gone state, emits stale and keeps the edited values', async () => {
+    await brewGone();
+
+    expect(host.stale).toHaveBeenCalledTimes(1);
+    expect(text()).toContain('This brew no longer exists');
+    expect(text()).toContain(
+      'It may have been deleted in another tab. Your changes are still here: save them as a new brew, or close.',
+    );
+    await button('Close');
+    await button('Save as new brew');
+    expect(text()).toContain('4 of 5');
+    expect(host.saved).not.toHaveBeenCalled();
+  });
+
+  it('Save as new brew in the brew-gone state POSTs all current values and emits saved on 201', async () => {
+    await brewGone();
+    await (await button('Save as new brew')).click();
+
+    const request = http.expectOne('/api/brews');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      name: 'Kenyan Morning',
+      beanName: 'AA Kiambu',
+      origin: 'Kenya',
+      methodId: 2,
+      roast: 'LIGHT',
+      rating: 4,
+      brewDate: '2026-10-28',
+      notes: 'Bright',
+    });
+    const created = { ...KENYAN_RATED_FOUR, id: 9 };
+    request.flush(created, { status: 201, statusText: 'Created' });
+    fixture.detectChanges();
+
+    expect(host.saved).toHaveBeenCalledTimes(1);
+    expect(host.saved).toHaveBeenCalledWith(created);
+  });
+
+  it('Close in the brew-gone state emits closed at once, without Discard changes?', async () => {
+    await brewGone();
+    await (await button('Close')).click();
+
+    expect(host.closed).toHaveBeenCalledTimes(1);
+    expect(text()).not.toContain('Discard changes?');
+  });
+
+  it('Save as new brew answering 400 DUPLICATE on name shows the duplicate-name state', async () => {
+    await brewGone();
+    await (await button('Save as new brew')).click();
+    http
+      .expectOne('/api/brews')
+      .flush(
+        { errors: [{ field: 'name', code: 'DUPLICATE' }] },
+        { status: 400, statusText: 'Bad Request' },
+      );
+    fixture.detectChanges();
+
+    expect(bannerTitle()).toBe('Couldn’t save your changes');
+    expect(bannerLinkTexts()).toEqual(['That brew name is already taken']);
+    expect(host.saved).not.toHaveBeenCalled();
+  });
+
+  it('while the PATCH is unflushed the primary is busy, Brew name is disabled, and a second click sends no second PATCH', async () => {
+    changeRatingToFour();
+    await saveChanges();
+
+    expect(primary().textContent).toContain('Saving…');
+    expect(primary().getAttribute('aria-busy')).toBe('true');
+    expect(primary().getAttribute('aria-disabled')).toBe('true');
+    expect(await (await field('#name')).isDisabled()).toBe(true);
+
+    await (await button('Saving…')).click();
+    fixture.detectChanges();
+
+    http.expectOne('/api/brews/7').flush(KENYAN_RATED_FOUR);
+    fixture.detectChanges();
+    expect(host.saved).toHaveBeenCalledTimes(1);
+  });
+
+  it('while Save as new brew is unflushed it is busy, Close is not disabled, and a second click sends no second POST', async () => {
+    await brewGone();
+    await (await button('Save as new brew')).click();
+    fixture.detectChanges();
+
+    expect(primary().textContent).toContain('Saving…');
+    expect(primary().getAttribute('aria-busy')).toBe('true');
+    expect(await (await button('Close')).isDisabled()).toBe(false);
+
+    await (await button('Saving…')).click();
+    fixture.detectChanges();
+
+    http
+      .expectOne('/api/brews')
+      .flush({ ...KENYAN_RATED_FOUR, id: 9 }, { status: 201, statusText: 'Created' });
+    fixture.detectChanges();
+    expect(host.saved).toHaveBeenCalledTimes(1);
+  });
+
+  it('a DUPLICATE name answer clears when the name changes, the banner keeps it until the next save, which sends the new name', async () => {
+    await (await field('#name')).setValue('sunday moka');
+    await saveChanges();
+    http
+      .expectOne('/api/brews/7')
+      .flush(
+        { errors: [{ field: 'name', code: 'DUPLICATE' }] },
+        { status: 400, statusText: 'Bad Request' },
+      );
+    fixture.detectChanges();
+
+    expect(bannerTitle()).toBe('Couldn’t save your changes');
+    expect(bannerLinkTexts()).toEqual(['That brew name is already taken']);
+
+    await (await field('#name')).setValue('Kenyan Evening');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-field="name"] mat-error')).toBeNull();
+    expect(bannerTitle()).toBe('Couldn’t save your changes');
+    expect(bannerLinkTexts()).toEqual(['That brew name is already taken']);
+
+    await saveChanges();
+
+    expect(bannerEl()).toBeNull();
+    expect(http.expectOne('/api/brews/7').request.body).toEqual({ name: 'Kenyan Evening' });
+  });
+
+  it('after a DUPLICATE name answer, saving again without a change sends nothing and lists the name error with focus on the banner', async () => {
+    await (await field('#name')).setValue('sunday moka');
+    await saveChanges();
+    http
+      .expectOne('/api/brews/7')
+      .flush(
+        { errors: [{ field: 'name', code: 'DUPLICATE' }] },
+        { status: 400, statusText: 'Bad Request' },
+      );
+    fixture.detectChanges();
+
+    await saveChanges();
+
+    http.expectNone((request) => request.method === 'PATCH');
+    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerLinkTexts()).toEqual([
+      'You already have a brew called “sunday moka”. Brew names must be unique, ignoring capitals.',
+    ]);
+    await vi.waitFor(() => expect(document.activeElement).toBe(bannerEl()));
+  });
+
+  it('in the brew-gone state, a changed rating leaves the brew-gone banner and its foot in place', async () => {
+    await brewGone();
+    radios()[2].click();
+    fixture.detectChanges();
+
+    expect(text()).toContain('This brew no longer exists');
+    await button('Close');
+    await button('Save as new brew');
   });
 });

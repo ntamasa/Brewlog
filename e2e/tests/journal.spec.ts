@@ -255,3 +255,48 @@ test.describe("journal sort", () => {
     await expect(cards).toHaveText([`${p} B`, `${p} A`, `${p} C`]);
   });
 });
+
+test.describe("journal edit brew", () => {
+  test("edits a brew from its card menu and shows the toast and the new rating on the card", async ({
+    page,
+  }, testInfo) => {
+    const name = uniqueName(`E ${testInfo.project.name} Edit me`);
+    const methods: { id: number; name: string }[] = await (
+      await page.request.get("/api/methods")
+    ).json();
+    const otherId = methods.find((method) => method.name === "Other")?.id;
+    expect(otherId).toBeDefined();
+    const now = new Date();
+    const today = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    const response = await page.request.post("/api/brews", {
+      data: {
+        name,
+        beanName: "Santos",
+        origin: "Brazil",
+        methodId: otherId,
+        roast: "LIGHT",
+        rating: 5,
+        brewDate: today,
+        notes: null,
+      },
+    });
+    expect(response.status()).toBe(201);
+
+    await page.goto("/journal");
+    await page.getByRole("button", { name: `Actions for ${name}` }).click();
+    await page.getByRole("menuitem", { name: "Edit brew" }).click();
+    await page.getByRole("radio", { name: "4 of 5 beans" }).check();
+    await page.getByRole("button", { name: "Save changes" }).click();
+
+    await expect(
+      page.getByText(`“${name}” saved to your journal`),
+    ).toBeVisible();
+    const card = page.locator("app-brew-card").filter({ hasText: name });
+    await expect(card.getByRole("img", { name: "4 of 5 beans" })).toBeVisible();
+  });
+});
