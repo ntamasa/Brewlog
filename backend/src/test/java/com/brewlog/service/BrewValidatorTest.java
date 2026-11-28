@@ -3,7 +3,6 @@ package com.brewlog.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -36,8 +35,7 @@ class BrewValidatorTest {
     @BeforeEach
     void methodTwoExistsAndNoBrewHasTheName() {
         when(brewMethodRepository.existsById(2L)).thenReturn(true);
-        when(brewRepository.existsByNameIgnoreCaseAndIdNot(anyString(), eq(-1L)))
-                .thenReturn(false);
+        when(brewRepository.existsByNameIgnoreCase(anyString())).thenReturn(false);
     }
 
     @Test
@@ -46,17 +44,47 @@ class BrewValidatorTest {
         List<FieldErrorDto> errors = validate("Kenyan Morning", "AA Kiambu", "Kenya", 2L, "LIGHT", 5, TODAY, null);
 
         assertThat(errors).isEmpty();
+        verify(brewRepository).existsByNameIgnoreCase("Kenyan Morning");
+        verify(brewRepository, never()).existsByNameIgnoreCaseAndIdNot(anyString(), anyLong());
+    }
+
+    @Test
+    @DisplayName("editing a brew keeps its own name without a duplicate check against itself")
+    void ownNameIsAcceptedWhenEditing() {
+        when(brewRepository.existsByNameIgnoreCaseAndIdNot("Kenyan Morning", 7L))
+                .thenReturn(false);
+        when(brewRepository.existsByNameIgnoreCase("Kenyan Morning")).thenReturn(true);
+        BrewRequest request = new BrewRequest("Kenyan Morning", "AA Kiambu", "Kenya", 2L, "LIGHT", 5, TODAY, null);
+
+        List<FieldErrorDto> errors = validator.validate(BrewDraft.from(request), 7L);
+
+        assertThat(errors).isEmpty();
+        verify(brewRepository, never()).existsByNameIgnoreCase(anyString());
     }
 
     @Test
     @DisplayName("a name another brew already uses, in other capitals, is rejected with DUPLICATE on name")
     void duplicateNameIsRejected() {
-        when(brewRepository.existsByNameIgnoreCaseAndIdNot("kenyan morning", -1L))
-                .thenReturn(true);
+        when(brewRepository.existsByNameIgnoreCase("kenyan morning")).thenReturn(true);
 
         List<FieldErrorDto> errors = validate("kenyan morning", "AA Kiambu", "Kenya", 2L, "LIGHT", 5, TODAY, null);
 
         assertThat(errors).containsExactly(new FieldErrorDto("name", ErrorCode.DUPLICATE));
+        verify(brewRepository, never()).existsByNameIgnoreCaseAndIdNot(anyString(), anyLong());
+    }
+
+    @Test
+    @DisplayName("editing a brew to the name of another brew is rejected with DUPLICATE on name")
+    void nameOfAnotherBrewIsRejectedWhenEditing() {
+        when(brewRepository.existsByNameIgnoreCaseAndIdNot("kenyan morning", 7L))
+                .thenReturn(true);
+        BrewRequest request = new BrewRequest("kenyan morning", "AA Kiambu", "Kenya", 2L, "LIGHT", 5, TODAY, null);
+
+        List<FieldErrorDto> errors = validator.validate(BrewDraft.from(request), 7L);
+
+        assertThat(errors).containsExactly(new FieldErrorDto("name", ErrorCode.DUPLICATE));
+        verify(brewRepository, never()).existsByNameIgnoreCase(anyString());
+        verify(brewMethodRepository, never()).existsById(anyLong());
     }
 
     @Test
@@ -230,8 +258,7 @@ class BrewValidatorTest {
     @Test
     @DisplayName("a duplicate name is answered alone, and a missing method is not checked")
     void duplicateNameWinsOverMissingMethod() {
-        when(brewRepository.existsByNameIgnoreCaseAndIdNot("kenyan morning", -1L))
-                .thenReturn(true);
+        when(brewRepository.existsByNameIgnoreCase("kenyan morning")).thenReturn(true);
 
         List<FieldErrorDto> errors = validate("kenyan morning", "AA Kiambu", "Kenya", 9L, "LIGHT", 5, TODAY, null);
 
@@ -242,8 +269,7 @@ class BrewValidatorTest {
     @Test
     @DisplayName("an origin of 101 characters is answered alone, with no database check run")
     void formatErrorIsAnsweredAloneWithNoDatabaseCheck() {
-        when(brewRepository.existsByNameIgnoreCaseAndIdNot("kenyan morning", -1L))
-                .thenReturn(true);
+        when(brewRepository.existsByNameIgnoreCase("kenyan morning")).thenReturn(true);
 
         List<FieldErrorDto> errors =
                 validate("kenyan morning", "AA Kiambu", "x".repeat(101), 9L, "LIGHT", 5, TODAY, null);
@@ -264,13 +290,12 @@ class BrewValidatorTest {
     @Test
     @DisplayName("a missing methodId is answered REQUIRED alone, and no database check runs")
     void missingMethodIdIsRequiredWithNoDatabaseCheck() {
-        when(brewRepository.existsByNameIgnoreCaseAndIdNot("kenyan morning", -1L))
-                .thenReturn(true);
+        when(brewRepository.existsByNameIgnoreCase("kenyan morning")).thenReturn(true);
 
         List<FieldErrorDto> errors = validate("kenyan morning", "AA Kiambu", "Kenya", null, "LIGHT", 5, TODAY, null);
 
         assertThat(errors).containsExactly(new FieldErrorDto("methodId", ErrorCode.REQUIRED));
-        verify(brewRepository, never()).existsByNameIgnoreCaseAndIdNot(anyString(), anyLong());
+        verify(brewRepository, never()).existsByNameIgnoreCase(anyString());
     }
 
     private List<FieldErrorDto> validate(
