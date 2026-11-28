@@ -31,7 +31,7 @@ import { MatInputModule } from '@angular/material/input';
 import { format, startOfDay } from 'date-fns';
 import { map } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
-import { BREW_TEXT_LIMITS } from '../core/brew-limits';
+import { BREW_TEXT_LIMITS, NOTES_WARN_AT } from '../core/brew-limits';
 import { parseApiError } from '../core/api-error';
 import { brewFieldMessage, fieldErrorMessage } from '../core/error-messages';
 import { ApiFieldError, Brew, BrewBody, BrewMethod, Roast } from '../core/models';
@@ -127,7 +127,7 @@ export class BrewForm implements ErrorStateMatcher {
   protected readonly notesState = computed(() =>
     this.notesLength() > BREW_TEXT_LIMITS.notes
       ? 'over'
-      : this.notesLength() > 1800
+      : this.notesLength() > NOTES_WARN_AT
         ? 'near'
         : 'none',
   );
