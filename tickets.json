@@ -1189,6 +1189,37 @@
       ],
       "blockedBy": [
         "S5.6"
+      ],
+      "done": true
+    },
+    {
+      "id": "S5.8",
+      "type": "subtask",
+      "key": "BREW-120",
+      "parent": "S5",
+      "summary": "Fix: notes counter threshold as NOTES_WARN_AT next to BREW_TEXT_LIMITS",
+      "description": [
+        {
+          "file": "tickets/S5.8.md"
+        }
+      ],
+      "blockedBy": [
+        "S5.7"
+      ]
+    },
+    {
+      "id": "S5.9",
+      "type": "subtask",
+      "key": "BREW-121",
+      "parent": "S5",
+      "summary": "Fix: backend roast check matches the Roast enum names",
+      "description": [
+        {
+          "file": "tickets/S5.9.md"
+        }
+      ],
+      "blockedBy": [
+        "S5.8"
       ]
     },
     {
@@ -1766,7 +1797,8 @@
       ],
       "blockedBy": [
         "S10.4"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S10.7",
@@ -1781,7 +1813,8 @@
       ],
       "blockedBy": [
         "S10.6"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S11",
