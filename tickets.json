@@ -13,7 +13,7 @@
         "heading": "Summary"
       },
       {
-        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done, and BREW-17, whose open subtasks don't need it; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91, and its busy and blocked bullets quoted in BREW-105 (\"Busy and blocked look\", \"Spinner\") and BREW-106 (\"Busy and blocked buttons\", \"Who is busy or blocked\"); Form fields in subtask BREW-100 (`jira.mjs read BREW-100`), which also adds the field classes that UI implementation → Shared helpers now lists; its later disabled-field bullets are written out in BREW-105; Backend in each backend subtask that isn't Done (BREW-25, BREW-29, BREW-33, BREW-37, BREW-43, BREW-47, BREW-50, BREW-54, BREW-58, BREW-64, BREW-67, BREW-70, BREW-79); Data model in story BREW-17 and subtask BREW-58 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10 (its R48 and R49 rows are written out in the subtasks that build them); Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
+        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done, and BREW-17, whose open subtasks don't need it; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91, and its busy and blocked bullets quoted in BREW-105 (\"Busy and blocked look\", \"Spinner\") and BREW-106 (\"Busy and blocked buttons\", \"Who is busy or blocked\"); Form fields in subtask BREW-100 (`jira.mjs read BREW-100`), which also adds the field classes that UI implementation → Shared helpers now lists; its later disabled-field bullets are written out in BREW-105; Backend in each backend subtask that isn't Done (BREW-25, BREW-122, BREW-33, BREW-37, BREW-43, BREW-47, BREW-50, BREW-54, BREW-58, BREW-64, BREW-67, BREW-70, BREW-79); Data model in story BREW-17 and subtask BREW-58 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10 (its R48 and R49 rows are written out in the subtasks that build them); Hard logic in BREW-10, BREW-122, BREW-32, BREW-42, BREW-46 and BREW-69."
       },
       {
         "from": "spec.md",
@@ -1256,6 +1256,10 @@
         },
         {
           "from": "spec.md",
+          "heading": "R51"
+        },
+        {
+          "from": "spec.md",
           "heading": "R21"
         },
         {
@@ -1274,15 +1278,15 @@
           "heading": "B27"
         },
         {
+          "from": "spec.md",
+          "heading": "B28"
+        },
+        {
           "text": "## Technical design (from the spec)"
         },
         {
           "from": "spec.md",
           "heading": "Frontend"
-        },
-        {
-          "from": "spec.md",
-          "heading": "Hard logic"
         }
       ],
       "blockedBy": [
@@ -1331,7 +1335,8 @@
       ],
       "blockedBy": [
         "S6.1"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S6.3",
@@ -1346,6 +1351,64 @@
       ],
       "blockedBy": [
         "S6.2"
+      ],
+      "done": true
+    },
+    {
+      "id": "S6.4",
+      "type": "subtask",
+      "key": "BREW-122",
+      "parent": "S6",
+      "summary": "Change: one database error per save",
+      "description": [
+        {
+          "file": "tickets/S6.4.md"
+        },
+        {
+          "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Backend"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Hard logic"
+        }
+      ],
+      "blockedBy": [
+        "S6.3"
+      ],
+      "done": true
+    },
+    {
+      "id": "S6.5",
+      "type": "subtask",
+      "key": "BREW-123",
+      "parent": "S6",
+      "summary": "Fix: log unexpected database integrity errors",
+      "description": [
+        {
+          "file": "tickets/S6.5.md"
+        }
+      ],
+      "blockedBy": [
+        "S6.4"
+      ]
+    },
+    {
+      "id": "S6.6",
+      "type": "subtask",
+      "key": "BREW-124",
+      "parent": "S6",
+      "summary": "Fix: check a new brew name without the -1 id",
+      "description": [
+        {
+          "file": "tickets/S6.6.md"
+        }
+      ],
+      "blockedBy": [
+        "S6.5"
       ]
     },
     {
@@ -1887,7 +1950,8 @@
           "heading": "Backend"
         }
       ],
-      "blockedBy": []
+      "blockedBy": [],
+      "done": true
     },
     {
       "id": "S11.2",
@@ -1902,6 +1966,37 @@
       ],
       "blockedBy": [
         "S11.1"
+      ],
+      "done": true
+    },
+    {
+      "id": "S11.3",
+      "type": "subtask",
+      "key": "BREW-125",
+      "parent": "S11",
+      "summary": "Fix: user-facing heading locator in the sort e2e test",
+      "description": [
+        {
+          "file": "tickets/S11.3.md"
+        }
+      ],
+      "blockedBy": [
+        "S11.2"
+      ]
+    },
+    {
+      "id": "S11.4",
+      "type": "subtask",
+      "key": "BREW-126",
+      "parent": "S11",
+      "summary": "Fix: no loop in the equal-brews sort test",
+      "description": [
+        {
+          "file": "tickets/S11.4.md"
+        }
+      ],
+      "blockedBy": [
+        "S11.3"
       ]
     },
     {
