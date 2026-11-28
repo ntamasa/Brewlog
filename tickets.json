@@ -13,7 +13,7 @@
         "heading": "Summary"
       },
       {
-        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done, and BREW-17, whose open subtasks don't need it; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91, and its busy and blocked bullets quoted in BREW-105 (\"Busy and blocked look\", \"Spinner\") and BREW-106 (\"Busy and blocked buttons\", \"Who is busy or blocked\"); Form fields in subtask BREW-100 (`jira.mjs read BREW-100`), which also adds the field classes that UI implementation → Shared helpers now lists; its later disabled-field bullets are written out in BREW-105; Backend in each backend subtask that isn't Done (BREW-25, BREW-29, BREW-33, BREW-37, BREW-43, BREW-47, BREW-50, BREW-54, BREW-58, BREW-64, BREW-67, BREW-70, BREW-79); Data model in stories BREW-17 and BREW-57 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10 (its R48 and R49 rows are written out in the subtasks that build them); Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
+        "text": "## Technical design\n\nShared sections below. The others, and the spec's Constraints, are in the issues that use them: Constraints, Repository and tooling, Prerequisites and CI in story BREW-4; Frontend in every story with UI work except BREW-4, whose frontend subtasks are Done, and BREW-17, whose open subtasks don't need it; UI implementation in subtask BREW-87 (`jira.mjs read BREW-87`), its later \"Focus rings\" and \"Icon build script\" bullets quoted in BREW-93 and BREW-91, and its busy and blocked bullets quoted in BREW-105 (\"Busy and blocked look\", \"Spinner\") and BREW-106 (\"Busy and blocked buttons\", \"Who is busy or blocked\"); Form fields in subtask BREW-100 (`jira.mjs read BREW-100`), which also adds the field classes that UI implementation → Shared helpers now lists; its later disabled-field bullets are written out in BREW-105; Backend in each backend subtask that isn't Done (BREW-25, BREW-29, BREW-33, BREW-37, BREW-43, BREW-47, BREW-50, BREW-54, BREW-58, BREW-64, BREW-67, BREW-70, BREW-79); Data model in story BREW-17 and subtask BREW-58 (and in the code since BREW-8: `backend/src/main/resources/db/changelog/001-init.sql`); Deployment in BREW-89; Seams and tests in BREW-10 (its R48 and R49 rows are written out in the subtasks that build them); Hard logic in BREW-10, BREW-28, BREW-32, BREW-42, BREW-46 and BREW-69."
       },
       {
         "from": "spec.md",
@@ -1073,7 +1073,8 @@
         "design/screenshots/brew-form.one-error.mobile.png",
         "design/screenshots/brew-form.field-limits.desktop.png",
         "design/screenshots/brew-form.field-limits.mobile.png"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S5.1",
@@ -1205,7 +1206,8 @@
       ],
       "blockedBy": [
         "S5.7"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S5.9",
@@ -1220,7 +1222,8 @@
       ],
       "blockedBy": [
         "S5.8"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S6",
@@ -2186,10 +2189,6 @@
         },
         {
           "from": "spec.md",
-          "heading": "Data model"
-        },
-        {
-          "from": "spec.md",
           "heading": "Frontend"
         }
       ],
@@ -2226,6 +2225,10 @@
         },
         {
           "text": "## Technical design (from the spec)"
+        },
+        {
+          "from": "spec.md",
+          "heading": "Data model"
         },
         {
           "from": "spec.md",
