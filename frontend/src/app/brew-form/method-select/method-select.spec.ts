@@ -2,10 +2,11 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
+import { MatFormFieldHarness } from '@angular/material/form-field/testing';
 import { MatIconHarness } from '@angular/material/icon/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { BREWLOG_FORM_FIELD_OPTIONS } from '../../core/form-field-options';
@@ -37,11 +38,12 @@ const METHODS: BrewMethod[] = [
 
 @Component({
   imports: [MethodSelect, ReactiveFormsModule],
-  template: `<app-method-select [formControl]="control" [methods]="methods" />`,
+  template: `<app-method-select [formControl]="control" [methods]="methods" [error]="error()" />`,
 })
 class MethodHost {
   readonly control = new FormControl<number | null>(null);
   readonly methods = METHODS;
+  readonly error = signal<string | null>(null);
 }
 
 describe('MethodSelect', () => {
@@ -191,6 +193,34 @@ describe('MethodSelect', () => {
       expect(await option.isSelected()).toBe(false);
     }
     expect(panelPseudoCheckboxCount()).toBe(0);
+  });
+
+  it('with the error "Choose a brew method", the form field shows the error state and that message', async () => {
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const formField = await loader.getHarness(MatFormFieldHarness);
+
+    host.error.set('Choose a brew method');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(await (await formField.host()).hasClass('mat-form-field-invalid')).toBe(true);
+    expect(await formField.getTextErrors()).toEqual(['Choose a brew method']);
+  });
+
+  it('when the error is set back to null, the form field loses the error state and its message', async () => {
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const formField = await loader.getHarness(MatFormFieldHarness);
+    host.error.set('Choose a brew method');
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(await (await formField.host()).hasClass('mat-form-field-invalid')).toBe(true);
+
+    host.error.set(null);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(await (await formField.host()).hasClass('mat-form-field-invalid')).toBe(false);
+    expect(await formField.getTextErrors()).toEqual([]);
   });
 });
 

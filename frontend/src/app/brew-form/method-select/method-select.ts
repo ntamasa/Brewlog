@@ -1,5 +1,6 @@
-import { Component, computed, forwardRef, input, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, forwardRef, input, signal, viewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ErrorStateMatcher } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
@@ -16,6 +17,17 @@ import { BrewMethod } from '../../core/models';
 })
 export class MethodSelect implements ControlValueAccessor {
   methods = input.required<BrewMethod[]>();
+  error = input<string | null>(null);
+  protected readonly errorMatcher: ErrorStateMatcher = {
+    isErrorState: () => this.error() !== null,
+  };
+
+  constructor() {
+    effect(() => {
+      this.error();
+      this.matSelect().updateErrorState();
+    });
+  }
 
   private readonly matSelect = viewChild.required(MatSelect);
 
