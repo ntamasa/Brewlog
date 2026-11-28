@@ -9,10 +9,12 @@
   >
     @if (formOpen()) {
       <app-brew-form
-        mode="create"
+        [mode]="editBrew() ? 'edit' : 'create'"
+        [brew]="editBrew()"
         [methods]="methodStore.methods()"
         (saved)="onSaved($event)"
         (closed)="onFormClosed()"
+        (stale)="store.reload()"
       />
     }
   </mat-sidenav>
@@ -135,7 +137,11 @@
             } @else {
               <div class="brew-grid">
                 @for (brew of store.items(); track brew.id) {
-                  <app-brew-card [brew]="brew" [highlighted]="brew.id === store.highlightId()" />
+                  <app-brew-card
+                    [brew]="brew"
+                    [highlighted]="brew.id === store.highlightId()"
+                    (edit)="openEdit($event)"
+                  />
                 }
               </div>
 

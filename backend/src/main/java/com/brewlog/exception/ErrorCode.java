@@ -9,5 +9,6 @@ public enum ErrorCode {
     METHOD_NOT_FOUND,
     INVALID,
     BREW_NOT_FOUND,
-    PROTECTED
+    PROTECTED,
+    INVALID_BODY
 }

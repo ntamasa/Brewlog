@@ -2,8 +2,11 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconHarness } from '@angular/material/icon/testing';
+import { MatMenuHarness } from '@angular/material/menu/testing';
+import { vi } from 'vitest';
 import { Brew } from '../../core/models';
 import { BrewCard } from './brew-card';
 
@@ -73,5 +76,49 @@ describe('BrewCard', () => {
     });
 
     expect(await iconNames(TestbedHarnessEnvironment.loader(fixture))).toContain('cup');
+  });
+});
+
+// BREW-35: the card's Actions menu with Edit brew
+
+@Component({
+  imports: [BrewCard],
+  template: `<app-brew-card [brew]="brew" (edit)="edited($event)" />`,
+})
+class CardHost {
+  readonly brew = KENYAN_MORNING;
+  readonly edited = vi.fn();
+}
+
+describe('BrewCard actions menu', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [CardHost],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+  });
+
+  it('shows an Actions button labelled with the brew name', () => {
+    const fixture = TestBed.createComponent(CardHost);
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('button[aria-label="Actions for Kenyan Morning"]'),
+    ).not.toBeNull();
+  });
+
+  it('choosing Edit brew from the Actions menu emits the brew', async () => {
+    const fixture = TestBed.createComponent(CardHost);
+    fixture.detectChanges();
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+
+    const menu = await loader.getHarness(
+      MatMenuHarness.with({ selector: '[aria-label="Actions for Kenyan Morning"]' }),
+    );
+    await menu.open();
+    await menu.clickItem({ text: 'Edit brew' });
+
+    expect(fixture.componentInstance.edited).toHaveBeenCalledTimes(1);
+    expect(fixture.componentInstance.edited).toHaveBeenCalledWith(KENYAN_MORNING);
   });
 });

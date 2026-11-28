@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.brewlog.dto.BrewRequest;
 import com.brewlog.dto.FieldErrorDto;
 import com.brewlog.exception.ErrorCode;
 import com.brewlog.repository.BrewMethodRepository;
@@ -54,9 +53,9 @@ class BrewValidatorTest {
         when(brewRepository.existsByNameIgnoreCaseAndIdNot("Kenyan Morning", 7L))
                 .thenReturn(false);
         when(brewRepository.existsByNameIgnoreCase("Kenyan Morning")).thenReturn(true);
-        BrewRequest request = new BrewRequest("Kenyan Morning", "AA Kiambu", "Kenya", 2L, "LIGHT", 5, TODAY, null);
+        BrewDraft draft = draft("Kenyan Morning", "AA Kiambu", "Kenya", 2L, "LIGHT", 5, TODAY, null);
 
-        List<FieldErrorDto> errors = validator.validate(BrewDraft.from(request), 7L);
+        List<FieldErrorDto> errors = validator.validate(draft, 7L);
 
         assertThat(errors).isEmpty();
         verify(brewRepository, never()).existsByNameIgnoreCase(anyString());
@@ -78,9 +77,9 @@ class BrewValidatorTest {
     void nameOfAnotherBrewIsRejectedWhenEditing() {
         when(brewRepository.existsByNameIgnoreCaseAndIdNot("kenyan morning", 7L))
                 .thenReturn(true);
-        BrewRequest request = new BrewRequest("kenyan morning", "AA Kiambu", "Kenya", 2L, "LIGHT", 5, TODAY, null);
+        BrewDraft draft = draft("kenyan morning", "AA Kiambu", "Kenya", 2L, "LIGHT", 5, TODAY, null);
 
-        List<FieldErrorDto> errors = validator.validate(BrewDraft.from(request), 7L);
+        List<FieldErrorDto> errors = validator.validate(draft, 7L);
 
         assertThat(errors).containsExactly(new FieldErrorDto("name", ErrorCode.DUPLICATE));
         verify(brewRepository, never()).existsByNameIgnoreCase(anyString());
@@ -98,9 +97,8 @@ class BrewValidatorTest {
     @Test
     @DisplayName("surrounding whitespace is removed from origin and no error is returned")
     void originIsTrimmed() {
-        BrewRequest request = new BrewRequest(
-                "Kenyan Morning", "AA Kiambu", " Kenya\t", 2L, "LIGHT", 5, LocalDate.of(2026, 11, 1), null);
-        BrewDraft draft = BrewDraft.from(request);
+        BrewDraft draft =
+                draft("Kenyan Morning", "AA Kiambu", " Kenya\t", 2L, "LIGHT", 5, LocalDate.of(2026, 11, 1), null);
 
         List<FieldErrorDto> errors = validator.validate(draft, null);
 
@@ -307,7 +305,27 @@ class BrewValidatorTest {
             Integer rating,
             LocalDate brewDate,
             String notes) {
-        BrewRequest request = new BrewRequest(name, beanName, origin, methodId, roast, rating, brewDate, notes);
-        return validator.validate(BrewDraft.from(request), null);
+        return validator.validate(draft(name, beanName, origin, methodId, roast, rating, brewDate, notes), null);
+    }
+
+    private static BrewDraft draft(
+            String name,
+            String beanName,
+            String origin,
+            Long methodId,
+            String roast,
+            Integer rating,
+            LocalDate brewDate,
+            String notes) {
+        BrewDraft draft = new BrewDraft();
+        draft.name = name;
+        draft.beanName = beanName;
+        draft.origin = origin;
+        draft.methodId = methodId;
+        draft.roast = roast;
+        draft.rating = rating;
+        draft.brewDate = brewDate;
+        draft.notes = notes;
+        return draft;
     }
 }

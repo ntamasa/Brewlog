@@ -2,13 +2,14 @@ package com.brewlog.service;
 
 import com.brewlog.dto.BrewPage;
 import com.brewlog.dto.BrewQuery;
-import com.brewlog.dto.BrewRequest;
 import com.brewlog.dto.BrewResponse;
 import com.brewlog.dto.FieldErrorDto;
 import com.brewlog.dto.MethodRef;
 import com.brewlog.entity.Brew;
 import com.brewlog.entity.BrewMethod;
 import com.brewlog.entity.Roast;
+import com.brewlog.exception.ErrorCode;
+import com.brewlog.exception.NotFoundException;
 import com.brewlog.exception.ValidationException;
 import com.brewlog.repository.BrewMethodRepository;
 import com.brewlog.repository.BrewRepository;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.node.ObjectNode;
 
 @Service
 public class BrewService {
@@ -35,8 +37,9 @@ public class BrewService {
     }
 
     @Transactional
-    public BrewResponse create(BrewRequest request) {
-        BrewDraft draft = BrewDraft.from(request);
+    public BrewResponse create(ObjectNode body) {
+        BrewDraft draft = new BrewDraft();
+        draft.apply(body);
         List<FieldErrorDto> errors = validator.validate(draft, null);
         if (!errors.isEmpty()) {
             throw new ValidationException(errors);
@@ -51,6 +54,27 @@ public class BrewService {
                 draft.rating,
                 draft.brewDate,
                 draft.notes);
+        return toResponse(brewRepository.saveAndFlush(brew));
+    }
+
+    @Transactional
+    public BrewResponse patch(long id, ObjectNode body) {
+        Brew brew = brewRepository.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.BREW_NOT_FOUND));
+        BrewDraft draft = BrewDraft.from(brew);
+        draft.apply(body);
+        List<FieldErrorDto> errors = validator.validate(draft, id);
+        if (!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
+        BrewMethod method = brewMethodRepository.getReferenceById(draft.methodId);
+        brew.setName(draft.name);
+        brew.setBeanName(draft.beanName);
+        brew.setOrigin(draft.origin);
+        brew.setMethod(method);
+        brew.setRoast(Roast.valueOf(draft.roast));
+        brew.setRating(draft.rating);
+        brew.setBrewDate(draft.brewDate);
+        brew.setNotes(draft.notes);
         return toResponse(brewRepository.saveAndFlush(brew));
     }
 

@@ -1,5 +1,5 @@
 <header class="head">
-  <h2 class="t-headline-md">Log a brew</h2>
+  <h2 class="t-headline-md">{{ mode() === 'edit' ? 'Edit brew' : 'Log a brew' }}</h2>
   <button matIconButton type="button" aria-label="Close without saving" (click)="requestClose()">
     <mat-icon svgIcon="close" class="icon" aria-hidden="true"></mat-icon>
   </button>
@@ -45,6 +45,19 @@
             lost: your entry is still here, so you can try again.
           }
         }
+      </div>
+    </div>
+  }
+
+  @if (brewGone()) {
+    <div class="banner-error" role="alert">
+      <mat-icon svgIcon="alert" class="icon" aria-hidden="true" />
+      <div>
+        <strong>This brew no longer exists</strong>
+        <p>
+          It may have been deleted in another tab. Your changes are still here: save them as a new
+          brew, or close.
+        </p>
       </div>
     </div>
   }
@@ -150,9 +163,11 @@
         <mat-icon matDatepickerToggleIcon svgIcon="calendar" aria-hidden="true"></mat-icon>
       </mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
-      <mat-hint class="field-help"
-        >Defaults to today. Change it if you’re logging an earlier brew.</mat-hint
-      >
+      @if (mode() === 'create') {
+        <mat-hint class="field-help"
+          >Defaults to today. Change it if you’re logging an earlier brew.</mat-hint
+        >
+      }
       @if (shownMessage('brewDate'); as message) {
         <mat-error class="field-error"
           ><mat-icon svgIcon="alert" aria-hidden="true" />{{ message }}</mat-error
@@ -196,6 +211,24 @@
       Keep editing
     </button>
     <button matButton="filled" type="button" (click)="discard()">Discard</button>
+  } @else if (brewGone()) {
+    <button matButton="outlined" type="button" class="btn-secondary" (click)="closed.emit()">
+      Close
+    </button>
+    <button
+      matButton="filled"
+      type="button"
+      [disabled]="saving()"
+      disabledInteractive
+      [attr.aria-busy]="saving() ? 'true' : null"
+      (click)="saveAsNew()"
+    >
+      @if (saving()) {
+        <span class="spinner" aria-hidden="true"></span>Saving…
+      } @else {
+        Save as new brew
+      }
+    </button>
   } @else {
     <button
       #cancelButton
@@ -217,7 +250,7 @@
       @if (saving()) {
         <span class="spinner" aria-hidden="true"></span>Saving…
       } @else {
-        Add to journal
+        {{ mode() === 'edit' ? 'Save changes' : 'Add to journal' }}
       }
     </button>
   }

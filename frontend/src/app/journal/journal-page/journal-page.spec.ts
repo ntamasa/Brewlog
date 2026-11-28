@@ -9,6 +9,7 @@ import { MatButtonToggleHarness } from '@angular/material/button-toggle/testing'
 import { MATERIAL_ANIMATIONS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatInputHarness } from '@angular/material/input/testing';
+import { MatMenuHarness } from '@angular/material/menu/testing';
 import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { Router, provideRouter } from '@angular/router';
@@ -1003,6 +1004,121 @@ describe('JournalPage', () => {
 
       expect(TestBed.inject(Router).url).toBe('/journal?sort=HIGHEST');
       expect(must(element, '.count').textContent).toContain('41 brews');
+    });
+  });
+});
+
+// BREW-35: the card's Actions menu opens the form in edit mode
+
+describe('JournalPage edit from a card', () => {
+  let http: HttpTestingController;
+  let toaster: { show: Mock };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter(routes),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideAppInitializer(registerIcons),
+        provideDateFnsAdapter(BREWLOG_DATE_FORMATS),
+        { provide: MAT_DATE_LOCALE, useValue: enGB },
+        { provide: MATERIAL_ANIMATIONS, useValue: { animationsDisabled: true } },
+        { provide: Toaster, useValue: { show: vi.fn() } },
+        { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: BREWLOG_FORM_FIELD_OPTIONS },
+      ],
+    });
+    http = TestBed.inject(HttpTestingController);
+    toaster = TestBed.inject(Toaster) as unknown as { show: Mock };
+  });
+
+  async function openKenyanMorningEdit(): Promise<{
+    harness: RouterTestingHarness;
+    element: HTMLElement;
+    loader: HarnessLoader;
+  }> {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/journal', JournalPage);
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush({
+      items: [SAVED],
+      page: 1,
+      totalPages: 1,
+      matchingCount: 1,
+      totalCount: 1,
+    });
+    await harness.fixture.whenStable();
+    const element: HTMLElement = harness.fixture.nativeElement;
+    const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+
+    const menu = await loader.getHarness(
+      MatMenuHarness.with({ selector: '[aria-label="Actions for Kenyan Morning"]' }),
+    );
+    await menu.open();
+    await menu.clickItem({ text: 'Edit brew' });
+    await harness.fixture.whenStable();
+    for (const request of http.match('/api/methods')) {
+      request.flush(METHODS);
+    }
+    await harness.fixture.whenStable();
+    return { harness, element, loader };
+  }
+
+  it('Edit brew from the Actions menu opens the form in edit mode with that brew, and a 200 shows the toast, reloads and highlights the card', async () => {
+    const { harness, element, loader } = await openKenyanMorningEdit();
+
+    expect(must(element, 'app-brew-form h2').textContent).toContain('Edit brew');
+    expect(await (await field(loader, '#name')).getValue()).toBe('Kenyan Morning');
+    element.querySelectorAll<HTMLInputElement>('.rating-input input[type="radio"]')[3].click();
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Save changes' }))).click();
+    http.expectOne('/api/brews/7').flush({ ...SAVED, rating: 4 });
+    await harness.fixture.whenStable();
+
+    expect(toaster.show).toHaveBeenCalledTimes(1);
+    expect(toaster.show).toHaveBeenCalledWith('“Kenyan Morning” saved to your journal');
+    http.expectOne('/api/brews?sort=NEWEST&page=1').flush({
+      items: [{ ...SAVED, rating: 4 }],
+      page: 1,
+      totalPages: 1,
+      matchingCount: 1,
+      totalCount: 1,
+    });
+    await harness.fixture.whenStable();
+
+    await vi.waitFor(() => {
+      const highlighted = element.querySelectorAll('.brew-card-highlight');
+      expect(highlighted).toHaveLength(1);
+      expect(highlighted[0].querySelector('h3')!.textContent.trim()).toBe('Kenyan Morning');
+    });
+  });
+
+  it('Edit brew focuses the Brew name input, which reads Kenyan Morning, and not the card Actions button', async () => {
+    const { element } = await openKenyanMorningEdit();
+
+    await vi.waitFor(() => {
+      expect(document.activeElement).toBe(element.querySelector('app-brew-form #name'));
+    });
+    expect((element.querySelector('app-brew-form #name') as HTMLInputElement).value).toBe(
+      'Kenyan Morning',
+    );
+  });
+
+  it('after Edit brew is cancelled, + Add brew shows Log a brew with an empty Brew name focused', async () => {
+    const { harness, element, loader } = await openKenyanMorningEdit();
+
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).click();
+    await expectFormClosed(element);
+
+    buttonWithText(element, 'Add brew').click();
+    await harness.fixture.whenStable();
+    for (const request of http.match('/api/methods')) {
+      request.flush(METHODS);
+    }
+    await harness.fixture.whenStable();
+
+    expect(must(element, 'app-brew-form h2').textContent).toContain('Log a brew');
+    expect(await (await field(loader, '#name')).getValue()).toBe('');
+    await vi.waitFor(() => {
+      expect(document.activeElement).toBe(element.querySelector('app-brew-form #name'));
     });
   });
 });
