@@ -3,6 +3,8 @@ package com.brewlog.service;
 import com.brewlog.dto.FieldErrorDto;
 import com.brewlog.entity.Roast;
 import com.brewlog.exception.ErrorCode;
+import com.brewlog.repository.BrewMethodRepository;
+import com.brewlog.repository.BrewRepository;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,9 +19,13 @@ class BrewValidator {
     private static final int NOTES_MAX = 2000;
 
     private final Clock clock;
+    private final BrewRepository brewRepository;
+    private final BrewMethodRepository brewMethodRepository;
 
-    BrewValidator(Clock clock) {
+    BrewValidator(Clock clock, BrewRepository brewRepository, BrewMethodRepository brewMethodRepository) {
         this.clock = clock;
+        this.brewRepository = brewRepository;
+        this.brewMethodRepository = brewMethodRepository;
     }
 
     List<FieldErrorDto> validate(BrewDraft draft, Long selfId) {
