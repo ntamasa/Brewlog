@@ -3,6 +3,7 @@ package com.brewlog.service;
 import com.brewlog.dto.BrewRequest;
 import com.brewlog.entity.Brew;
 import java.time.LocalDate;
+import tools.jackson.databind.node.ObjectNode;
 
 class BrewDraft {
 
@@ -39,5 +40,9 @@ class BrewDraft {
         d.brewDate = b.getBrewDate();
         d.notes = b.getNotes();
         return d;
+    }
+
+    void apply(ObjectNode body) {
+        throw new UnsupportedOperationException("BREW-128: not implemented");
     }
 }
