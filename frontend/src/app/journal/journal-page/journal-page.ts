@@ -42,6 +42,7 @@ export class JournalPage implements OnInit {
   protected readonly sidenav = viewChild.required(MatSidenav);
   protected readonly brewForm = viewChild(BrewForm);
   protected readonly formOpen = signal(false);
+  protected readonly editBrew = signal<Brew | null>(null);
   protected readonly skeletonCards: readonly number[] = [1, 2, 3, 4, 5, 6];
 
   protected readonly countText = computed(() =>
@@ -70,6 +71,14 @@ export class JournalPage implements OnInit {
 
   protected openCreate(): void {
     if (this.methodStore.status() === 'idle') this.methodStore.load();
+    this.editBrew.set(null);
+    this.formOpen.set(true);
+    void this.sidenav().open();
+  }
+
+  protected openEdit(brew: Brew): void {
+    if (this.methodStore.status() === 'idle') this.methodStore.load();
+    this.editBrew.set(brew);
     this.formOpen.set(true);
     void this.sidenav().open();
   }

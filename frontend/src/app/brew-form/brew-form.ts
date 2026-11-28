@@ -12,6 +12,7 @@ import {
   untracked,
   viewChild,
   afterNextRender,
+  OnInit,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -28,7 +29,7 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { format, startOfDay } from 'date-fns';
+import { format, parseISO, startOfDay } from 'date-fns';
 import { map } from 'rxjs';
 import { BrewApi } from '../core/brew-api';
 import { BREW_TEXT_LIMITS, NOTES_WARN_AT } from '../core/brew-limits';
@@ -37,6 +38,7 @@ import { brewFieldMessage, fieldErrorMessage } from '../core/error-messages';
 import { ApiFieldError, Brew, BrewBody, BrewMethod, Roast } from '../core/models';
 import { BeanRating } from '../shared/bean-rating/bean-rating';
 import { MethodStore } from '../methods/method.store';
+import { changedFields } from './diff';
 import { BREW_VALIDATORS } from './brew-validators';
 import { MethodSelect } from './method-select/method-select';
 
@@ -91,12 +93,13 @@ const BANNER_FIELDS: { field: keyof BrewFormControls; id: string }[] = [
   providers: [{ provide: ErrorStateMatcher, useExisting: forwardRef(() => BrewForm) }],
   host: { '(keydown.escape)': 'requestClose()' },
 })
-export class BrewForm implements ErrorStateMatcher {
+export class BrewForm implements ErrorStateMatcher, OnInit {
   readonly mode = input<'create' | 'edit'>('create');
   readonly brew = input<Brew | null>(null);
   readonly methods = input.required<BrewMethod[]>();
   readonly saved = output<Brew>();
   readonly closed = output<void>();
+  readonly stale = output<void>();
 
   private readonly brewApi = inject(BrewApi);
   private readonly methodStore = inject(MethodStore);
@@ -111,6 +114,7 @@ export class BrewForm implements ErrorStateMatcher {
 
   protected readonly today = startOfDay(new Date());
   readonly saving = signal(false);
+  readonly brewGone = signal(false);
   readonly submitted = signal(false);
   readonly banner = signal<FormBanner | null>(null);
   readonly confirmingDiscard = signal(false);
@@ -146,6 +150,21 @@ export class BrewForm implements ErrorStateMatcher {
     source: this.notesState,
     computation: (state) => (state === 'none' ? '' : untracked(this.counterText)),
   });
+
+  ngOnInit(): void {
+    const brew = this.brew();
+    if (this.mode() !== 'edit' || brew === null) return;
+    this.form.setValue({
+      name: brew.name,
+      beanName: brew.beanName,
+      origin: brew.origin,
+      notes: brew.notes ?? '',
+      methodId: brew.method.id,
+      roast: brew.roast,
+      rating: brew.rating,
+      brewDate: parseISO(brew.brewDate),
+    });
+  }
 
   fieldMessage(field: keyof BrewFormControls): string | null {
     return fieldErrorMessage(field, this.form.controls[field].errors, this.messageValue(field));
@@ -232,6 +251,14 @@ export class BrewForm implements ErrorStateMatcher {
   }
 
   submit(): void {
+    this.send(this.mode() === 'edit' && !this.brewGone() ? 'patch' : 'create');
+  }
+
+  saveAsNew(): void {
+    this.send('create');
+  }
+
+  private send(kind: 'patch' | 'create'): void {
     if (this.saving()) return;
     this.submitted.set(true);
     this.form.markAllAsTouched();
@@ -244,14 +271,24 @@ export class BrewForm implements ErrorStateMatcher {
     const body = this.toBody(this.form.getRawValue());
     this.saving.set(true);
     this.form.disable();
-    this.brewApi.create(body).subscribe({
-      next: (brew) => this.saved.emit(brew),
+    const brew = this.brew();
+    const request =
+      kind === 'patch' && brew !== null
+        ? this.brewApi.patch(brew.id, changedFields(brew, body))
+        : this.brewApi.create(body);
+    request.subscribe({
+      next: (saved) => this.saved.emit(saved),
       error: (err: unknown) => {
         // any status: values kept, form stays open
         this.saving.set(false);
         // enable() re-runs every validator, so it must come before the server errors are set
         this.form.enable();
         const error = parseApiError(err);
+        if (error.kind === 'notFound') {
+          this.brewGone.set(true);
+          this.stale.emit();
+          return;
+        }
         if (error.kind === 'network') {
           this.showBanner({ kind: 'server' });
           return;

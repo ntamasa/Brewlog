@@ -4,6 +4,15 @@
       <app-method-icon [iconKey]="brew().method.iconKey" />
       <span class="t-caps">{{ brew().method.name }}</span>
     </div>
+    <button
+      matIconButton
+      type="button"
+      class="card-menu"
+      [attr.aria-label]="'Actions for ' + brew().name"
+      [matMenuTriggerFor]="actions"
+    >
+      <mat-icon svgIcon="more" aria-hidden="true" />
+    </button>
   </div>
   <div>
     <h3>{{ brew().name }}</h3>
@@ -30,4 +39,10 @@
   <p class="date t-body-sm muted">
     <time>{{ date() }}</time>
   </p>
+  <mat-menu #actions="matMenu">
+    <button mat-menu-item type="button" (click)="edit.emit(brew())">
+      <mat-icon svgIcon="edit" aria-hidden="true" />
+      <span>Edit brew</span>
+    </button>
+  </mat-menu>
 </mat-card>
