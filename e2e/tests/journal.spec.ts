@@ -235,7 +235,7 @@ test.describe("journal sort", () => {
       expect(response.status()).toBe(201);
     }
 
-    const cards = page.locator("app-brew-card h3");
+    const cards = page.getByRole("heading", { level: 3, name: p });
     const search = (sort?: string) => {
       const params = new URLSearchParams({ q: p });
       if (sort) params.set("sort", sort);
