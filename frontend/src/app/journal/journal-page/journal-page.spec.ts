@@ -871,4 +871,53 @@ describe('JournalPage', () => {
       }
     });
   });
+
+  describe('sort', () => {
+    it('sends the sort chosen in the Sort select, writes it to the URL and lists the response order', async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/journal', JournalPage);
+      http.expectOne('/api/brews?sort=NEWEST&page=1').flush(page(1, 12, 1));
+      await harness.fixture.whenStable();
+      const element: HTMLElement = harness.fixture.nativeElement;
+      const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+
+      await (
+        await loader.getHarness(MatSelectHarness.with({ selector: '#f-sort' }))
+      ).clickOptions({ text: 'Lowest rated' });
+      http.expectOne('/api/brews?sort=LOWEST&page=1').flush({
+        items: [brewAt(3), brewAt(1), brewAt(2)],
+        page: 1,
+        totalPages: 1,
+        matchingCount: 3,
+        totalCount: 3,
+      });
+      TestBed.flushEffects();
+      await harness.fixture.whenStable();
+
+      expect(TestBed.inject(Router).url).toBe('/journal?sort=LOWEST');
+      expect(cardNames(element)).toEqual(['Brew 3', 'Brew 1', 'Brew 2']);
+    });
+
+    it('keeps the sort when Clear all is clicked', async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/journal?q=kenya&sort=HIGHEST', JournalPage);
+      http.expectOne('/api/brews?q=kenya&sort=HIGHEST&page=1').flush({
+        items: [brewAt(1)],
+        page: 1,
+        totalPages: 1,
+        matchingCount: 1,
+        totalCount: 41,
+      });
+      await harness.fixture.whenStable();
+      const element: HTMLElement = harness.fixture.nativeElement;
+
+      buttonWithText(element, 'Clear all').click();
+      http.expectOne('/api/brews?sort=HIGHEST&page=1').flush(page(1, 12, 1));
+      TestBed.flushEffects();
+      await harness.fixture.whenStable();
+
+      expect(TestBed.inject(Router).url).toBe('/journal?sort=HIGHEST');
+      expect(must(element, '.count').textContent).toContain('41 brews');
+    });
+  });
 });

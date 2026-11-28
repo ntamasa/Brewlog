@@ -4,6 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatInputHarness } from '@angular/material/input/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { vi } from 'vitest';
 import { BREWLOG_FORM_FIELD_OPTIONS } from '../../core/form-field-options';
 import { BrewQuery, DEFAULT_QUERY } from '../../core/models';
@@ -56,5 +57,36 @@ describe('JournalToolbar', () => {
 
     expect(element.querySelector<HTMLInputElement>('#q')!.value).toBe('');
     expect(searchChange).not.toHaveBeenCalled();
+  });
+
+  it('labels the Sort select, shows Newest first and lists the four orders in order', async () => {
+    const fixture = render(DEFAULT_QUERY);
+    const element: HTMLElement = fixture.nativeElement;
+
+    expect(element.querySelector('span.field-label#f-sort-label')!.textContent.trim()).toBe('Sort');
+    expect(element.querySelector('#f-sort')!.getAttribute('aria-labelledby')).toContain('f-sort-label');
+
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const select = await loader.getHarness(MatSelectHarness.with({ selector: '#f-sort' }));
+    expect(await select.getValueText()).toBe('Newest first');
+
+    await select.open();
+    const options = await select.getOptions();
+    const texts = await Promise.all(options.map((option) => option.getText()));
+    expect(texts).toEqual(['Newest first', 'Oldest first', 'Highest rated', 'Lowest rated']);
+    await select.close();
+  });
+
+  it('emits HIGHEST when Highest rated is chosen', async () => {
+    const fixture = render(DEFAULT_QUERY);
+    const sort = vi.fn();
+    fixture.componentInstance.sort.subscribe(sort);
+
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    await (
+      await loader.getHarness(MatSelectHarness.with({ selector: '#f-sort' }))
+    ).clickOptions({ text: 'Highest rated' });
+
+    expect(sort).toHaveBeenLastCalledWith('HIGHEST');
   });
 });
