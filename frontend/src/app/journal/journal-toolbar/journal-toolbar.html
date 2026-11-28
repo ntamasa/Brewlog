@@ -15,4 +15,21 @@
       />
     </mat-form-field>
   </div>
+  <div class="field desktop-only">
+    <span class="field-label" id="f-sort-label">Sort</span>
+    <mat-form-field>
+      <mat-select
+        id="f-sort"
+        aria-labelledby="f-sort-label"
+        [value]="query().sort"
+        (selectionChange)="sort.emit($event.value)"
+      >
+        <mat-option value="NEWEST">Newest first</mat-option>
+        <mat-option value="OLDEST">Oldest first</mat-option>
+        <mat-option value="HIGHEST">Highest rated</mat-option>
+        <mat-option value="LOWEST">Lowest rated</mat-option>
+      </mat-select>
+      <mat-icon matIconSuffix svgIcon="chevron-down" class="icon-sm" aria-hidden="true" />
+    </mat-form-field>
+  </div>
 </div>

@@ -18,6 +18,14 @@ describe('queryFromParams', () => {
   it('reads the search from ?q=kenya', () => {
     expect(queryFromParams(convertToParamMap({ q: 'kenya' })).q).toBe('kenya');
   });
+
+  it('reads the sort from ?sort=OLDEST', () => {
+    expect(queryFromParams(convertToParamMap({ sort: 'OLDEST' })).sort).toBe('OLDEST');
+  });
+
+  it('reads an unknown sort as Newest first until the URL story', () => {
+    expect(queryFromParams(convertToParamMap({ sort: 'FOO' })).sort).toBe('NEWEST');
+  });
 });
 
 describe('queryToParams', () => {
@@ -35,5 +43,9 @@ describe('queryToParams', () => {
 
   it('omits the q param when the search is blank after trimming', () => {
     expect(queryToParams({ ...DEFAULT_QUERY, q: '   ' })).toEqual({});
+  });
+
+  it('omits the sort param for Newest first', () => {
+    expect(queryToParams({ ...DEFAULT_QUERY, sort: 'NEWEST' })).toEqual({});
   });
 });
