@@ -1,6 +1,6 @@
 <header class="head">
   <h2 class="t-headline-md">Log a brew</h2>
-  <button matIconButton type="button" aria-label="Close without saving" (click)="closed.emit()">
+  <button matIconButton type="button" aria-label="Close without saving" (click)="requestClose()">
     <mat-icon svgIcon="close" class="icon" aria-hidden="true"></mat-icon>
   </button>
 </header>
@@ -190,21 +190,35 @@
 </div>
 
 <footer class="foot">
-  <button matButton="outlined" type="button" class="btn-secondary" (click)="closed.emit()">
-    Cancel
-  </button>
-  <button
-    matButton="filled"
-    type="button"
-    [disabled]="saving()"
-    disabledInteractive
-    [attr.aria-busy]="saving() ? 'true' : null"
-    (click)="submit()"
-  >
-    @if (saving()) {
-      <span class="spinner" aria-hidden="true"></span>Saving…
-    } @else {
-      Add to journal
-    }
-  </button>
+  @if (confirmingDiscard()) {
+    <p #discardText class="discard-text" tabindex="-1">Discard changes?</p>
+    <button matButton="outlined" type="button" class="btn-secondary" (click)="keepEditing()">
+      Keep editing
+    </button>
+    <button matButton="filled" type="button" (click)="discard()">Discard</button>
+  } @else {
+    <button
+      #cancelButton
+      matButton="outlined"
+      type="button"
+      class="btn-secondary"
+      (click)="requestClose()"
+    >
+      Cancel
+    </button>
+    <button
+      matButton="filled"
+      type="button"
+      [disabled]="saving()"
+      disabledInteractive
+      [attr.aria-busy]="saving() ? 'true' : null"
+      (click)="submit()"
+    >
+      @if (saving()) {
+        <span class="spinner" aria-hidden="true"></span>Saving…
+      } @else {
+        Add to journal
+      }
+    </button>
+  }
 </footer>

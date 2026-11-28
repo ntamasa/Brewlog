@@ -1,8 +1,9 @@
-<mat-sidenav-container>
+<mat-sidenav-container (backdropClick)="brewForm()?.requestClose()">
   <mat-sidenav
     mode="over"
     position="end"
     fixedInViewport
+    disableClose
     autoFocus="[cdkFocusInitial]"
     (closed)="formOpen.set(false)"
   >

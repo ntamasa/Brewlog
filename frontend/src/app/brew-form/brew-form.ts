@@ -89,6 +89,7 @@ const BANNER_FIELDS: { field: keyof BrewFormControls; id: string }[] = [
   templateUrl: './brew-form.html',
   styleUrl: './brew-form.scss',
   providers: [{ provide: ErrorStateMatcher, useExisting: forwardRef(() => BrewForm) }],
+  host: { '(keydown.escape)': 'requestClose()' },
 })
 export class BrewForm implements ErrorStateMatcher {
   readonly mode = input<'create' | 'edit'>('create');
@@ -102,11 +103,17 @@ export class BrewForm implements ErrorStateMatcher {
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly bannerEl = viewChild<ElementRef<HTMLElement>>('banner');
+  private readonly cancelButton = viewChild('cancelButton', {
+    read: ElementRef<HTMLButtonElement>,
+  });
+  private readonly discardText = viewChild<ElementRef<HTMLElement>>('discardText');
+  private returnTo: HTMLElement | 'cancel' = 'cancel';
 
   protected readonly today = startOfDay(new Date());
   readonly saving = signal(false);
   readonly submitted = signal(false);
   readonly banner = signal<FormBanner | null>(null);
+  readonly confirmingDiscard = signal(false);
 
   readonly form = new FormGroup<BrewFormControls>({
     name: new FormControl('', { nonNullable: true, validators: BREW_VALIDATORS.name }),
@@ -176,6 +183,42 @@ export class BrewForm implements ErrorStateMatcher {
     if (banner !== null) {
       afterNextRender(() => this.bannerEl()?.nativeElement.focus(), { injector: this.injector });
     }
+  }
+
+  requestClose(): void {
+    if (this.confirmingDiscard()) return;
+    if (!this.form.dirty) {
+      this.closed.emit();
+      return;
+    }
+    const active = document.activeElement;
+    this.returnTo =
+      active instanceof HTMLElement &&
+      active !== this.cancelButton()?.nativeElement &&
+      this.host.nativeElement.contains(active)
+        ? active // ×, a field
+        : 'cancel'; // Cancel itself (removed by the prompt), or outside the form (backdrop click)
+    this.confirmingDiscard.set(true);
+    afterNextRender(() => this.discardText()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  keepEditing(): void {
+    const target = this.returnTo;
+    this.confirmingDiscard.set(false);
+    afterNextRender(
+      () => {
+        const focusable =
+          target !== 'cancel' && this.host.nativeElement.contains(target)
+            ? target
+            : this.cancelButton()?.nativeElement; // the re-rendered Cancel
+        focusable?.focus();
+      },
+      { injector: this.injector },
+    );
+  }
+
+  discard(): void {
+    this.closed.emit();
   }
 
   protected focusField(event: Event, id: string): void {
