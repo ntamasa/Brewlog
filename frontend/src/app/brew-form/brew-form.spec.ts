@@ -1,4 +1,4 @@
-import { HarnessLoader } from '@angular/cdk/testing';
+import { HarnessLoader, TestKey } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -452,7 +452,7 @@ describe('BrewForm', () => {
     fixture.detectChanges();
   });
 
-  it('while the POST is in flight Cancel and the close button stay enabled, and Cancel emits closed once', async () => {
+  it('while the POST is in flight Cancel and the close button stay enabled, and Cancel asks Discard changes?', async () => {
     await fillValid();
     await addToJournal();
     const request = http.expectOne('/api/brews');
@@ -469,7 +469,10 @@ describe('BrewForm', () => {
     }
 
     await (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).click();
-    expect(closed).toHaveBeenCalledTimes(1);
+    expect(fixture.nativeElement.querySelector('footer.foot').textContent).toContain(
+      'Discard changes?',
+    );
+    expect(closed).not.toHaveBeenCalled();
 
     request.flush(SAVED, { status: 201, statusText: 'Created' });
     fixture.detectChanges();
@@ -1194,6 +1197,149 @@ describe('BrewForm', () => {
     expect(bannerTitle()).toBe('1 field needs your attention');
     expect(bannerLinkTexts()).toEqual(['Enter a brew name']);
     expect(fixture.nativeElement.textContent).not.toContain(SERVER_FAILURE_TEXT);
+  });
+
+  // Unsaved changes (R21)
+
+  async function cancelWithNameChanged(): Promise<void> {
+    await (await field('#name')).setValue('K');
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).click();
+    fixture.detectChanges();
+  }
+
+  function footText(): string {
+    return fixture.nativeElement.querySelector('footer.foot')?.textContent ?? '';
+  }
+
+  function discardText(): HTMLElement | null {
+    return fixture.nativeElement.querySelector('footer.foot .discard-text');
+  }
+
+  function cancelButton(): HTMLButtonElement {
+    return fixture.nativeElement.querySelector('footer.foot button.btn-secondary');
+  }
+
+  it('Cancel with a changed name asks Discard changes? with Keep editing and Discard, and focuses the prompt text', async () => {
+    await cancelWithNameChanged();
+
+    expect(await loader.hasHarness(MatButtonHarness.with({ text: 'Cancel' }))).toBe(false);
+    expect(await loader.hasHarness(MatButtonHarness.with({ text: 'Add to journal' }))).toBe(false);
+    expect(await loader.hasHarness(MatButtonHarness.with({ text: 'Keep editing' }))).toBe(true);
+    expect(await loader.hasHarness(MatButtonHarness.with({ text: 'Discard' }))).toBe(true);
+    expect(closed).not.toHaveBeenCalled();
+    expect(discardText()?.textContent?.trim()).toBe('Discard changes?');
+    expect(discardText()?.getAttribute('tabindex')).toBe('-1');
+    expect(document.activeElement).toBe(discardText());
+  });
+
+  it('Discard after the prompt emits closed once and sends no request', async () => {
+    await cancelWithNameChanged();
+
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Discard' }))).click();
+
+    expect(closed).toHaveBeenCalledTimes(1);
+    http.expectNone('/api/brews');
+  });
+
+  it('Keep editing hides the prompt, shows Cancel and Add to journal again, keeps the name and emits nothing', async () => {
+    await cancelWithNameChanged();
+
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Keep editing' }))).click();
+    fixture.detectChanges();
+
+    expect(discardText()).toBeNull();
+    expect(await loader.hasHarness(MatButtonHarness.with({ text: 'Cancel' }))).toBe(true);
+    expect(await loader.hasHarness(MatButtonHarness.with({ text: 'Add to journal' }))).toBe(true);
+    expect(await (await field('#name')).getValue()).toBe('K');
+    expect(closed).not.toHaveBeenCalled();
+  });
+
+  it('after Esc in a changed Origin, Keep editing focuses Origin, and Esc in Origin asks Discard changes? with focus on the prompt', async () => {
+    await (await field('#origin')).setValue('Kenya Peaberry');
+    await (await field('#origin')).focus();
+    await (await (await field('#origin')).host()).sendKeys(TestKey.ESCAPE);
+    fixture.detectChanges();
+    expect(discardText()).not.toBeNull();
+    expect(document.activeElement).toBe(discardText());
+
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Keep editing' }))).click();
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(fixture.nativeElement.querySelector('#origin'));
+    expect((document.activeElement as HTMLInputElement).value).toBe('Kenya Peaberry');
+  });
+
+  it('after Keep editing, Cancel focuses the new Cancel button', async () => {
+    await (await field('#name')).setValue('K');
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).focus();
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).click();
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Keep editing' }))).click();
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(cancelButton());
+    expect(cancelButton().textContent?.trim()).toBe('Cancel');
+  });
+
+  it('after × with changes, Keep editing focuses ×', async () => {
+    await (await field('#name')).setValue('K');
+    const close = await loader.getHarness(
+      MatButtonHarness.with({ selector: 'button[aria-label="Close without saving"]' }),
+    );
+    await close.focus();
+    await close.click();
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Keep editing' }))).click();
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(
+      fixture.nativeElement.querySelector('button[aria-label="Close without saving"]'),
+    );
+  });
+
+  it('an untouched form closes at once from Cancel, × or Esc, with no Discard changes? prompt', async () => {
+    const actions: (() => Promise<void>)[] = [
+      async () => (await loader.getHarness(MatButtonHarness.with({ text: 'Cancel' }))).click(),
+      async () =>
+        (
+          await loader.getHarness(
+            MatButtonHarness.with({ selector: 'button[aria-label="Close without saving"]' }),
+          )
+        ).click(),
+      async () => (await (await field('#name')).host()).sendKeys(TestKey.ESCAPE),
+    ];
+    for (const act of actions) {
+      mount();
+      await act();
+      fixture.detectChanges();
+
+      expect(closed).toHaveBeenCalledTimes(1);
+      expect(footText()).not.toContain('Discard changes?');
+    }
+  });
+
+  it('after only the rating changed, Esc asks Discard changes? and emits nothing', async () => {
+    radios()[4].click();
+    fixture.detectChanges();
+    await (await (await field('#name')).host()).sendKeys(TestKey.ESCAPE);
+    fixture.detectChanges();
+
+    expect(footText()).toContain('Discard changes?');
+    expect(closed).not.toHaveBeenCalled();
+  });
+
+  it('Esc pressed on the prompt text keeps the prompt, emits nothing, and Keep editing still focuses Origin', async () => {
+    await (await field('#origin')).setValue('Kenya Peaberry');
+    await (await field('#origin')).focus();
+    await (await (await field('#origin')).host()).sendKeys(TestKey.ESCAPE);
+    fixture.detectChanges();
+
+    discardText()?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(discardText()).not.toBeNull();
+    expect(closed).not.toHaveBeenCalled();
+
+    await (await loader.getHarness(MatButtonHarness.with({ text: 'Keep editing' }))).click();
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(fixture.nativeElement.querySelector('#origin'));
   });
 
   it('a second click on the busy Saving button sends no second POST and emits saved once', async () => {
