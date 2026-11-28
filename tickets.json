@@ -1315,7 +1315,8 @@
           "heading": "Backend"
         }
       ],
-      "blockedBy": []
+      "blockedBy": [],
+      "done": true
     },
     {
       "id": "S6.2",
@@ -1699,7 +1700,8 @@
         "design/screenshots/brews.filtered.mobile.png",
         "design/screenshots/brews.no-results.desktop.png",
         "design/screenshots/brews.no-results.mobile.png"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S10.1",
