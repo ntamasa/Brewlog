@@ -36,10 +36,16 @@ class BrewValidator {
 
         List<FieldErrorDto> errors = new ArrayList<>();
         checkText(errors, "name", draft.name, NAME_MAX);
+        if (errors.stream().noneMatch(error -> error.field().equals("name"))
+                && brewRepository.existsByNameIgnoreCaseAndIdNot(draft.name, selfId == null ? -1L : selfId)) {
+            errors.add(new FieldErrorDto("name", ErrorCode.DUPLICATE));
+        }
         checkText(errors, "beanName", draft.beanName, NAME_MAX);
         checkText(errors, "origin", draft.origin, NAME_MAX);
         if (draft.methodId == null) {
             errors.add(new FieldErrorDto("methodId", ErrorCode.REQUIRED));
+        } else if (!brewMethodRepository.existsById(draft.methodId)) {
+            errors.add(new FieldErrorDto("methodId", ErrorCode.METHOD_NOT_FOUND));
         }
         checkRoast(errors, draft.roast);
         checkRating(errors, draft.rating);

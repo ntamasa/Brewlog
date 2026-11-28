@@ -32,9 +32,7 @@ class BrewConflictIT extends IntegrationTest {
     void duplicateNameIsRejectedAndNothingIsSaved() throws Exception {
         TestData.brew("Kenyan Morning").insert(jdbc);
 
-        mvc.perform(post("/api/brews")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(brewBody("kenyan morning", 2L)))
+        mvc.perform(post("/api/brews").contentType(MediaType.APPLICATION_JSON).content(brewBody("kenyan morning", 2L)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0].field").value("name"))
                 .andExpect(jsonPath("$.errors[0].code").value("DUPLICATE"))
