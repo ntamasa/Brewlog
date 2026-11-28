@@ -86,12 +86,15 @@ class BrewSortIT extends IntegrationTest {
                 .createdAt("2026-11-01T08:00:00Z")
                 .insert(jdbc);
 
-        for (int call = 0; call < 2; call++) {
-            mvc.perform(get("/api/brews").param("sort", "NEWEST"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.items[0].name").value("B"))
-                    .andExpect(jsonPath("$.items[1].name").value("A"));
-        }
+        mvc.perform(get("/api/brews").param("sort", "NEWEST"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].name").value("B"))
+                .andExpect(jsonPath("$.items[1].name").value("A"));
+
+        mvc.perform(get("/api/brews").param("sort", "NEWEST"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].name").value("B"))
+                .andExpect(jsonPath("$.items[1].name").value("A"));
     }
 
     @Test
