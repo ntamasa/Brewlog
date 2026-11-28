@@ -22,9 +22,13 @@ import org.springframework.test.web.servlet.MvcResult;
 class BrewConflictIT extends IntegrationTest {
 
     private static String brewBody(String name, long methodId) {
+        return brewBody(name, "Kenya", methodId);
+    }
+
+    private static String brewBody(String name, String origin, long methodId) {
         return """
-                {"name":"%s","beanName":"AA Kiambu","origin":"Kenya","methodId":%d,
-                 "roast":"LIGHT","rating":5,"brewDate":"2026-11-01","notes":""}""".formatted(name, methodId);
+                {"name":"%s","beanName":"AA Kiambu","origin":"%s","methodId":%d,
+                 "roast":"LIGHT","rating":5,"brewDate":"2026-11-01","notes":""}""".formatted(name, origin, methodId);
     }
 
     @Test
@@ -61,6 +65,50 @@ class BrewConflictIT extends IntegrationTest {
 
         Integer rows = jdbc.queryForObject("SELECT count(*) FROM brew", Integer.class);
         assertThat(rows).isZero();
+    }
+
+    @Test
+    @DisplayName("a duplicate name with a deleted method is answered with DUPLICATE alone and nothing is saved")
+    void duplicateNameIsAnsweredAloneWhenTheMethodIsAlsoGone() throws Exception {
+        TestData.brew("Kenyan Morning").insert(jdbc);
+        long methodId = jdbc.queryForObject(
+                "INSERT INTO brew_method (name, icon_key, predefined, is_protected, position)"
+                        + " VALUES ('Kalita Wave', 'cup', false, false, NULL) RETURNING id",
+                Long.class);
+        jdbc.update("DELETE FROM brew_method WHERE id = ?", methodId);
+
+        mvc.perform(post("/api/brews")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(brewBody("kenyan morning", methodId)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("name"))
+                .andExpect(jsonPath("$.errors[0].code").value("DUPLICATE"))
+                .andExpect(jsonPath("$.errors.length()").value(1));
+
+        Integer rows = jdbc.queryForObject("SELECT count(*) FROM brew", Integer.class);
+        assertThat(rows).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a 101-character origin with a duplicate name and a deleted method is answered with TOO_LONG alone")
+    void originErrorIsAnsweredAloneWhenTheNameAndMethodAreAlsoWrong() throws Exception {
+        TestData.brew("Kenyan Morning").insert(jdbc);
+        long methodId = jdbc.queryForObject(
+                "INSERT INTO brew_method (name, icon_key, predefined, is_protected, position)"
+                        + " VALUES ('Kalita Wave', 'cup', false, false, NULL) RETURNING id",
+                Long.class);
+        jdbc.update("DELETE FROM brew_method WHERE id = ?", methodId);
+
+        mvc.perform(post("/api/brews")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(brewBody("kenyan morning", "x".repeat(101), methodId)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("origin"))
+                .andExpect(jsonPath("$.errors[0].code").value("TOO_LONG"))
+                .andExpect(jsonPath("$.errors.length()").value(1));
+
+        Integer rows = jdbc.queryForObject("SELECT count(*) FROM brew", Integer.class);
+        assertThat(rows).isEqualTo(1);
     }
 
     @Test
