@@ -103,3 +103,41 @@ describe('BrewApi.create', () => {
     expect(result).toEqual(created);
   });
 });
+
+describe('BrewApi.patch', () => {
+  let api: BrewApi;
+  let http: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    api = TestBed.inject(BrewApi);
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => http.verify());
+
+  it('sends only the given fields as a PATCH to /api/brews/{id} and emits the brew', () => {
+    const patched: Brew = {
+      id: 7,
+      name: 'Kenyan Morning',
+      beanName: 'AA Kiambu',
+      origin: 'Kenya',
+      method: { id: 2, name: 'Pour Over', iconKey: 'pour-over' },
+      roast: 'LIGHT',
+      rating: 4,
+      brewDate: '2026-11-01',
+      notes: null,
+    };
+    let result: Brew | undefined;
+    api.patch(7, { rating: 4 }).subscribe((brew) => (result = brew));
+
+    const req = http.expectOne('/api/brews/7');
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ rating: 4 });
+    req.flush(patched);
+
+    expect(result).toEqual(patched);
+  });
+});
