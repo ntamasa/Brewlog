@@ -29,4 +29,8 @@ export class BrewApi {
   create(body: BrewBody): Observable<Brew> {
     return this.http.post<Brew>('/api/brews', body);
   }
+
+  patch(id: number, changes: Partial<BrewBody>): Observable<Brew> {
+    throw new Error(`BREW-34: not implemented: patch(${id}, ${JSON.stringify(changes)})`);
+  }
 }
