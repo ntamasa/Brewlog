@@ -45,6 +45,15 @@
         </p>
       </div>
 
+      @if (!isEmpty()) {
+        <app-journal-toolbar [query]="store.query()" (searchChange)="store.setSearch($event)" />
+        <app-filter-chips
+          [query]="store.query()"
+          (remove)="store.removeFilter($event)"
+          (clearAll)="store.clearFilters()"
+        />
+      }
+
       @switch (store.status()) {
         @case ('loading') {
           <section class="brew-grid" aria-label="Loading brews" aria-busy="true">
@@ -99,20 +108,41 @@
               </button>
             </section>
           } @else {
-            <div class="brew-grid">
-              @for (brew of store.items(); track brew.id) {
-                <app-brew-card [brew]="brew" [highlighted]="brew.id === store.highlightId()" />
-              }
-            </div>
+            @if (store.matchingCount() === 0) {
+              <section class="panel">
+                <div class="art" aria-hidden="true">
+                  <mat-icon svgIcon="search" class="icon" aria-hidden="true"></mat-icon>
+                </div>
+                <h2 class="t-headline-md">No brews match</h2>
+                <p class="muted">
+                  Nothing in your journal matches “{{ store.query().q.trim() }}” with these filters.
+                  Try a different name or loosen a filter.
+                </p>
+                <button
+                  matButton="outlined"
+                  type="button"
+                  class="btn-secondary"
+                  (click)="store.clearFilters()"
+                >
+                  Clear search and filters
+                </button>
+              </section>
+            } @else {
+              <div class="brew-grid">
+                @for (brew of store.items(); track brew.id) {
+                  <app-brew-card [brew]="brew" [highlighted]="brew.id === store.highlightId()" />
+                }
+              </div>
 
-            <div class="list-foot">
-              <p class="t-body-sm">{{ footerText() }}</p>
-              <app-pagination
-                [page]="store.page()"
-                [totalPages]="store.totalPages()"
-                (pageChange)="onPageChange($event)"
-              />
-            </div>
+              <div class="list-foot">
+                <p class="t-body-sm">{{ footerText() }}</p>
+                <app-pagination
+                  [page]="store.page()"
+                  [totalPages]="store.totalPages()"
+                  (pageChange)="onPageChange($event)"
+                />
+              </div>
+            }
           }
         }
       }

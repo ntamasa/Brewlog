@@ -5,7 +5,16 @@ import com.brewlog.dto.SortKey;
 
 public class BrewQueryParams {
 
+    private String q;
     private int page = 1;
+
+    public String getQ() {
+        return q;
+    }
+
+    public void setQ(String q) {
+        this.q = q == null || q.isBlank() ? null : q.strip();
+    }
 
     public int getPage() {
         return page;
@@ -16,6 +25,6 @@ public class BrewQueryParams {
     }
 
     BrewQuery toQuery() {
-        return new BrewQuery(null, null, null, null, SortKey.NEWEST, page);
+        return new BrewQuery(q, null, null, null, SortKey.NEWEST, page);
     }
 }

@@ -349,3 +349,12 @@ html {
 .mat-button-toggle-group.segmented .swatch {
   margin-right: var(--spacing-sm);
 }
+
+.chips-row .mat-mdc-button {
+  @include mat.button-overrides(
+    (
+      text-container-height: 32px,
+      text-label-text-size: var(--text-body-sm),
+    )
+  );
+}

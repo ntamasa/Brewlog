@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +9,8 @@ import { Brew } from '../../core/models';
 import { Toaster } from '../../core/toast';
 import { MethodStore } from '../../methods/method.store';
 import { BrewCard } from '../brew-card/brew-card';
+import { FilterChips } from '../filter-chips/filter-chips';
+import { JournalToolbar } from '../journal-toolbar/journal-toolbar';
 import { queryFromParams, queryToParams } from '../journal-query';
 import { JournalStore } from '../journal.store';
 import { Pagination } from '../pagination/pagination';
@@ -25,6 +27,8 @@ const PAGE_SIZE = 12;
     BrewForm,
     BrewCard,
     Pagination,
+    JournalToolbar,
+    FilterChips,
   ],
   templateUrl: './journal-page.html',
   styleUrl: './journal-page.scss',
@@ -39,7 +43,11 @@ export class JournalPage implements OnInit {
   protected readonly formOpen = signal(false);
   protected readonly skeletonCards: readonly number[] = [1, 2, 3, 4, 5, 6];
 
-  protected readonly countText = computed(() => brewCount(this.store.totalCount()));
+  protected readonly countText = computed(() =>
+    this.store.isFiltered()
+      ? this.store.matchingCount() + ' of ' + brewCount(this.store.totalCount())
+      : brewCount(this.store.totalCount()),
+  );
   protected readonly isEmpty = computed(
     () => this.store.status() === 'ready' && this.store.totalCount() === 0,
   );
@@ -48,6 +56,12 @@ export class JournalPage implements OnInit {
     const last = first + this.store.items().length - 1;
     return `Showing ${first}–${last} of ${this.store.matchingCount()}`;
   });
+
+  constructor() {
+    effect(() => {
+      void this.router.navigate([], { queryParams: queryToParams(this.store.query()) });
+    });
+  }
 
   ngOnInit(): void {
     this.store.setQuery(queryFromParams(this.route.snapshot.queryParamMap));
@@ -72,6 +86,5 @@ export class JournalPage implements OnInit {
 
   protected onPageChange(page: number): void {
     this.store.setPage(page);
-    this.router.navigate([], { queryParams: queryToParams(this.store.query()) });
   }
 }
