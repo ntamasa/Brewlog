@@ -50,7 +50,10 @@ class BrewValidator {
         if (!errors.isEmpty()) {
             return List.copyOf(errors);
         }
-        if (brewRepository.existsByNameIgnoreCaseAndIdNot(draft.name, selfId == null ? -1L : selfId)) {
+        boolean nameTaken = selfId == null
+                ? brewRepository.existsByNameIgnoreCase(draft.name)
+                : brewRepository.existsByNameIgnoreCaseAndIdNot(draft.name, selfId);
+        if (nameTaken) {
             return List.of(new FieldErrorDto("name", ErrorCode.DUPLICATE));
         }
         if (!brewMethodRepository.existsById(draft.methodId)) {
