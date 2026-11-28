@@ -496,3 +496,64 @@ test.describe("brew form", () => {
     await expect(next).toHaveCSS("color", grey);
   });
 });
+
+test.describe("brew form duplicate name", () => {
+  test("shows the duplicate-name error for a lower-case copy of an existing brew name and keeps the form open", async ({
+    page,
+  }, testInfo) => {
+    const name = uniqueName("Dup");
+    const methods: { id: number; name: string }[] = await (
+      await page.request.get("/api/methods")
+    ).json();
+    const otherId = methods.find((method) => method.name === "Other")?.id;
+    expect(otherId).toBeDefined();
+    const seeded = await page.request.post("/api/brews", {
+      data: {
+        name,
+        beanName: "AA Kiambu",
+        origin: "Kenya",
+        methodId: otherId,
+        roast: "LIGHT",
+        rating: 5,
+        brewDate: "2026-10-25",
+        notes: null,
+      },
+    });
+    expect(seeded.status()).toBe(201);
+
+    const { header, fab } = addBrewTriggers(page);
+    await page.goto("/journal");
+    await expect(
+      page.getByRole("heading", { name: "Your brews" }),
+    ).toBeVisible();
+    await (isPhone(testInfo.project.name) ? fab : header).click();
+    const drawer = page.locator("mat-sidenav");
+    await expect(
+      drawer.getByRole("heading", { name: "Log a brew" }),
+    ).toBeVisible();
+
+    const lower = name.toLowerCase();
+    await drawer.getByLabel("Brew name", { exact: true }).fill(lower);
+    await drawer.getByLabel("Bean name", { exact: true }).fill("AA Kiambu");
+    await drawer.getByLabel("Origin", { exact: true }).fill("Kenya");
+    await drawer.getByRole("combobox").click();
+    await page.getByRole("option", { name: "Pour Over", exact: true }).click();
+    await drawer.locator("mat-button-toggle", { hasText: "Light" }).click();
+    await drawer
+      .getByRole("radiogroup", { name: "Rating" })
+      .locator("label")
+      .nth(4)
+      .click();
+    await drawer.getByRole("button", { name: "Add to journal" }).click();
+
+    await expect(
+      drawer.locator(".mat-mdc-form-field-error", {
+        hasText: `You already have a brew called “${lower}”. Brew names must be unique, ignoring capitals.`,
+      }),
+    ).toBeVisible();
+    await expect(drawer).toHaveClass(/mat-drawer-opened/);
+    await expect(drawer.getByLabel("Brew name", { exact: true })).toHaveValue(
+      lower,
+    );
+  });
+});

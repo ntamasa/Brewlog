@@ -932,7 +932,8 @@ describe('BrewForm', () => {
   it('a changed Brew name clears its server error, and the banner keeps it until the next submit, which sends the new name', async () => {
     await duplicateName();
     expect(await (await fieldOf('name')).getTextErrors()).toEqual([DUPLICATE_MESSAGE]);
-    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerTitle()).toBe('Couldn’t save your changes');
+    expect(bannerLinkTexts()).toEqual(['That brew name is already taken']);
 
     await (await field('#name')).setValue('Kenyan Evening');
     await (await field('#name')).blur();
@@ -941,7 +942,8 @@ describe('BrewForm', () => {
     expect(await (await (await fieldOf('name')).host()).hasClass('mat-form-field-invalid')).toBe(
       false,
     );
-    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerTitle()).toBe('Couldn’t save your changes');
+    expect(bannerLinkTexts()).toEqual(['That brew name is already taken']);
 
     await addToJournal();
     expect(bannerEl()).toBeNull();
@@ -1048,17 +1050,150 @@ describe('BrewForm', () => {
     request.flush(SAVED, { status: 201, statusText: 'Created' });
   });
 
-  it('a POST that fails with status 0 sets no field error and no banner, and keeps the fields enabled with their values', async () => {
+  const SERVER_FAILURE_TEXT =
+    'The Brewlog server didn’t respond. Nothing was lost: your entry is still here, so you can try again.';
+  const METHOD_GONE_MESSAGE = 'This method no longer exists. Choose another one.';
+
+  async function methodGone(): Promise<void> {
+    await fillValid();
+    await addToJournal();
+    await answerSaveWithFieldErrors([{ field: 'methodId', code: 'METHOD_NOT_FOUND' }]);
+    http.expectOne('/api/methods').flush(METHODS);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
+  async function serverFailure(): Promise<void> {
     await fillValid();
     await addToJournal();
     http.expectOne('/api/brews').error(new ProgressEvent('error'));
     fixture.detectChanges();
     await fixture.whenStable();
+  }
+
+  it('a POST that fails with status 0 sets no field error, shows the server banner, and keeps the fields enabled with their values', async () => {
+    await serverFailure();
 
     expect(fixture.nativeElement.querySelector('mat-error')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('.mat-form-field-invalid').length).toBe(0);
-    expect(bannerEl()).toBeNull();
+    expect(bannerTitle()).toBe('Couldn’t save your brew');
+    expect(bannerEl()?.textContent).toContain(SERVER_FAILURE_TEXT);
     await expectKeptAfterFailure();
+    expect(toaster.show).not.toHaveBeenCalled();
+  });
+
+  it('after a 500 shows the server banner with its text and keeps the values', async () => {
+    await fillValid();
+    await addToJournal();
+    http.expectOne('/api/brews').flush({}, { status: 500, statusText: 'Internal Server Error' });
+    fixture.detectChanges();
+
+    expect(bannerTitle()).toBe('Couldn’t save your brew');
+    expect(bannerEl()?.textContent).toContain(SERVER_FAILURE_TEXT);
+    await expectKeptAfterFailure();
+  });
+
+  it('while the POST is unflushed the button reads Saving… with aria-busy and every input is disabled', async () => {
+    await fillValid();
+    await addToJournal();
+    fixture.detectChanges();
+
+    const busy: HTMLElement = fixture.nativeElement.querySelector('button[aria-busy="true"]');
+    expect(busy.textContent).toContain('Saving…');
+    await expectFormDisabled(true);
+    http.expectOne('/api/brews').flush(SAVED, { status: 201, statusText: 'Created' });
+  });
+
+  it('a DUPLICATE answer shows the duplicate banner with its link, the name error and no method error, and keeps every value', async () => {
+    await duplicateName();
+
+    expect(bannerTitle()).toBe('Couldn’t save your changes');
+    expect(bannerLinkTexts()).toEqual(['That brew name is already taken']);
+    expect(await (await fieldOf('name')).getTextErrors()).toEqual([DUPLICATE_MESSAGE]);
+    const select: HTMLElement = fixture.nativeElement.querySelector('[data-field="method"]');
+    expect(select.querySelector('mat-error')).toBeNull();
+    expect(select.querySelector('.mat-form-field-invalid')).toBeNull();
+    expect(await (await field('#name')).getValue()).toBe('  kenyan morning ');
+    expect(await (await field('#bean')).getValue()).toBe('AA Kiambu');
+    expect(saved).not.toHaveBeenCalled();
+  });
+
+  it('a METHOD_NOT_FOUND answer reloads the methods once, shows Choose a method with its error and the method-gone banner, and keeps the other values', async () => {
+    await methodGone();
+
+    const select: HTMLElement = fixture.nativeElement.querySelector('[data-field="method"]');
+    expect(select.textContent).toContain('Choose a method');
+    expect(select.querySelector('mat-error')?.textContent?.trim()).toBe(METHOD_GONE_MESSAGE);
+    expect(select.querySelector('.mat-form-field-invalid')).not.toBeNull();
+    expect(bannerTitle()).toBe('Couldn’t save your brew');
+    expect(bannerLinkTexts()).toEqual(['This method no longer exists']);
+    expect(await (await field('#name')).getValue()).toBe('Kenyan Morning');
+    expect(await (await field('#bean')).getValue()).toBe('AA Kiambu');
+    expect(await (await field('#origin')).getValue()).toBe('Kenya');
+    expect(saved).not.toHaveBeenCalled();
+  });
+
+  it('after a method is gone, choosing another method sends the POST with that method', async () => {
+    await methodGone();
+    await (
+      await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }))
+    ).clickOptions({ text: 'AeroPress' });
+    await addToJournal();
+
+    const request = http.expectOne('/api/brews');
+    expect(request.request.body.methodId).toBe(4);
+    request.flush(SAVED, { status: 201, statusText: 'Created' });
+    expect(saved).toHaveBeenCalledWith(SAVED);
+  });
+
+  it('after a method is gone, choosing another method clears its error and the banner keeps it until the next submit', async () => {
+    await methodGone();
+    await (
+      await loader.getHarness(MatSelectHarness.with({ selector: '#method-btn' }))
+    ).clickOptions({ text: 'AeroPress' });
+    fixture.detectChanges();
+
+    const select: HTMLElement = fixture.nativeElement.querySelector('[data-field="method"]');
+    expect(select.querySelector('mat-error')).toBeNull();
+    expect(select.querySelector('.mat-form-field-invalid')).toBeNull();
+    expect(bannerTitle()).toBe('Couldn’t save your brew');
+    expect(bannerLinkTexts()).toEqual(['This method no longer exists']);
+  });
+
+  it('after a server failure, changing a field keeps the server banner, and the next submit hides it and sends the change', async () => {
+    await serverFailure();
+
+    await (await field('#origin')).setValue('Kenya');
+    fixture.detectChanges();
+    expect(bannerTitle()).toBe('Couldn’t save your brew');
+
+    await addToJournal();
+    expect(bannerEl()).toBeNull();
+    const request = http.expectOne('/api/brews');
+    expect(request.request.body.origin).toBe('Kenya');
+    request.flush(SAVED, { status: 201, statusText: 'Created' });
+    expect(saved).toHaveBeenCalledWith(SAVED);
+  });
+
+  it('after a method is gone, Add to journal without choosing one sends nothing and lists the method error in the banner', async () => {
+    await methodGone();
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerLinkTexts()).toEqual([METHOD_GONE_MESSAGE]);
+  });
+
+  it('after a server failure, a cleared Brew name and Add to journal sends nothing, lists the name error and drops the server banner', async () => {
+    await serverFailure();
+
+    await (await field('#name')).setValue('');
+    await addToJournal();
+
+    http.expectNone('/api/brews');
+    expect(bannerTitle()).toBe('1 field needs your attention');
+    expect(bannerLinkTexts()).toEqual(['Enter a brew name']);
+    expect(fixture.nativeElement.textContent).not.toContain(SERVER_FAILURE_TEXT);
   });
 
   it('a second click on the busy Saving button sends no second POST and emits saved once', async () => {
