@@ -305,4 +305,44 @@ describe('JournalStore', () => {
       expect(list).toHaveBeenLastCalledWith({ ...DEFAULT_QUERY, sort: 'HIGHEST' });
     });
   });
+
+  describe('setSort', () => {
+    beforeEach(() => {
+      setUp(() => of(FIRST_PAGE));
+    });
+
+    it('loads page 1 with the new sort when the sort changes on page 3', () => {
+      store.setQuery({ ...DEFAULT_QUERY, sort: 'OLDEST', page: 3 });
+
+      store.setSort('HIGHEST');
+
+      expect(list).toHaveBeenLastCalledWith({ ...DEFAULT_QUERY, sort: 'HIGHEST', page: 1 });
+      expect(store.query().page).toBe(1);
+      expect(store.query().sort).toBe('HIGHEST');
+    });
+
+    it('keeps the search and filters when the sort changes', () => {
+      store.setQuery({
+        ...DEFAULT_QUERY,
+        q: 'kenya',
+        roast: 'LIGHT',
+        minRating: 4,
+        sort: 'OLDEST',
+        page: 3,
+      });
+
+      store.setSort('HIGHEST');
+
+      const expected: BrewQuery = {
+        ...DEFAULT_QUERY,
+        q: 'kenya',
+        roast: 'LIGHT',
+        minRating: 4,
+        sort: 'HIGHEST',
+        page: 1,
+      };
+      expect(list).toHaveBeenLastCalledWith(expected);
+      expect(store.query()).toEqual(expected);
+    });
+  });
 });
