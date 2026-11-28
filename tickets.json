@@ -1394,7 +1394,8 @@
       ],
       "blockedBy": [
         "S6.4"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S6.6",
@@ -1409,7 +1410,8 @@
       ],
       "blockedBy": [
         "S6.5"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S7",
@@ -1982,7 +1984,8 @@
       ],
       "blockedBy": [
         "S11.2"
-      ]
+      ],
+      "done": true
     },
     {
       "id": "S11.4",
@@ -1997,6 +2000,22 @@
       ],
       "blockedBy": [
         "S11.3"
+      ],
+      "done": true
+    },
+    {
+      "id": "S11.5",
+      "type": "subtask",
+      "key": "BREW-127",
+      "parent": "S11",
+      "summary": "Fix: store test that a sort change on page 3 loads page 1",
+      "description": [
+        {
+          "file": "tickets/S11.5.md"
+        }
+      ],
+      "blockedBy": [
+        "S11.4"
       ]
     },
     {
