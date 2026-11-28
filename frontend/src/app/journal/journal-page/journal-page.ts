@@ -40,6 +40,7 @@ export class JournalPage implements OnInit {
   protected readonly store = inject(JournalStore);
   protected readonly methodStore = inject(MethodStore);
   protected readonly sidenav = viewChild.required(MatSidenav);
+  protected readonly brewForm = viewChild(BrewForm);
   protected readonly formOpen = signal(false);
   protected readonly skeletonCards: readonly number[] = [1, 2, 3, 4, 5, 6];
 

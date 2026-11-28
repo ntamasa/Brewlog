@@ -607,6 +607,91 @@ describe('JournalPage', () => {
     expect(document.activeElement).not.toBe(document.body);
   });
 
+  describe('unsaved changes', () => {
+    async function openFormWithOriginChanged(): Promise<{
+      element: HTMLElement;
+      loader: HarnessLoader;
+      trigger: HTMLButtonElement;
+    }> {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/journal', JournalPage);
+      http.expectOne('/api/brews?sort=NEWEST&page=1').flush(threeBrews());
+      await harness.fixture.whenStable();
+      const element: HTMLElement = harness.fixture.nativeElement;
+      const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+      const trigger = buttonWithText(element, 'Add brew');
+
+      trigger.focus();
+      await (await loader.getHarness(MatButtonHarness.with({ text: 'Add brew' }))).click();
+      await vi.waitFor(() =>
+        expect(document.activeElement).toBe(element.querySelector('input[formcontrolname="name"]')),
+      );
+      await (await field(loader, '#origin')).setValue('Kenya');
+      return { element, loader, trigger };
+    }
+
+    function isOpen(element: HTMLElement): boolean {
+      return element.querySelector('mat-sidenav')!.classList.contains('mat-drawer-opened');
+    }
+
+    function discardText(element: HTMLElement): HTMLElement | null {
+      return element.querySelector('app-brew-form footer.foot .discard-text');
+    }
+
+    function backdropClick(element: HTMLElement): void {
+      (element.querySelector('.mat-drawer-backdrop') as HTMLElement).click();
+    }
+
+    it('a backdrop click with Origin changed keeps the form open and asks Discard changes? with focus on it', async () => {
+      const { element } = await openFormWithOriginChanged();
+
+      backdropClick(element);
+
+      await vi.waitFor(() => {
+        expect(isOpen(element)).toBe(true);
+        expect(discardText(element)?.textContent?.trim()).toBe('Discard changes?');
+        expect(document.activeElement).toBe(discardText(element));
+      });
+    });
+
+    it('after a backdrop click from a blurred page, Keep editing focuses the form Cancel', async () => {
+      const { element, loader } = await openFormWithOriginChanged();
+      (document.activeElement as HTMLElement).blur();
+
+      backdropClick(element);
+      await vi.waitFor(() => expect(discardText(element)).not.toBeNull());
+      await (await loader.getHarness(MatButtonHarness.with({ text: 'Keep editing' }))).click();
+
+      await vi.waitFor(() =>
+        expect(document.activeElement).toBe(
+          element.querySelector('app-brew-form footer.foot button.btn-secondary'),
+        ),
+      );
+    });
+
+    it('Esc in Origin, then Discard closes the form and returns focus to "+ Add brew"', async () => {
+      const { element, loader, trigger } = await openFormWithOriginChanged();
+
+      await (await (await field(loader, '#origin')).host()).sendKeys(TestKey.ESCAPE);
+      await (await loader.getHarness(MatButtonHarness.with({ text: 'Discard' }))).click();
+
+      await expectFormClosed(element);
+      await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
+    });
+
+    it('Esc in Origin, then Keep editing keeps the form open and focuses Origin, not "+ Add brew"', async () => {
+      const { element, loader } = await openFormWithOriginChanged();
+
+      await (await (await field(loader, '#origin')).host()).sendKeys(TestKey.ESCAPE);
+      await (await loader.getHarness(MatButtonHarness.with({ text: 'Keep editing' }))).click();
+
+      await vi.waitFor(() => {
+        expect(isOpen(element)).toBe(true);
+        expect(document.activeElement).toBe(element.querySelector('#origin'));
+      });
+    });
+  });
+
   describe('search, chip and count', () => {
     function listOf(count: number): Brew[] {
       return Array.from({ length: count }, (_, i) => brewAt(i + 1));

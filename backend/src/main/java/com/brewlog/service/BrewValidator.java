@@ -3,6 +3,8 @@ package com.brewlog.service;
 import com.brewlog.dto.FieldErrorDto;
 import com.brewlog.entity.Roast;
 import com.brewlog.exception.ErrorCode;
+import com.brewlog.repository.BrewMethodRepository;
+import com.brewlog.repository.BrewRepository;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,9 +19,13 @@ class BrewValidator {
     private static final int NOTES_MAX = 2000;
 
     private final Clock clock;
+    private final BrewRepository brewRepository;
+    private final BrewMethodRepository brewMethodRepository;
 
-    BrewValidator(Clock clock) {
+    BrewValidator(Clock clock, BrewRepository brewRepository, BrewMethodRepository brewMethodRepository) {
         this.clock = clock;
+        this.brewRepository = brewRepository;
+        this.brewMethodRepository = brewMethodRepository;
     }
 
     List<FieldErrorDto> validate(BrewDraft draft, Long selfId) {
@@ -41,7 +47,19 @@ class BrewValidator {
         if (draft.notes != null && draft.notes.length() > NOTES_MAX) {
             errors.add(new FieldErrorDto("notes", ErrorCode.TOO_LONG));
         }
-        return List.copyOf(errors);
+        if (!errors.isEmpty()) {
+            return List.copyOf(errors);
+        }
+        boolean nameTaken = selfId == null
+                ? brewRepository.existsByNameIgnoreCase(draft.name)
+                : brewRepository.existsByNameIgnoreCaseAndIdNot(draft.name, selfId);
+        if (nameTaken) {
+            return List.of(new FieldErrorDto("name", ErrorCode.DUPLICATE));
+        }
+        if (!brewMethodRepository.existsById(draft.methodId)) {
+            return List.of(new FieldErrorDto("methodId", ErrorCode.METHOD_NOT_FOUND));
+        }
+        return List.of();
     }
 
     private static void checkText(List<FieldErrorDto> errors, String field, String value, int max) {

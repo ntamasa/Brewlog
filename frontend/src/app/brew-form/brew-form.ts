@@ -36,6 +36,7 @@ import { parseApiError } from '../core/api-error';
 import { brewFieldMessage, fieldErrorMessage } from '../core/error-messages';
 import { ApiFieldError, Brew, BrewBody, BrewMethod, Roast } from '../core/models';
 import { BeanRating } from '../shared/bean-rating/bean-rating';
+import { MethodStore } from '../methods/method.store';
 import { BREW_VALIDATORS } from './brew-validators';
 import { MethodSelect } from './method-select/method-select';
 
@@ -55,10 +56,11 @@ export interface BannerLink {
   message: string;
 }
 
-export interface FormBanner {
-  kind: 'fields';
-  links: BannerLink[];
-}
+export type FormBanner =
+  | { kind: 'fields'; links: BannerLink[] }
+  | { kind: 'duplicate' }
+  | { kind: 'methodGone' }
+  | { kind: 'server' };
 
 const BANNER_FIELDS: { field: keyof BrewFormControls; id: string }[] = [
   { field: 'name', id: 'name' },
@@ -87,6 +89,7 @@ const BANNER_FIELDS: { field: keyof BrewFormControls; id: string }[] = [
   templateUrl: './brew-form.html',
   styleUrl: './brew-form.scss',
   providers: [{ provide: ErrorStateMatcher, useExisting: forwardRef(() => BrewForm) }],
+  host: { '(keydown.escape)': 'requestClose()' },
 })
 export class BrewForm implements ErrorStateMatcher {
   readonly mode = input<'create' | 'edit'>('create');
@@ -96,14 +99,21 @@ export class BrewForm implements ErrorStateMatcher {
   readonly closed = output<void>();
 
   private readonly brewApi = inject(BrewApi);
+  private readonly methodStore = inject(MethodStore);
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly bannerEl = viewChild<ElementRef<HTMLElement>>('banner');
+  private readonly cancelButton = viewChild('cancelButton', {
+    read: ElementRef<HTMLButtonElement>,
+  });
+  private readonly discardText = viewChild<ElementRef<HTMLElement>>('discardText');
+  private returnTo: HTMLElement | 'cancel' = 'cancel';
 
   protected readonly today = startOfDay(new Date());
   readonly saving = signal(false);
   readonly submitted = signal(false);
   readonly banner = signal<FormBanner | null>(null);
+  readonly confirmingDiscard = signal(false);
 
   readonly form = new FormGroup<BrewFormControls>({
     name: new FormControl('', { nonNullable: true, validators: BREW_VALIDATORS.name }),
@@ -165,10 +175,50 @@ export class BrewForm implements ErrorStateMatcher {
       const message = this.fieldMessage(field);
       if (message !== null) links.push({ id, message });
     }
-    this.banner.set(links.length === 0 ? null : { kind: 'fields', links });
-    if (links.length > 0) {
+    this.showBanner(links.length === 0 ? null : { kind: 'fields', links });
+  }
+
+  private showBanner(banner: FormBanner | null): void {
+    this.banner.set(banner);
+    if (banner !== null) {
       afterNextRender(() => this.bannerEl()?.nativeElement.focus(), { injector: this.injector });
     }
+  }
+
+  requestClose(): void {
+    if (this.confirmingDiscard()) return;
+    if (!this.form.dirty) {
+      this.closed.emit();
+      return;
+    }
+    const active = document.activeElement;
+    this.returnTo =
+      active instanceof HTMLElement &&
+      active !== this.cancelButton()?.nativeElement &&
+      this.host.nativeElement.contains(active)
+        ? active // ×, a field
+        : 'cancel'; // Cancel itself (removed by the prompt), or outside the form (backdrop click)
+    this.confirmingDiscard.set(true);
+    afterNextRender(() => this.discardText()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  keepEditing(): void {
+    const target = this.returnTo;
+    this.confirmingDiscard.set(false);
+    afterNextRender(
+      () => {
+        const focusable =
+          target !== 'cancel' && this.host.nativeElement.contains(target)
+            ? target
+            : this.cancelButton()?.nativeElement; // the re-rendered Cancel
+        focusable?.focus();
+      },
+      { injector: this.injector },
+    );
+  }
+
+  discard(): void {
+    this.closed.emit();
   }
 
   protected focusField(event: Event, id: string): void {
@@ -202,9 +252,27 @@ export class BrewForm implements ErrorStateMatcher {
         // enable() re-runs every validator, so it must come before the server errors are set
         this.form.enable();
         const error = parseApiError(err);
+        if (error.kind === 'network') {
+          this.showBanner({ kind: 'server' });
+          return;
+        }
         if (error.kind !== 'fields') return;
+        // the server answers DUPLICATE or METHOD_NOT_FOUND alone, never with other field errors
+        const duplicate = error.fields.some(
+          ({ field, code }) => field === 'name' && code === 'DUPLICATE',
+        );
+        const methodGone = error.fields.some(
+          ({ field, code }) => field === 'methodId' && code === 'METHOD_NOT_FOUND',
+        );
+        if (methodGone) {
+          this.methodStore.load();
+          // setValue re-runs the validators, so it must come before the server errors are set
+          this.form.controls.methodId.setValue(null);
+        }
         this.setServerFieldErrors(error.fields);
-        this.setFieldsBanner();
+        if (duplicate) this.showBanner({ kind: 'duplicate' });
+        else if (methodGone) this.showBanner({ kind: 'methodGone' });
+        else this.setFieldsBanner();
       },
     });
   }

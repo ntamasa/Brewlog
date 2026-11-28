@@ -121,6 +121,11 @@ mat-form-field {
   border-top: 1px solid var(--color-outline);
 }
 
+.discard-text {
+  margin: 0 auto 0 0;
+  align-self: center;
+}
+
 @media (max-width: 767px) {
   .row-2 {
     grid-template-columns: 1fr;
