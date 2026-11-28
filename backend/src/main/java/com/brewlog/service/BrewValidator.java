@@ -36,16 +36,10 @@ class BrewValidator {
 
         List<FieldErrorDto> errors = new ArrayList<>();
         checkText(errors, "name", draft.name, NAME_MAX);
-        if (errors.stream().noneMatch(error -> error.field().equals("name"))
-                && brewRepository.existsByNameIgnoreCaseAndIdNot(draft.name, selfId == null ? -1L : selfId)) {
-            errors.add(new FieldErrorDto("name", ErrorCode.DUPLICATE));
-        }
         checkText(errors, "beanName", draft.beanName, NAME_MAX);
         checkText(errors, "origin", draft.origin, NAME_MAX);
         if (draft.methodId == null) {
             errors.add(new FieldErrorDto("methodId", ErrorCode.REQUIRED));
-        } else if (!brewMethodRepository.existsById(draft.methodId)) {
-            errors.add(new FieldErrorDto("methodId", ErrorCode.METHOD_NOT_FOUND));
         }
         checkRoast(errors, draft.roast);
         checkRating(errors, draft.rating);
@@ -53,7 +47,16 @@ class BrewValidator {
         if (draft.notes != null && draft.notes.length() > NOTES_MAX) {
             errors.add(new FieldErrorDto("notes", ErrorCode.TOO_LONG));
         }
-        return List.copyOf(errors);
+        if (!errors.isEmpty()) {
+            return List.copyOf(errors);
+        }
+        if (brewRepository.existsByNameIgnoreCaseAndIdNot(draft.name, selfId == null ? -1L : selfId)) {
+            return List.of(new FieldErrorDto("name", ErrorCode.DUPLICATE));
+        }
+        if (!brewMethodRepository.existsById(draft.methodId)) {
+            return List.of(new FieldErrorDto("methodId", ErrorCode.METHOD_NOT_FOUND));
+        }
+        return List.of();
     }
 
     private static void checkText(List<FieldErrorDto> errors, String field, String value, int max) {
